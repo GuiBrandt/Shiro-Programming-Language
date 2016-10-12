@@ -39,7 +39,7 @@ typedef enum types {
     s_tFloat        = 0x11,
     s_tString       = 0x20,
     s_tArray        = 0x30,
-    s_tFunction     = 0x40,
+    s_tMethod       = 0x40,
     s_tVoid         = -1
 } shiro_type;
 

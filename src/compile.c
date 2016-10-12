@@ -41,8 +41,7 @@
 #define KW_BREAK        "break"
 #define KW_NEXT         "continue"
 #define KW_DELETE       "delete"
-#define KW_FUNC         "function"
-#define KW_PROC         "procedure"
+#define KW_FUNC         "fn"
 #define KW_VAR          "var"
 #define KW_CONST        "const"
 #define KW_CLASS        "class"
@@ -92,15 +91,15 @@
 // As funções que são definidas nesse arquivo devem primeiro ser declaradas
 // aqui
 //=============================================================================
-bool __is_operator       (const char*);
-bool __is_operator_c     (char);
-bool __is_symbol         (char);
-bool __is_whitespace     (char);
-void __append_to_string  (char**, unsigned int*, unsigned int*, char c);
-void __clear_token       (char**, unsigned int*, unsigned int*);
-void __push_token        (char**, unsigned int*, unsigned int*, const char*);
-void __error             (unsigned int, const char*, const char*, ...);
-void __compile_statement (const char*);
+bool  __is_operator       (const char*);
+bool  __is_operator_c     (char);
+bool  __is_symbol         (char);
+bool  __is_whitespace     (char);
+char* __append_to_string (char*, unsigned int*, unsigned int*, char c);
+char* __clear_token      (char*, unsigned int*, unsigned int*);
+char* __push_token       (char*, unsigned int*, unsigned int*, const char*);
+void  __error             (unsigned int, const char*, const char*, ...);
+void  __compile_statement (const char*);
 
 typedef enum __tokentype {
     TK_KEYWORD,
@@ -180,24 +179,26 @@ bool __is_operator(const char* str) {
 //                    string
 //      c           : Caractere a adicionar
 //-----------------------------------------------------------------------------
-void __append_to_string(
-        char** string,
+char* __append_to_string(
+        char* string,
         unsigned int* str_size,
         unsigned int* last,
         char c
 ) {
     if (*last >= *str_size) {
-        char* buf = (char*)malloc(*last);
-        memset(*string, 0, *last);
-        memcpy(buf, *string, *str_size);
-        free(*string);
+        char* buf = malloc(*last);
+        memset(buf, 0, *last);
+        memcpy(buf, string, *str_size);
+        free(string);
         (*str_size) *= 2;
-        *string = (char*)malloc(*str_size);
-        memset(*string, 0, *str_size);
-        memcpy(*string, buf, *last);
+        string = malloc(*str_size);
+        memset(string, 0, *str_size);
+        memcpy(string, buf, *last);
         free(buf);
     }
-    (*string)[(*last)++] = c;
+    string[(*last)++] = c;
+
+    return string;
 }
 //-----------------------------------------------------------------------------
 // Esvazia uma string liberando memória
@@ -205,12 +206,13 @@ void __append_to_string(
 //      size    : Ponteiro para o tamanho da string
 //      index   : Pointeiro para o índice do último caractere da string
 //-----------------------------------------------------------------------------
-void __clear_token(char** string, unsigned int* size, unsigned int* index) {
-    free(*string);
+char* __clear_token(char* string, unsigned int* size, unsigned int* index) {
+    free(string);
     *size = DF_TOKEN_SIZE;
     *index = 0;
-    *string = (char*)malloc(*size);
-    memset(*string, 0, *size);
+    string = malloc(*size);
+    memset(string, 0, *size);
+    return string;
 }
 //-----------------------------------------------------------------------------
 // Adiciona uma string a uma lista de tokens
@@ -219,8 +221,8 @@ void __clear_token(char** string, unsigned int* size, unsigned int* index) {
 //      last            : Índice do último elemento da lista
 //      string          : String a ser adicionada à lista
 //-----------------------------------------------------------------------------
-void __push_token(
-        char** tokens,
+char* __push_token(
+        char* tokens,
         unsigned int* tokens_size,
         unsigned int* last,
         const char* string
@@ -228,22 +230,24 @@ void __push_token(
     int len = strlen(string);
 
     if (len == 0)
-        return;
+        return tokens;
 
     if ((*last) + len >= (*tokens_size) - 2) {
-        char* buf = (char*)malloc((*last) + len);
+        char* buf = malloc((*last) + len);
         memset(buf, 0, (*last) + len);
-        memcpy(buf, *tokens, *tokens_size);
-        *tokens_size = (*last) + len + 2;
-        free(*tokens);
-        *tokens = (char*)malloc(*tokens_size);
-        memset(*tokens, 0, *tokens_size);
-        memcpy(*tokens, buf, (*last) + len);
+        memcpy(buf, tokens, *tokens_size);
+        *tokens_size = ((*last) + len) * 2 + 2;
+        free(tokens);
+        tokens = malloc(*tokens_size);
+        memset(tokens, 0, *tokens_size);
+        memcpy(tokens, buf, (*last) + len);
         free(buf);
     }
 
-    memcpy((*tokens) + (*last), string, len);
+    memcpy(tokens + (*last), string, len);
     *last += len + 1;
+
+    return tokens;
 }
 //-----------------------------------------------------------------------------
 // Lança uma mensagem de erro
@@ -251,7 +255,7 @@ void __push_token(
 //      message     : Mensagem de erro
 //-----------------------------------------------------------------------------
 void __error(unsigned int line, const char* errcode, const char* message, ...) {
-    char* err = (char*)malloc(1024);
+    char* err = malloc(1024);
     sprintf(err, "%s on line %d: %s", errcode, line, message);
 
     va_list args;
@@ -271,10 +275,10 @@ unsigned int burn_tokenize(const char* code, char* out) {
         l = 0, l_sz = DF_TOKEN_SIZE,
         t = 0, t_sz = size * 2;
 
-    char* tokens = (char*)malloc(t_sz + 2);
+    char* tokens = malloc(t_sz + 2);
     memset(tokens, 0, t_sz + 2);
 
-    char* lexeme = (char*)malloc(l_sz);
+    char* lexeme = malloc(l_sz);
     memset(lexeme, 0, l_sz);
 
     char c;
@@ -283,20 +287,20 @@ unsigned int burn_tokenize(const char* code, char* out) {
         c = code[i];
 
         if (__is_whitespace(c)) {
-            __push_token(&tokens, &t_sz, &t, lexeme);
-            __clear_token(&lexeme, &l_sz, &l);
+            tokens = __push_token(tokens, &t_sz, &t, lexeme);
+            lexeme = __clear_token(lexeme, &l_sz, &l);
         } else if (__is_symbol(c)) {
-            __push_token(&tokens, &t_sz, &t, lexeme);
+            tokens = __push_token(tokens, &t_sz, &t, lexeme);
 
             bool op2 = false;
             if (size > i + 1) {
-                char* str = (char*)malloc(3);
+                char* str = malloc(3);
                 str[0] = c;
                 str[1] = code[i + 1];
                 str[2] = 0;
 
                 if (__is_operator(str)) {
-                    __push_token(&tokens, &t_sz, &t, str);
+                    tokens = __push_token(tokens, &t_sz, &t, str);
                     i++;
                     op2 = true;
                 }
@@ -305,33 +309,33 @@ unsigned int burn_tokenize(const char* code, char* out) {
             }
 
             if (!op2) {
-                char* str = (char*)malloc(2);
+                char* str = malloc(2);
                 str[0] = c;
                 str[1] = 0;
-                __push_token(&tokens, &t_sz, &t, str);
+                tokens = __push_token(tokens, &t_sz, &t, str);
                 free(str);
             }
 
-            __clear_token(&lexeme, &l_sz, &l);
+            lexeme = __clear_token(lexeme, &l_sz, &l);
         } else if (c == *MARK_STR1 || c == *MARK_STR2) {
-            __push_token(&tokens, &t_sz, &t, lexeme);
-            __clear_token(&lexeme, &l_sz, &l);
+            tokens = __push_token(tokens, &t_sz, &t, lexeme);
+            lexeme = __clear_token(lexeme, &l_sz, &l);
 
             char s = c;
 
             do {
-                __append_to_string(&lexeme, &l_sz, &l, c);
+                lexeme = __append_to_string(lexeme, &l_sz, &l, c);
             } while ((c = code[++i]) != s && i < size);
-            __append_to_string(&lexeme, &l_sz, &l, c);
+            lexeme = __append_to_string(lexeme, &l_sz, &l, c);
 
-            __push_token(&tokens, &t_sz, &t, lexeme);
-            __clear_token(&lexeme, &l_sz, &l);
+            tokens = __push_token(tokens, &t_sz, &t, lexeme);
+            lexeme = __clear_token(lexeme, &l_sz, &l);
         } else
-            __append_to_string(&lexeme, &l_sz, &l, c);
+            lexeme = __append_to_string(lexeme, &l_sz, &l, c);
     }
 
     if (lexeme[0] != 0)
-        __push_token(&tokens, &t_sz, &t, lexeme);
+        tokens = __push_token(tokens, &t_sz, &t, lexeme);
 
     free(lexeme);
     memcpy(out, tokens, t_sz);
@@ -350,10 +354,10 @@ burn_token_type __get_token_type(const char* token) {
         strcmp(token, KW_CONST)     == 0 || strcmp(token, KW_DELETE)  == 0 ||
         strcmp(token, KW_ELSE)      == 0 || strcmp(token, KW_FOR)     == 0 ||
         strcmp(token, KW_WHILE)     == 0 || strcmp(token, KW_LOOP)    == 0 ||
-        strcmp(token, KW_FUNC)      == 0 || strcmp(token, KW_PROC)    == 0 ||
+        strcmp(token, KW_FUNC)      == 0 || strcmp(token, KW_SWITCH)  == 0 ||
         strcmp(token, KW_DO)        == 0 || strcmp(token, KW_PRIVATE) == 0 ||
         strcmp(token, KW_PROTECTED) == 0 || strcmp(token, KW_PUBLIC)  == 0 ||
-        strcmp(token, KW_SWITCH)    == 0 || strcmp(token, KW_NEXT)    == 0)
+        strcmp(token, KW_NEXT)      == 0)
         return TK_KEYWORD;
 
     const char c = *token;
@@ -368,17 +372,6 @@ burn_token_type __get_token_type(const char* token) {
             token[0] == *OP_OR  || token[0] == *OP_XOR)
         ))
         return TK_B_OPERATOR;
-
-    /*typedef enum __tokentype {
-        TK_KEYWORD,
-        TK_MARK,
-        TK_B_OPERATOR,
-        TK_COMPARATOR,
-        TK_U_OPERATOR,
-        TK_WHITESPACE,
-        TK_CONST,
-        TK_NAME
-    } burn_token_type;*/
 
     if (strcmp(token, CMP_EQU)    == 0 || strcmp(token, CMP_DIF)   == 0 ||
         strcmp(token, CMP_GRT)    == 0 || strcmp(token, CMP_LT)    == 0 ||
@@ -409,19 +402,28 @@ void __compile_statement(const char* statement) {
         line = 1;
 
         int i, j;
-        for (i = j = 0; j < n && (statement[i] + statement[i + 1]) != 0; i++, j++)
+
+        for (i = j = 0; j < n && (statement[i] + statement[i + 1]) != 0; i++, j++) {
             while (statement[i] != 0) {
-                if (statement[i] == '\n')
+                if (statement[i] == *MARK_EOL)
                     line++;
                 i++;
             }
+        }
 
         if ((statement[i] + statement[i - 1]) == 0)
             return NULL;
         return statement + i;
     }
 
-    const char* token = __token(0);
+    const char* token;
+
+    int i = 0;
+    while ((token = __token(i++)) != NULL)
+        printf("%s ", token);
+    return;
+
+    token = __token(0);
 
     switch (__get_token_type(token)) {
         case TK_KEYWORD:
@@ -455,7 +457,7 @@ void __compile_statement(const char* statement) {
         case TK_CONST:
             break;
         default:
-            __error(line, "UNEXPECTED_TOKEN", "Unexpected token '%s'", token);
+            __error(line, "INVALID_TOKEN", "Unexpected token '%s'", token);
             break;
     }
 }
@@ -481,9 +483,11 @@ void burn_compile(const char* code) {
                  p_stack = 0;
 
     void __process_token() {
+        if (*token == 0)
+            return;
+
         if (strcmp(token, MARK_EOL) == 0) {
             line++;
-            return;
         } else if (strcmp(token, MARK_OBLOCK) == 0)
             if (p_stack != 0) {
                 __error(line, "CANT_OPEN_BLOCK", "Unexpected '%s', expecting '%s'", MARK_OBLOCK, MARK_CEXPR);
@@ -497,8 +501,9 @@ void burn_compile(const char* code) {
                 __error(line, "CANT_CLOSE_BLOCK", "Unexpected '%s'", MARK_CBLOCK);
                 return;
             }
-        } else if (strcmp(token, MARK_OEXPR) == 0)
+        } else if (strcmp(token, MARK_OEXPR) == 0) {
             p_stack++;
+        }
         else if (strcmp(token, MARK_CEXPR) == 0) {
             if (p_stack > 0)
                 p_stack--;
@@ -507,8 +512,7 @@ void burn_compile(const char* code) {
                 return;
             }
         }
-
-        __push_token(&statement, &s_sz, &s, token);
+        statement = __push_token(statement, &s_sz, &s, token);
 
         if (strcmp(token, MARK_EOS) == 0 && stack == 0 && p_stack == 0) {
             __compile_statement(statement);
@@ -522,18 +526,23 @@ void burn_compile(const char* code) {
     for (; (tokens[i] + tokens[i + 1]) != 0; i++) {
         if (tokens[i] == 0) {
             __process_token();
-            __clear_token(&token, &t_sz, &t);
+            token = __clear_token(token, &t_sz, &t);
+
         } else
-            __append_to_string(&token, &t_sz, &t, tokens[i]);
+            token = __append_to_string(token, &t_sz, &t, tokens[i]);
     }
     free(tokens);
+
 
     __process_token();
     free(token);
 
     if (stack > 0)
-        __error(line, "BLOCK_NOT_CLOSED", "A code block was not closed");
-
+        __error(line, "BLOCK_NOT_CLOSED",
+                    "Unexpected EOF, expecting '%s'", MARK_CBLOCK);
+    else if (p_stack > 0)
+        __error(line, "EXPR_NOT_CLOSED",
+                    "Unexpected EOF, expecting '%s'", MARK_CEXPR);
     __compile_statement(statement);
 
     free(statement);
@@ -542,7 +551,7 @@ void burn_compile(const char* code) {
 // Ponto de entrada para teste
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv) {
-    static const char* code = "<= puts('Hello World');";
+    static const char* code = "fn say_hello { print('Hello World'); } asd bsd;";
 
     double get_time() {
         LARGE_INTEGER t, f;
