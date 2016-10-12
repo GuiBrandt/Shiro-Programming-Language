@@ -26,64 +26,64 @@ typedef enum bytecodes {
     DROP            = 0x31,
 
     FINISH          = 0xED,
-} burn_bytecode;
+} shiro_bytecode;
 
 typedef struct node {
-    burn_bytecode code;
+    shiro_bytecode code;
     void**        args;
-} burn_node, *burn_binary;
+} shiro_node, *shiro_binary;
 
 typedef enum types {
-    b_tObject       = 0x00,
-    b_tInt          = 0x10,
-    b_tFloat        = 0x11,
-    b_tString       = 0x20,
-    b_tArray        = 0x30,
-    b_tFunction     = 0x40,
-    b_tVoid         = -1
-} burn_type;
+    s_tObject       = 0x00,
+    s_tInt          = 0x10,
+    s_tFloat        = 0x11,
+    s_tString       = 0x20,
+    s_tArray        = 0x30,
+    s_tFunction     = 0x40,
+    s_tVoid         = -1
+} shiro_type;
 
 #ifdef _INTTYPES_H_
-    typedef int32_t burn_fixnum;
-    typedef int64_t burn_bignum;
+    typedef int32_t shiro_fixnum;
+    typedef int64_t shiro_bignum;
 #else
-    typedef int burn_fixnum;
-    typedef long long burn_bignum;
+    typedef int shiro_fixnum;
+    typedef long long shiro_bignum;
 #endif
 
-typedef double burn_float;
+typedef double shiro_float;
 
-typedef struct bstr {
+typedef struct sstr {
     size_t length;
     char*  data;
-} burn_string;
+} shiro_string;
 
-#define BURN_FIXNUM_SZ sizeof(burn_fixnum)
-#define BURN_BIGNUM_SZ sizeof(burn_bignum)
-#define BURN_FLOAT_SZ  sizeof(burn_float)
-#define BURN_STRING_SZ sizeof(burn_string)
+#define SHIRO_FIXNUM_SZ sizeof(shiro_fixnum)
+#define SHIRO_BIGNUM_SZ sizeof(shiro_bignum)
+#define SHIRO_FLOAT_SZ  sizeof(shiro_float)
+#define SHIRO_STRING_SZ sizeof(shiro_string)
 
 typedef struct value {
-    burn_type type;
+    shiro_type type;
     union {
         struct value*   val;
-        burn_fixnum     i;
-        burn_bignum     l;
-        burn_float      f;
-        burn_string     str;
+        shiro_fixnum     i;
+        shiro_bignum     l;
+        shiro_float      f;
+        shiro_string     str;
     } *fields;
     size_t n_fields;
-} burn_value;
+} shiro_value;
 
-typedef burn_value (*burn_c_function)(burn_value, int);
+typedef shiro_value (*shiro_c_function)(shiro_value, int);
 
 typedef struct func {
-    burn_type type;
+    shiro_type type;
     union {
-        burn_c_function native;
-        burn_binary     natural;
+        shiro_c_function native;
+        shiro_binary     natural;
     };
     int n_args;
-} burn_function;
+} shiro_function;
 
 #endif // VM_H_INCLUDED

@@ -7,14 +7,18 @@
 // alteradas em caso de necessidade real. Preze por sua vida, jovem mago.
 //=============================================================================
 #include <stdlib.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
 
-#include <vm.h>
+#include "vm.h"
 
-#include <windows.h>
+#ifdef __DEBUG__
+#include <windows.h> // PARA BENCHMARK, APAGAR DEPOIS!
+#endif // __DEBUG__
+
 //=============================================================================
 // Constantes
 //-----------------------------------------------------------------------------
@@ -31,13 +35,14 @@
 #define KW_SWITCH       "switch"
 #define KW_CASE         "case"
 #define KW_FOR          "for"
+#define KW_DO           "do"
 #define KW_WHILE        "while"
 #define KW_LOOP         "loop"
 #define KW_BREAK        "break"
 #define KW_NEXT         "continue"
 #define KW_DELETE       "delete"
-#define KW_FUNC         "fn"
-#define KW_PROC         "proc"
+#define KW_FUNC         "function"
+#define KW_PROC         "procedure"
 #define KW_VAR          "var"
 #define KW_CONST        "const"
 #define KW_CLASS        "class"
@@ -94,7 +99,7 @@ bool __is_whitespace     (char);
 void __append_to_string  (char**, unsigned int*, unsigned int*, char c);
 void __clear_token       (char**, unsigned int*, unsigned int*);
 void __push_token        (char**, unsigned int*, unsigned int*, const char*);
-void __error             (const char*, const char*);
+void __error             (unsigned int, const char*, const char*, ...);
 void __compile_statement (const char*);
 
 typedef enum __tokentype {
@@ -108,7 +113,7 @@ typedef enum __tokentype {
     TK_NAME
 } burn_token_type;
 
-burn_token_type get_token_type(const char*);
+burn_token_type __get_token_type(const char*);
 //=============================================================================
 //  Implementação
 //-----------------------------------------------------------------------------
@@ -129,8 +134,8 @@ bool __is_whitespace(const char c) {
 bool __is_symbol(const char c) {
     bool result = c == *MARK_EOL    || c == *MARK_EOS    || c == *MARK_SEPP  ||
                   c == *MARK_COND   || c == *MARK_OEXPR  || c == *MARK_CEXPR ||
-                  c == *MARK_OBLOCK || c == *MARK_CBLOCK || c == *MARK_STR1  ||
-                  c == *MARK_STR2   || c == *MARK_LIST   || c == *MARK_PROP;
+                  c == *MARK_OBLOCK || c == *MARK_CBLOCK || c == *MARK_LIST  ||
+                  c == *MARK_PROP;
     if (result) return true;
 
     char* str = (char*)malloc(2);
@@ -214,7 +219,12 @@ void __clear_token(char** string, unsigned int* size, unsigned int* index) {
 //      last            : Índice do último elemento da lista
 //      string          : String a ser adicionada à lista
 //-----------------------------------------------------------------------------
-void __push_token(char** tokens, unsigned int* tokens_size, unsigned int* last, const char* string) {
+void __push_token(
+        char** tokens,
+        unsigned int* tokens_size,
+        unsigned int* last,
+        const char* string
+) {
     int len = strlen(string);
 
     if (len == 0)
@@ -240,8 +250,14 @@ void __push_token(char** tokens, unsigned int* tokens_size, unsigned int* last, 
 //      errcode     : Nome do tipo de erro
 //      message     : Mensagem de erro
 //-----------------------------------------------------------------------------
-void __error(const char* errcode, const char* message) {
+void __error(unsigned int line, const char* errcode, const char* message, ...) {
+    char* err = (char*)malloc(1024);
+    sprintf(err, "%s on line %d: %s", errcode, line, message);
 
+    va_list args;
+    va_start(args, message);
+    vfprintf(stderr, err, args);
+    va_end(args);
 }
 //-----------------------------------------------------------------------------
 // Separa código em tokens
@@ -297,6 +313,19 @@ unsigned int burn_tokenize(const char* code, char* out) {
             }
 
             __clear_token(&lexeme, &l_sz, &l);
+        } else if (c == *MARK_STR1 || c == *MARK_STR2) {
+            __push_token(&tokens, &t_sz, &t, lexeme);
+            __clear_token(&lexeme, &l_sz, &l);
+
+            char s = c;
+
+            do {
+                __append_to_string(&lexeme, &l_sz, &l, c);
+            } while ((c = code[++i]) != s && i < size);
+            __append_to_string(&lexeme, &l_sz, &l, c);
+
+            __push_token(&tokens, &t_sz, &t, lexeme);
+            __clear_token(&lexeme, &l_sz, &l);
         } else
             __append_to_string(&lexeme, &l_sz, &l, c);
     }
@@ -314,12 +343,17 @@ unsigned int burn_tokenize(const char* code, char* out) {
 // Retorna o tipo de uma token
 //      Token   : Token a analisar
 //-----------------------------------------------------------------------------
-burn_token_type get_token_type(const char* token) {
-    if (strcmp(token, KW_BREAK) == 0 || strcmp(token, KW_CASE)   == 0 ||
-        strcmp(token, KW_CLASS) == 0 || strcmp(token, KW_COND)   == 0 ||
-        strcmp(token, KW_CONST) == 0 || strcmp(token, KW_DELETE) == 0 ||
-        strcmp(token, KW_ELSE)  == 0 || strcmp(token, KW_FOR)    == 0 ||
-        strcmp(token, KW_FUNC)  == 0)
+burn_token_type __get_token_type(const char* token) {
+
+    if (strcmp(token, KW_BREAK)     == 0 || strcmp(token, KW_CASE)    == 0 ||
+        strcmp(token, KW_CLASS)     == 0 || strcmp(token, KW_COND)    == 0 ||
+        strcmp(token, KW_CONST)     == 0 || strcmp(token, KW_DELETE)  == 0 ||
+        strcmp(token, KW_ELSE)      == 0 || strcmp(token, KW_FOR)     == 0 ||
+        strcmp(token, KW_WHILE)     == 0 || strcmp(token, KW_LOOP)    == 0 ||
+        strcmp(token, KW_FUNC)      == 0 || strcmp(token, KW_PROC)    == 0 ||
+        strcmp(token, KW_DO)        == 0 || strcmp(token, KW_PRIVATE) == 0 ||
+        strcmp(token, KW_PROTECTED) == 0 || strcmp(token, KW_PUBLIC)  == 0 ||
+        strcmp(token, KW_SWITCH)    == 0 || strcmp(token, KW_NEXT)    == 0)
         return TK_KEYWORD;
 
     const char c = *token;
@@ -335,11 +369,27 @@ burn_token_type get_token_type(const char* token) {
         ))
         return TK_B_OPERATOR;
 
-    if (strcmp(U_INC, token) == 0 || strcmp(U_DEC, token) == 0 || c == *U_NOT  ||
-            c == *U_B_NOT)
+    /*typedef enum __tokentype {
+        TK_KEYWORD,
+        TK_MARK,
+        TK_B_OPERATOR,
+        TK_COMPARATOR,
+        TK_U_OPERATOR,
+        TK_WHITESPACE,
+        TK_CONST,
+        TK_NAME
+    } burn_token_type;*/
+
+    if (strcmp(token, CMP_EQU)    == 0 || strcmp(token, CMP_DIF)   == 0 ||
+        strcmp(token, CMP_GRT)    == 0 || strcmp(token, CMP_LT)    == 0 ||
+        strcmp(token, CMP_GRTEQU) == 0 || strcmp(token, CMP_LTEQU) == 0)
+        return TK_COMPARATOR;
+
+    if (strcmp(U_INC, token) == 0 || strcmp(U_DEC, token) == 0 ||
+        c == *U_NOT || c == *U_B_NOT)
         return TK_U_OPERATOR;
 
-    if (isdigit(c) || c == MARK_STR1 || c == MARK_STR2)
+    if (isdigit(c) || c == *MARK_STR1 || c == *MARK_STR2)
         return TK_CONST;
 
     return TK_NAME;
@@ -353,25 +403,61 @@ void __compile_statement(const char* statement) {
     if (*statement == 0)
         return;
 
-    const char* __token(int n) {
-        int i, j;
+    int line;
 
-        for (i = j = 0; j < n && (statement[i] + statement[i + 1]) != 0;) {
-            while (statement[i] != 0)
+    const char* __token(int n) {
+        line = 1;
+
+        int i, j;
+        for (i = j = 0; j < n && (statement[i] + statement[i + 1]) != 0; i++, j++)
+            while (statement[i] != 0) {
+                if (statement[i] == '\n')
+                    line++;
                 i++;
-            i++;
-            j++;
-        }
+            }
 
         if ((statement[i] + statement[i - 1]) == 0)
             return NULL;
-
         return statement + i;
     }
 
-    int i = 0;
-    while (__token(i) != NULL)
-        printf("%s ", __token(i++));
+    const char* token = __token(0);
+
+    switch (__get_token_type(token)) {
+        case TK_KEYWORD:
+            /*
+                #define KW_COND         "if"
+                #define KW_ELSE         "else"
+                #define KW_PRIVATE      "private"
+                #define KW_PROTECTED    "protected"
+                #define KW_PUBLIC       "public"
+                #define KW_SWITCH       "switch"
+                #define KW_CASE         "case"
+                #define KW_FOR          "for"
+                #define KW_WHILE        "while"
+                #define KW_LOOP         "loop"
+                #define KW_BREAK        "break"
+                #define KW_NEXT         "continue"
+                #define KW_DELETE       "delete"
+                #define KW_FUNC         "fn"
+                #define KW_PROC         "proc"
+                #define KW_VAR          "var"
+                #define KW_CONST        "const"
+                #define KW_CLASS        "class"
+            */
+
+
+            break;
+        case TK_NAME:
+            break;
+        case TK_MARK:
+            break;
+        case TK_CONST:
+            break;
+        default:
+            __error(line, "UNEXPECTED_TOKEN", "Unexpected token '%s'", token);
+            break;
+    }
 }
 //-----------------------------------------------------------------------------
 // Compila o código passado
@@ -390,11 +476,41 @@ void burn_compile(const char* code) {
     char* statement = (char*)malloc(s_sz);
     memset(statement, 0, s_sz);
 
+    unsigned int line = 1,
+                 stack = 0,
+                 p_stack = 0;
+
     void __process_token() {
-        if (strcmp(token, MARK_EOL) == 0)
+        if (strcmp(token, MARK_EOL) == 0) {
+            line++;
             return;
+        } else if (strcmp(token, MARK_OBLOCK) == 0)
+            if (p_stack != 0) {
+                __error(line, "CANT_OPEN_BLOCK", "Unexpected '%s', expecting '%s'", MARK_OBLOCK, MARK_CEXPR);
+                return;
+            } else
+                stack++;
+        else if (strcmp(token, MARK_CBLOCK) == 0) {
+            if (stack > 0)
+                stack--;
+            else {
+                __error(line, "CANT_CLOSE_BLOCK", "Unexpected '%s'", MARK_CBLOCK);
+                return;
+            }
+        } else if (strcmp(token, MARK_OEXPR) == 0)
+            p_stack++;
+        else if (strcmp(token, MARK_CEXPR) == 0) {
+            if (p_stack > 0)
+                p_stack--;
+            else {
+                __error(line, "CANT_CLOSE_EXPR", "Unexpected '%s'", MARK_CEXPR);
+                return;
+            }
+        }
+
         __push_token(&statement, &s_sz, &s, token);
-        if (strcmp(token, MARK_EOS) == 0) {
+
+        if (strcmp(token, MARK_EOS) == 0 && stack == 0 && p_stack == 0) {
             __compile_statement(statement);
             free(statement);
             statement = (char*)malloc(s_sz);
@@ -415,6 +531,9 @@ void burn_compile(const char* code) {
     __process_token();
     free(token);
 
+    if (stack > 0)
+        __error(line, "BLOCK_NOT_CLOSED", "A code block was not closed");
+
     __compile_statement(statement);
 
     free(statement);
@@ -423,7 +542,7 @@ void burn_compile(const char* code) {
 // Ponto de entrada para teste
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv) {
-    static const char* code =   "puts('Hello World');";
+    static const char* code = "<= puts('Hello World');";
 
     double get_time() {
         LARGE_INTEGER t, f;
