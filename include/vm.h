@@ -3,35 +3,7 @@
 
 #include <inttypes.h>
 
-typedef enum bytecodes {
-    VAR             = 0x01,
-    FN              = 0x02,
-    CLASS           = 0x03,
-
-    COND            = 0x04,
-    JUMP            = 0x05,
-    FN_CALL         = 0x06,
-
-    ALLOC           = 0x10,
-    ALLOC_VAR       = ALLOC | VAR,
-    ALLOC_FN        = ALLOC | FN,
-    ALLOC_CLASS     = ALLOC | CLASS,
-
-    FREE            = 0x20,
-    FREE_VAR        = FREE | VAR,
-    FREE_FN         = FREE | FN,
-    FREE_CLASS      = FREE | CLASS,
-
-    PUSH            = 0x30,
-    DROP            = 0x31,
-
-    FINISH          = 0xED,
-} shiro_bytecode;
-
-typedef struct node {
-    shiro_bytecode code;
-    void**        args;
-} shiro_node, *shiro_binary;
+#include "parser.h"
 
 typedef enum types {
     s_tObject       = 0x00,
@@ -53,10 +25,7 @@ typedef enum types {
 
 typedef double shiro_float;
 
-typedef struct sstr {
-    size_t length;
-    char*  data;
-} shiro_string;
+typedef char* shiro_string;
 
 #define SHIRO_FIXNUM_SZ sizeof(shiro_fixnum)
 #define SHIRO_BIGNUM_SZ sizeof(shiro_bignum)
@@ -65,8 +34,8 @@ typedef struct sstr {
 
 typedef struct value {
     shiro_type type;
-    union {
-        struct value*   val;
+    union shiro_field {
+        struct value*    val;
         shiro_fixnum     i;
         shiro_bignum     l;
         shiro_float      f;

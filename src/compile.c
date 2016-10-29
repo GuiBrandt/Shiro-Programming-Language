@@ -9,246 +9,35 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
 
 #include "vm.h"
+#include "lexer.h"
+#include "parser.h"
+#include "errors.h"
 
 #ifdef __DEBUG__
 #include <windows.h> // PARA BENCHMARK, APAGAR DEPOIS!
 #endif // __DEBUG__
 
 //=============================================================================
-// Constantes
-//-----------------------------------------------------------------------------
-// Esses valores são usados pelo compilador para definir o tipo do um token e
-// convertê-lo em código compilado
-//=============================================================================
-#define DF_TOKEN_SIZE   32
-
-#define KW_COND         "if"
-#define KW_ELSE         "else"
-#define KW_PRIVATE      "private"
-#define KW_PROTECTED    "protected"
-#define KW_PUBLIC       "public"
-#define KW_SWITCH       "switch"
-#define KW_CASE         "case"
-#define KW_FOR          "for"
-#define KW_DO           "do"
-#define KW_WHILE        "while"
-#define KW_LOOP         "loop"
-#define KW_BREAK        "break"
-#define KW_NEXT         "continue"
-#define KW_DELETE       "delete"
-#define KW_FUNC         "fn"
-#define KW_VAR          "var"
-#define KW_CONST        "const"
-#define KW_CLASS        "class"
-
-#define MARK_SEPP       ":"
-#define MARK_COND       "?"
-#define MARK_STR1       "\""
-#define MARK_STR2       "'"
-#define MARK_OBLOCK     "{"
-#define MARK_CBLOCK     "}"
-#define MARK_OEXPR      "("
-#define MARK_CEXPR      ")"
-#define MARK_LIST       ","
-#define MARK_PROP       "."
-#define MARK_EOS        ";"
-#define MARK_EOL        "\n"
-
-#define OP_SET          "="
-#define OP_ADD          "+"
-#define OP_SUB          "-"
-#define OP_MUL          "*"
-#define OP_DIV          "/"
-#define OP_MOD          "%"
-#define OP_AND          "&"
-#define OP_OR           "|"
-#define OP_XOR          "^"
-#define OP_ASSOC        "=>"
-
-#define CMP_EQU         "=="
-#define CMP_GRT         ">"
-#define CMP_GRTEQU      ">="
-#define CMP_LT          "<"
-#define CMP_LTEQU       "<="
-#define CMP_DIF         "!="
-
-#define U_NOT           "!"
-#define U_INC           "++"
-#define U_DEC           "--"
-#define U_B_NOT         "~"
-
-#define WS_SPACE        ' '
-#define WS_CARET_RETURN '\r'
-#define WS_TAB          '\t'
-//=============================================================================
 //  Declaração
 //-----------------------------------------------------------------------------
 // As funções que são definidas nesse arquivo devem primeiro ser declaradas
 // aqui
 //=============================================================================
-bool  __is_operator       (const char*);
-bool  __is_operator_c     (char);
-bool  __is_symbol         (char);
-bool  __is_whitespace     (char);
-char* __append_to_string (char*, unsigned int*, unsigned int*, char c);
-char* __clear_token      (char*, unsigned int*, unsigned int*);
-char* __push_token       (char*, unsigned int*, unsigned int*, const char*);
-void  __error             (unsigned int, const char*, const char*, ...);
-void  __compile_statement (const char*);
-
-typedef enum __tokentype {
-    TK_KEYWORD,
-    TK_MARK,
-    TK_B_OPERATOR,
-    TK_COMPARATOR,
-    TK_U_OPERATOR,
-    TK_WHITESPACE,
-    TK_CONST,
-    TK_NAME
-} burn_token_type;
-
-burn_token_type __get_token_type(const char*);
+void          __error                       (unsigned int, const char*, const char*, ...);
+shiro_binary  __binary_concat               (shiro_binary*, shiro_binary*);
+void          __free_binary                 (shiro_binary*);
+shiro_binary  __binary_concat_and_destroy   (shiro_binary*, shiro_binary*);
+shiro_binary  __compile_statement           (const char*, unsigned int*);
 //=============================================================================
 //  Implementação
 //-----------------------------------------------------------------------------
 // Daqui pra baixo começam umas tretas fortes com ponteiros. Não se arrisque
 // demais mexendo nisso.
 //=============================================================================
-//---------------------------------------------------------------------------
-// Verifica se um caractere é um espaço em branco
-//      c   : Caractere a verificar
-//---------------------------------------------------------------------------
-bool __is_whitespace(const char c) {
-    return c == WS_SPACE || c == WS_TAB || c == WS_CARET_RETURN;
-}
-//-----------------------------------------------------------------------------
-// Verifica se um caractere é um símbolo
-//      c   : Caractere a verificar
-//-----------------------------------------------------------------------------
-bool __is_symbol(const char c) {
-    bool result = c == *MARK_EOL    || c == *MARK_EOS    || c == *MARK_SEPP  ||
-                  c == *MARK_COND   || c == *MARK_OEXPR  || c == *MARK_CEXPR ||
-                  c == *MARK_OBLOCK || c == *MARK_CBLOCK || c == *MARK_LIST  ||
-                  c == *MARK_PROP;
-    if (result) return true;
-
-    char* str = (char*)malloc(2);
-    str[0] = c;
-    str[1] = 0;
-    bool r = __is_operator(str);
-    free(str);
-    return r;
-}
-//-----------------------------------------------------------------------------
-// Verifica se um char é um operador válido
-//      c   : Caractere a verificar
-//-----------------------------------------------------------------------------
-bool __is_operator_c(const char c) {
-    return  c == *OP_SET || c == *OP_ADD  || c == *OP_SUB || c == *OP_MUL ||
-            c == *OP_DIV || c == *OP_MOD  || c == *OP_AND || c == *OP_OR  ||
-            c == *OP_XOR || c == *CMP_GRT || c == *CMP_LT || c == *U_NOT  ||
-            c == *U_B_NOT;
-}
-//-----------------------------------------------------------------------------
-// Verifica se uma string é um operador válido
-//      str   : String a verificar
-//-----------------------------------------------------------------------------
-bool __is_operator(const char* str) {
-    if (str[0] == 0) return false;
-    if (str[1] == 0) return __is_operator_c(str[0]);
-    else
-        return  strcmp(CMP_EQU, str)   == 0 || strcmp(CMP_GRTEQU, str) == 0 ||
-                strcmp(CMP_LTEQU, str) == 0 || strcmp(CMP_DIF, str)    == 0 ||
-                strcmp(OP_ASSOC, str)  == 0 || strcmp(U_INC, str)      == 0 ||
-                strcmp(U_DEC, str)     == 0 || (str[1] == *OP_SET && (
-                    str[0] == *OP_ADD || str[0] == *OP_SUB ||
-                    str[0] == *OP_MUL || str[0] == *OP_DIV ||
-                    str[0] == *OP_MOD || str[0] == *OP_AND ||
-                    str[0] == *OP_OR  || str[0] == *OP_XOR));
-}
-//-----------------------------------------------------------------------------
-// Adiciona um caractere ao fim de uma string
-//      string      : String a verificar
-//      str_size    : Ponteiro para o tamanho do buffer alocado para a string
-//      last        : Ponteiro para o índice do último caractere adicionado à
-//                    string
-//      c           : Caractere a adicionar
-//-----------------------------------------------------------------------------
-char* __append_to_string(
-        char* string,
-        unsigned int* str_size,
-        unsigned int* last,
-        char c
-) {
-    if (*last >= *str_size) {
-        char* buf = malloc(*last);
-        memset(buf, 0, *last);
-        memcpy(buf, string, *str_size);
-        free(string);
-        (*str_size) *= 2;
-        string = malloc(*str_size);
-        memset(string, 0, *str_size);
-        memcpy(string, buf, *last);
-        free(buf);
-    }
-    string[(*last)++] = c;
-
-    return string;
-}
-//-----------------------------------------------------------------------------
-// Esvazia uma string liberando memória
-//      string  : String a esvaziar
-//      size    : Ponteiro para o tamanho da string
-//      index   : Pointeiro para o índice do último caractere da string
-//-----------------------------------------------------------------------------
-char* __clear_token(char* string, unsigned int* size, unsigned int* index) {
-    free(string);
-    *size = DF_TOKEN_SIZE;
-    *index = 0;
-    string = malloc(*size);
-    memset(string, 0, *size);
-    return string;
-}
-//-----------------------------------------------------------------------------
-// Adiciona uma string a uma lista de tokens
-//      tokens          : Lista de tokens
-//      tokens_size     : Tamanho do buffer alocado para a lista
-//      last            : Índice do último elemento da lista
-//      string          : String a ser adicionada à lista
-//-----------------------------------------------------------------------------
-char* __push_token(
-        char* tokens,
-        unsigned int* tokens_size,
-        unsigned int* last,
-        const char* string
-) {
-    int len = strlen(string);
-
-    if (len == 0)
-        return tokens;
-
-    if ((*last) + len >= (*tokens_size) - 2) {
-        char* buf = malloc((*last) + len);
-        memset(buf, 0, (*last) + len);
-        memcpy(buf, tokens, *tokens_size);
-        *tokens_size = ((*last) + len) * 2 + 2;
-        free(tokens);
-        tokens = malloc(*tokens_size);
-        memset(tokens, 0, *tokens_size);
-        memcpy(tokens, buf, (*last) + len);
-        free(buf);
-    }
-
-    memcpy(tokens + (*last), string, len);
-    *last += len + 1;
-
-    return tokens;
-}
 //-----------------------------------------------------------------------------
 // Lança uma mensagem de erro
 //      errcode     : Nome do tipo de erro
@@ -262,170 +51,135 @@ void __error(unsigned int line, const char* errcode, const char* message, ...) {
     va_start(args, message);
     vfprintf(stderr, err, args);
     va_end(args);
+
+    exit(1);
 }
 //-----------------------------------------------------------------------------
-// Separa código em tokens
-//      code    : Código para ser separado em tokens
-//      out     : Ponteiro para um ponteiro de lista de tokens
+// Concatena dois códigos Shiro compilados
+//      a   : Primeiro binário
+//      b   : Segundo binário
 //-----------------------------------------------------------------------------
-unsigned int burn_tokenize(const char* code, char* out) {
-    unsigned int
-        size = strlen(code),
-        i,
-        l = 0, l_sz = DF_TOKEN_SIZE,
-        t = 0, t_sz = size * 2;
+shiro_binary __binary_concat(shiro_binary* a, shiro_binary* b) {
 
-    char* tokens = malloc(t_sz + 2);
-    memset(tokens, 0, t_sz + 2);
+    shiro_binary r;
+    r.size = a->size + b->size;
 
-    char* lexeme = malloc(l_sz);
-    memset(lexeme, 0, l_sz);
-
-    char c;
-
-    for (i = 0; i < size; i++) {
-        c = code[i];
-
-        if (__is_whitespace(c)) {
-            tokens = __push_token(tokens, &t_sz, &t, lexeme);
-            lexeme = __clear_token(lexeme, &l_sz, &l);
-        } else if (__is_symbol(c)) {
-            tokens = __push_token(tokens, &t_sz, &t, lexeme);
-
-            bool op2 = false;
-            if (size > i + 1) {
-                char* str = malloc(3);
-                str[0] = c;
-                str[1] = code[i + 1];
-                str[2] = 0;
-
-                if (__is_operator(str)) {
-                    tokens = __push_token(tokens, &t_sz, &t, str);
-                    i++;
-                    op2 = true;
-                }
-
-                free(str);
-            }
-
-            if (!op2) {
-                char* str = malloc(2);
-                str[0] = c;
-                str[1] = 0;
-                tokens = __push_token(tokens, &t_sz, &t, str);
-                free(str);
-            }
-
-            lexeme = __clear_token(lexeme, &l_sz, &l);
-        } else if (c == *MARK_STR1 || c == *MARK_STR2) {
-            tokens = __push_token(tokens, &t_sz, &t, lexeme);
-            lexeme = __clear_token(lexeme, &l_sz, &l);
-
-            char s = c;
-
-            do {
-                lexeme = __append_to_string(lexeme, &l_sz, &l, c);
-            } while ((c = code[++i]) != s && i < size);
-            lexeme = __append_to_string(lexeme, &l_sz, &l, c);
-
-            tokens = __push_token(tokens, &t_sz, &t, lexeme);
-            lexeme = __clear_token(lexeme, &l_sz, &l);
-        } else
-            lexeme = __append_to_string(lexeme, &l_sz, &l, c);
+    if (a->size == 0) {
+        r.nodes = b->nodes;
+    } else if (b->size == 0) {
+        r.nodes = a->nodes;
+    } else {
+        r.nodes = calloc(5, sizeof(shiro_node));
+        memcpy(r.nodes, a->nodes, a->size * sizeof(shiro_node));
+        memcpy(r.nodes + a->size * sizeof(shiro_node),
+                b->nodes, b->size * sizeof(shiro_node));
     }
 
-    if (lexeme[0] != 0)
-        tokens = __push_token(tokens, &t_sz, &t, lexeme);
-
-    free(lexeme);
-    memcpy(out, tokens, t_sz);
-    free(tokens);
-
-    return t_sz;
+    return r;
 }
 //-----------------------------------------------------------------------------
-// Retorna o tipo de uma token
-//      Token   : Token a analisar
+// Libera a memória usada por um código Shiro compilado
+//      bin : Binário a ser liberado
 //-----------------------------------------------------------------------------
-burn_token_type __get_token_type(const char* token) {
+void __free_binary(shiro_binary* bin) {
+    unsigned int i;
+    for (i = 0; i < bin->size; i++) {
+        unsigned int j;
+        for (j = 0; j < bin->nodes[i].n_args; j++)
+            free(bin->nodes[i].args[j]);
+        //free(bin->nodes[i].args);
+    }
+}
+//-----------------------------------------------------------------------------
+// Concatena dois códigos Shiro compilados e os limpa da memória
+//      a   : Primeiro binário
+//      b   : Segundo binário
+//-----------------------------------------------------------------------------
+shiro_binary __binary_concat_and_destroy(shiro_binary* a, shiro_binary* b) {
+    shiro_binary r = __binary_concat(a, b);
 
-    if (strcmp(token, KW_BREAK)     == 0 || strcmp(token, KW_CASE)    == 0 ||
-        strcmp(token, KW_CLASS)     == 0 || strcmp(token, KW_COND)    == 0 ||
-        strcmp(token, KW_CONST)     == 0 || strcmp(token, KW_DELETE)  == 0 ||
-        strcmp(token, KW_ELSE)      == 0 || strcmp(token, KW_FOR)     == 0 ||
-        strcmp(token, KW_WHILE)     == 0 || strcmp(token, KW_LOOP)    == 0 ||
-        strcmp(token, KW_FUNC)      == 0 || strcmp(token, KW_SWITCH)  == 0 ||
-        strcmp(token, KW_DO)        == 0 || strcmp(token, KW_PRIVATE) == 0 ||
-        strcmp(token, KW_PROTECTED) == 0 || strcmp(token, KW_PUBLIC)  == 0 ||
-        strcmp(token, KW_NEXT)      == 0)
-        return TK_KEYWORD;
+    __free_binary(a);
+    __free_binary(b);
 
-    const char c = *token;
-
-    if (c == *OP_SET || c == *OP_ADD || c == *OP_SUB || c == *OP_MUL ||
-        c == *OP_DIV || c == *OP_MOD || c == *OP_AND || c == *OP_OR  ||
-        c == *OP_XOR || strcmp(OP_ASSOC, token) == 0 ||
-        (token[1] == *OP_SET && (
-            token[0] == *OP_ADD || token[0] == *OP_SUB ||
-            token[0] == *OP_MUL || token[0] == *OP_DIV ||
-            token[0] == *OP_MOD || token[0] == *OP_AND ||
-            token[0] == *OP_OR  || token[0] == *OP_XOR)
-        ))
-        return TK_B_OPERATOR;
-
-    if (strcmp(token, CMP_EQU)    == 0 || strcmp(token, CMP_DIF)   == 0 ||
-        strcmp(token, CMP_GRT)    == 0 || strcmp(token, CMP_LT)    == 0 ||
-        strcmp(token, CMP_GRTEQU) == 0 || strcmp(token, CMP_LTEQU) == 0)
-        return TK_COMPARATOR;
-
-    if (strcmp(U_INC, token) == 0 || strcmp(U_DEC, token) == 0 ||
-        c == *U_NOT || c == *U_B_NOT)
-        return TK_U_OPERATOR;
-
-    if (isdigit(c) || c == *MARK_STR1 || c == *MARK_STR2)
-        return TK_CONST;
-
-    return TK_NAME;
+    return r;
 }
 //-----------------------------------------------------------------------------
 // Compila uma expressão
 //      statement   : Expressão
 //-----------------------------------------------------------------------------
-void __compile_statement(const char* statement) {
+shiro_binary __compile_statement(const char* statement, unsigned int* line) {
+    shiro_binary binary;
+    binary.size = 0;
 
     if (*statement == 0)
-        return;
+        return binary;
 
-    int line;
+    unsigned int start_line = *line;
 
+    // Obtém a enésima token da sentença
     const char* __token(int n) {
-        line = 1;
+        *line = start_line;
 
         int i, j;
 
         for (i = j = 0; j < n && (statement[i] + statement[i + 1]) != 0; i++, j++) {
+
+            if (strcmp(statement + i, MARK_OBLOCK) == 0)
+                while (strcmp(statement + i, MARK_CBLOCK) != 0)
+                    i++;
+            else if (strcmp(statement + i, MARK_OEXPR) == 0)
+                while (strcmp(statement + i, MARK_CEXPR) != 0)
+                    i++;
+
             while (statement[i] != 0) {
                 if (statement[i] == *MARK_EOL)
-                    line++;
+                    (*line)++;
                 i++;
             }
         }
 
-        if ((statement[i] + statement[i - 1]) == 0)
+        if (i > 0 && (statement[i] + statement[i - 1]) == 0)
             return NULL;
         return statement + i;
     }
 
+    // Obtém uma expressão a partir de um token '('
+    const char* __expr(const char* token) {
+
+        unsigned int
+            e_sz = DF_TOKEN_SIZE,
+            e = 0;
+        char* expression = malloc(e_sz);
+        memset(expression, 0, e_sz);
+
+        unsigned int p_stack = 1;
+
+        while (*token != 0)
+            token++;
+        token++;
+
+        while (p_stack > 0) {
+            if (strcmp(token, MARK_OEXPR) == 0)
+                p_stack++;
+            else if (strcmp(token, MARK_CEXPR) == 0)
+                p_stack--;
+
+            if (p_stack > 0) {
+                expression = push_token(expression, &e_sz, &e, token);
+                while (*token != 0) {
+                    token++;
+                }
+                token++;
+            }
+        }
+
+        return expression;
+    }
+
     const char* token;
-
-    int i = 0;
-    while ((token = __token(i++)) != NULL)
-        printf("%s ", token);
-    return;
-
     token = __token(0);
 
-    switch (__get_token_type(token)) {
+    switch (get_token_type(token)) {
         case TK_KEYWORD:
             /*
                 #define KW_COND         "if"
@@ -447,7 +201,43 @@ void __compile_statement(const char* statement) {
                 #define KW_CONST        "const"
                 #define KW_CLASS        "class"
             */
+            if (strcmp(token, KW_COND) == 0)
+            {
+                token = __token(1);
+                if (token != NULL && strcmp(token, MARK_OEXPR) == 0) {
 
+                    const char* expression = __expr(token);
+                    token = __token(2);
+
+                    if (token != NULL && strcmp(token, MARK_OBLOCK) == 0) {
+
+                        token = __token(3);
+                        if (token != NULL && strcmp(token, KW_ELSE) == 0) {
+
+                        } else if (token != NULL && strcmp(token, MARK_EOS) == 0) {
+                            shiro_binary b_expr = __compile_statement(expression, line);
+
+                            binary.size = 1;
+                            binary.nodes = calloc(binary.size, sizeof(shiro_node));
+                            binary.nodes[0] = (shiro_node){ COND, NULL, 0 };
+
+                            binary = __binary_concat_and_destroy(&b_expr, &binary);
+                        } else if (token != NULL) {
+                            __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token);
+                            return binary;
+                        } else {
+                            __error(*line, ERR_SYNTAX_ERROR, "Unexpected <END>, expecting '%s'", MARK_EOS);
+                            return binary;
+                        }
+                    } else {
+                        __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token, MARK_OBLOCK);
+                        return binary;
+                    }
+                } else {
+                    __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token, MARK_OEXPR);
+                    return binary;
+                }
+            }
 
             break;
         case TK_NAME:
@@ -455,30 +245,74 @@ void __compile_statement(const char* statement) {
         case TK_MARK:
             break;
         case TK_CONST:
+        {
+            const char* value = token;
+
+            token = __token(1);
+            if (token != NULL) {
+
+            } else {
+                binary.size = 1;
+                binary.nodes = calloc(1, sizeof(shiro_node));
+
+                shiro_value s_value;
+
+                if (value[0] == *MARK_STR1 || value[0] == *MARK_STR2) {
+                    s_value.type = s_tString;
+                    s_value.fields = calloc(2, sizeof(union shiro_field));
+
+                    shiro_string v = malloc(strlen(value) - 1);
+                    memset(v, 0, strlen(value) - 1);
+                    memcpy(v, value + 1, strlen(value) - 1);
+
+                    s_value.fields[0].str = (shiro_string)v;
+                    s_value.fields[1].i   = (shiro_fixnum)strlen(s_value.fields[0].str);
+                    s_value.n_fields = 2;
+                } else {
+                    s_value.type = s_tInt;
+                    s_value.fields = calloc(1, sizeof(union shiro_field));
+
+                    char* end;
+                    s_value.fields[0].i = (shiro_fixnum)strtol(value, &end, 10);
+                    s_value.n_fields = 1;
+                }
+
+                shiro_value* args = calloc(1, sizeof(shiro_value));
+                args[0] = s_value;
+
+                binary.nodes[0] = (shiro_node){PUSH, (void**)&args, 1};
+            }
             break;
+        }
         default:
-            __error(line, "INVALID_TOKEN", "Unexpected token '%s'", token);
+            __error(*line, ERR_SYNTAX_ERROR, "Unexpected token '%s'", token);
             break;
     }
+
+    return binary;
 }
 //-----------------------------------------------------------------------------
 // Compila o código passado
 //      code    : Código
 //-----------------------------------------------------------------------------
-void burn_compile(const char* code) {
-    char* tokens = (char*)malloc(strlen(code) * 2 + 1);
+shiro_binary shiro_compile(const char* code) {
+    char* tokens = malloc(strlen(code) * 2 + 1);
     memset(tokens, 0, strlen(code) * 2 + 1);
-    burn_tokenize(code, tokens);
+    shiro_tokenize(code, tokens);
 
     unsigned int i = 0, t_sz = DF_TOKEN_SIZE, t = 0;
-    char* token = (char*)malloc(t_sz);
+    char* token = malloc(t_sz);
     memset(token, 0, t_sz);
 
     unsigned int s_sz = strlen(code) / 2 + 1, s = 0;
-    char* statement = (char*)malloc(s_sz);
+    char* statement = malloc(s_sz);
     memset(statement, 0, s_sz);
 
-    unsigned int line = 1,
+    shiro_binary binary;
+    binary.size = 0;
+
+    unsigned int line_compiled = 1,
+                 line = 1,
                  stack = 0,
                  p_stack = 0;
 
@@ -490,7 +324,9 @@ void burn_compile(const char* code) {
             line++;
         } else if (strcmp(token, MARK_OBLOCK) == 0)
             if (p_stack != 0) {
-                __error(line, "CANT_OPEN_BLOCK", "Unexpected '%s', expecting '%s'", MARK_OBLOCK, MARK_CEXPR);
+                __error(line, ERR_SYNTAX_ERROR,
+                            "Unexpected '%s', expecting '%s'",
+                            MARK_OBLOCK, MARK_CEXPR);
                 return;
             } else
                 stack++;
@@ -498,26 +334,33 @@ void burn_compile(const char* code) {
             if (stack > 0)
                 stack--;
             else {
-                __error(line, "CANT_CLOSE_BLOCK", "Unexpected '%s'", MARK_CBLOCK);
+                __error(line, ERR_SYNTAX_ERROR, "Unexpected '%s'", MARK_CBLOCK);
                 return;
             }
         } else if (strcmp(token, MARK_OEXPR) == 0) {
             p_stack++;
-        }
-        else if (strcmp(token, MARK_CEXPR) == 0) {
+        } else if (strcmp(token, MARK_CEXPR) == 0) {
             if (p_stack > 0)
                 p_stack--;
             else {
-                __error(line, "CANT_CLOSE_EXPR", "Unexpected '%s'", MARK_CEXPR);
+                __error(line, ERR_SYNTAX_ERROR, "Unexpected '%s'", MARK_CEXPR);
                 return;
             }
         }
-        statement = __push_token(statement, &s_sz, &s, token);
+        statement = push_token(statement, &s_sz, &s, token);
 
         if (strcmp(token, MARK_EOS) == 0 && stack == 0 && p_stack == 0) {
-            __compile_statement(statement);
+            shiro_binary other = __compile_statement(statement, &line_compiled);
+
+            if (other.size > 0) {
+                if (binary.size > 0)
+                    binary = __binary_concat_and_destroy(&binary, &other);
+                else
+                    binary = other;
+            }
+
             free(statement);
-            statement = (char*)malloc(s_sz);
+            statement = malloc(s_sz);
             memset(statement, 0, s_sz);
             s = 0;
         }
@@ -526,32 +369,41 @@ void burn_compile(const char* code) {
     for (; (tokens[i] + tokens[i + 1]) != 0; i++) {
         if (tokens[i] == 0) {
             __process_token();
-            token = __clear_token(token, &t_sz, &t);
-
+            token = clear_token(token, &t_sz, &t);
         } else
-            token = __append_to_string(token, &t_sz, &t, tokens[i]);
+            token = append_to_string(token, &t_sz, &t, tokens[i]);
     }
     free(tokens);
 
-
     __process_token();
+
     free(token);
 
     if (stack > 0)
-        __error(line, "BLOCK_NOT_CLOSED",
-                    "Unexpected EOF, expecting '%s'", MARK_CBLOCK);
+        __error(line, ERR_SYNTAX_ERROR,
+                    "Unexpected <EOF>, expecting '%s'", MARK_CBLOCK);
     else if (p_stack > 0)
-        __error(line, "EXPR_NOT_CLOSED",
-                    "Unexpected EOF, expecting '%s'", MARK_CEXPR);
-    __compile_statement(statement);
+        __error(line, ERR_SYNTAX_ERROR,
+                    "Unexpected <EOF>, expecting '%s'", MARK_CEXPR);
+
+    shiro_binary other = __compile_statement(statement, &line_compiled);
+
+    if (other.size > 0) {
+        if (binary.size > 0)
+            binary = __binary_concat_and_destroy(&binary, &other);
+        else
+            binary = other;
+    }
 
     free(statement);
+
+    return binary;
 }
 //-----------------------------------------------------------------------------
 // Ponto de entrada para teste
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv) {
-    static const char* code = "fn say_hello { print('Hello World'); } asd bsd;";
+    static const char* code = "if (1) { print('Hello World'); };";
 
     double get_time() {
         LARGE_INTEGER t, f;
@@ -561,7 +413,11 @@ int main(int argc, char** argv) {
     }
 
     double t0 = get_time();
-    burn_compile(code);
+
+    for (;;) {
+        shiro_binary bin = shiro_compile(code);
+        printf("%d node(s) compiled\n", bin.size);
+    }
     printf("\n\n%f ms\n", (get_time() - t0) * 1000);
 
     return 0;
