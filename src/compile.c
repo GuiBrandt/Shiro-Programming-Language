@@ -1,10 +1,7 @@
 //=============================================================================
 // src\compile.c
 //-----------------------------------------------------------------------------
-// Define as funções usadas para compilar código Burn.
-//
-// As funções definidas aqui incluem magias negras fortes e só devem ser
-// alteradas em caso de necessidade real. Preze por sua vida, jovem mago.
+// Define as funções usadas para compilar código Shiro
 //=============================================================================
 #include <stdlib.h>
 #include <stdarg.h>
@@ -20,26 +17,8 @@
 #ifdef __DEBUG__
 #include <windows.h> // PARA BENCHMARK, APAGAR DEPOIS!
 #endif // __DEBUG__
-
-//=============================================================================
-//  Declaração
 //-----------------------------------------------------------------------------
-// As funções que são definidas nesse arquivo devem primeiro ser declaradas
-// aqui
-//=============================================================================
-void          __error                       (unsigned int, const char*, const char*, ...);
-shiro_binary  __binary_concat               (shiro_binary*, shiro_binary*);
-void          __free_binary                 (shiro_binary*);
-shiro_binary  __binary_concat_and_destroy   (shiro_binary*, shiro_binary*);
-shiro_binary  __compile_statement           (const char*, unsigned int*);
-//=============================================================================
-//  Implementação
-//-----------------------------------------------------------------------------
-// Daqui pra baixo começam umas tretas fortes com ponteiros. Não se arrisque
-// demais mexendo nisso.
-//=============================================================================
-//-----------------------------------------------------------------------------
-// Lança uma mensagem de erro
+// Lança uma mensagem de erro e aborta a execução do programa
 //      errcode     : Nome do tipo de erro
 //      message     : Mensagem de erro
 //-----------------------------------------------------------------------------
@@ -55,329 +34,404 @@ void __error(unsigned int line, const char* errcode, const char* message, ...) {
     exit(1);
 }
 //-----------------------------------------------------------------------------
-// Concatena dois códigos Shiro compilados
-//      a   : Primeiro binário
-//      b   : Segundo binário
+// Obtém uma expressão a partir de um token '('
+//      stmt    : Ponteiro para o shiro_statement onde está o token '('
+//      offset  : Índice do token no shiro_statement
 //-----------------------------------------------------------------------------
-shiro_binary __binary_concat(shiro_binary* a, shiro_binary* b) {
+shiro_statement* __expression(
+    const shiro_statement* stmt,
+    shiro_uint offset
+) {
+    shiro_statement* expression = new_statement(1);
 
-    shiro_binary r;
-    r.size = a->size + b->size;
+    shiro_uint p_stack = 1, line = 0;
+    shiro_token* token = get_token(stmt, offset, &line);
 
-    if (a->size == 0) {
-        r.nodes = b->nodes;
-    } else if (b->size == 0) {
-        r.nodes = a->nodes;
-    } else {
-        r.nodes = calloc(5, sizeof(shiro_node));
-        memcpy(r.nodes, a->nodes, a->size * sizeof(shiro_node));
-        memcpy(r.nodes + a->size * sizeof(shiro_node),
-                b->nodes, b->size * sizeof(shiro_node));
+    shiro_uint i = 0;
+    while (stmt->tokens[i] != token)
+        i++;
+
+    token = stmt->tokens[++i];
+
+    while (p_stack > 0) {
+        if (strcmp(token->value, MARK_OEXPR) == 0)
+            p_stack++;
+        else if (strcmp(token->value, MARK_CEXPR) == 0)
+            p_stack--;
+
+        if (p_stack > 0)
+            push_token(expression, token);
+
+        token = stmt->tokens[++i];
     }
 
-    return r;
+    return expression;
 }
 //-----------------------------------------------------------------------------
-// Libera a memória usada por um código Shiro compilado
-//      bin : Binário a ser liberado
+// Obtém um bloco de código a partir de um token '{'
+//      stmt    : Ponteiro para o shiro_statement onde está o token '{'
+//      offset  : Índice do token no shiro_statement
 //-----------------------------------------------------------------------------
-void __free_binary(shiro_binary* bin) {
-    unsigned int i;
-    for (i = 0; i < bin->size; i++) {
-        unsigned int j;
-        for (j = 0; j < bin->nodes[i].n_args; j++)
-            free(bin->nodes[i].args[j]);
-        //free(bin->nodes[i].args);
+shiro_statement* __block(
+    const shiro_statement* stmt,
+    shiro_uint offset
+) {
+    shiro_statement* expression = new_statement(1);
+
+    shiro_uint stack = 1, line = 0;
+    shiro_token* token = get_token(stmt, offset, &line);
+
+    shiro_uint i = 0;
+    while (stmt->tokens[i] != token)
+        i++;
+
+    token = stmt->tokens[++i];
+
+    while (stack > 0) {
+        if (strcmp(token->value, MARK_OBLOCK) == 0)
+            stack++;
+        else if (strcmp(token->value, MARK_CBLOCK) == 0)
+            stack--;
+
+        if (stack > 0)
+            push_token(expression, token);
+
+        token = stmt->tokens[++i];
     }
-}
-//-----------------------------------------------------------------------------
-// Concatena dois códigos Shiro compilados e os limpa da memória
-//      a   : Primeiro binário
-//      b   : Segundo binário
-//-----------------------------------------------------------------------------
-shiro_binary __binary_concat_and_destroy(shiro_binary* a, shiro_binary* b) {
-    shiro_binary r = __binary_concat(a, b);
 
-    __free_binary(a);
-    __free_binary(b);
-
-    return r;
+    return expression;
 }
 //-----------------------------------------------------------------------------
 // Compila uma expressão
 //      statement   : Expressão
 //-----------------------------------------------------------------------------
-shiro_binary __compile_statement(const char* statement, unsigned int* line) {
-    shiro_binary binary;
-    binary.size = 0;
+shiro_binary* __compile_statement(
+    const shiro_statement* statement,
+    shiro_uint* line
+) {
+    shiro_binary* binary = new_binary();
 
-    if (*statement == 0)
+    if (statement == SHIRO_NIL || statement->used == 0)
         return binary;
 
-    unsigned int start_line = *line;
-
-    // Obtém a enésima token da sentença
-    const char* __token(int n) {
-        *line = start_line;
-
-        int i, j;
-
-        for (i = j = 0; j < n && (statement[i] + statement[i + 1]) != 0; i++, j++) {
-
-            if (strcmp(statement + i, MARK_OBLOCK) == 0)
-                while (strcmp(statement + i, MARK_CBLOCK) != 0)
-                    i++;
-            else if (strcmp(statement + i, MARK_OEXPR) == 0)
-                while (strcmp(statement + i, MARK_CEXPR) != 0)
-                    i++;
-
-            while (statement[i] != 0) {
-                if (statement[i] == *MARK_EOL)
-                    (*line)++;
-                i++;
-            }
-        }
-
-        if (i > 0 && (statement[i] + statement[i - 1]) == 0)
-            return NULL;
-        return statement + i;
-    }
-
-    // Obtém uma expressão a partir de um token '('
-    const char* __expr(const char* token) {
-
-        unsigned int
-            e_sz = DF_TOKEN_SIZE,
-            e = 0;
-        char* expression = malloc(e_sz);
-        memset(expression, 0, e_sz);
-
-        unsigned int p_stack = 1;
-
-        while (*token != 0)
-            token++;
-        token++;
-
-        while (p_stack > 0) {
-            if (strcmp(token, MARK_OEXPR) == 0)
-                p_stack++;
-            else if (strcmp(token, MARK_CEXPR) == 0)
-                p_stack--;
-
-            if (p_stack > 0) {
-                expression = push_token(expression, &e_sz, &e, token);
-                while (*token != 0) {
-                    token++;
-                }
-                token++;
-            }
-        }
-
-        return expression;
-    }
-
-    const char* token;
-    token = __token(0);
+    const shiro_token* token;
+    token = get_token(statement, 0, line);
 
     switch (get_token_type(token)) {
-        case TK_KEYWORD:
-            /*
-                #define KW_COND         "if"
-                #define KW_ELSE         "else"
-                #define KW_PRIVATE      "private"
-                #define KW_PROTECTED    "protected"
-                #define KW_PUBLIC       "public"
-                #define KW_SWITCH       "switch"
-                #define KW_CASE         "case"
-                #define KW_FOR          "for"
-                #define KW_WHILE        "while"
-                #define KW_LOOP         "loop"
-                #define KW_BREAK        "break"
-                #define KW_NEXT         "continue"
-                #define KW_DELETE       "delete"
-                #define KW_FUNC         "fn"
-                #define KW_PROC         "proc"
-                #define KW_VAR          "var"
-                #define KW_CONST        "const"
-                #define KW_CLASS        "class"
-            */
-            if (strcmp(token, KW_COND) == 0)
-            {
-                token = __token(1);
-                if (token != NULL && strcmp(token, MARK_OEXPR) == 0) {
+        case s_tkKeyword:
+        {
+            if (strcmp(token->value, KW_COND) == 0) {
+                token = get_token(statement, 1, line);
+                if (token != SHIRO_NIL && strcmp(token->value, MARK_OEXPR) == 0) {
+                    shiro_statement* expression = __expression(statement, 1);
+                    token = get_token(statement, 2, line);
+                    if (token != SHIRO_NIL && strcmp(token->value, MARK_OBLOCK) == 0) {
+                        shiro_statement* block = __block(statement, 2);
+                        token = get_token(statement, 3, line);
+                        if (token != SHIRO_NIL && strcmp(token->value, KW_ELSE) == 0) {
 
-                    const char* expression = __expr(token);
-                    token = __token(2);
+                        } else if (token == SHIRO_NIL || strcmp(token->value, MARK_EOS) == 0) {
+                            shiro_binary* b_expr = __compile_statement(expression, line);
+                            free_statement(expression);
 
-                    if (token != NULL && strcmp(token, MARK_OBLOCK) == 0) {
+                            shiro_binary* b_block = __compile_statement(block, line);
+                            free_statement(block);
 
-                        token = __token(3);
-                        if (token != NULL && strcmp(token, KW_ELSE) == 0) {
+                            shiro_node* cond = new_node(COND, 0);
+                            push_node(binary, cond);
+                            free_node(cond);
 
-                        } else if (token != NULL && strcmp(token, MARK_EOS) == 0) {
-                            shiro_binary b_expr = __compile_statement(expression, line);
+                            shiro_uint sz = b_block->used;
+                            shiro_node* jmp = new_node(JUMP, 1, &sz);
+                            push_node(binary, jmp);
+                            free_node(jmp);
 
-                            binary.size = 1;
-                            binary.nodes = calloc(binary.size, sizeof(shiro_node));
-                            binary.nodes[0] = (shiro_node){ COND, NULL, 0 };
-
-                            binary = __binary_concat_and_destroy(&b_expr, &binary);
-                        } else if (token != NULL) {
-                            __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token);
-                            return binary;
+                            binary = concat_and_free_binary(b_expr, binary);
+                            binary = concat_and_free_binary(binary, b_block);
                         } else {
-                            __error(*line, ERR_SYNTAX_ERROR, "Unexpected <END>, expecting '%s'", MARK_EOS);
+                            __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
                             return binary;
                         }
                     } else {
-                        __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token, MARK_OBLOCK);
+                        __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OBLOCK);
                         return binary;
                     }
                 } else {
-                    __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token, MARK_OEXPR);
+                    __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OEXPR);
                     return binary;
                 }
             }
 
             break;
-        case TK_NAME:
-            break;
-        case TK_MARK:
-            break;
-        case TK_CONST:
+        }
+        case s_tkName:
         {
-            const char* value = token;
+            shiro_string name = calloc(token->used, sizeof(shiro_character));
+            memcpy(name, token->value, token->used * sizeof(shiro_character));
 
-            token = __token(1);
-            if (token != NULL) {
+            token = get_token(statement, 1, line);
+
+            if (token == SHIRO_NIL || strcmp(token->value, MARK_EOS) == 0) {
+                shiro_node* node = new_node(PUSH_BY_NAME, 1, name);
+                push_node(binary, node);
+                free_node(node);
+            } else if (strcmp(token->value, MARK_PROP) == 0) {
+                token = get_token(statement, 2, line);
+
+                if (get_token_type(token) == s_tkName) {
+                    shiro_statement* rest = malloc(sizeof(shiro_statement));
+                    memcpy(rest, statement, sizeof(shiro_statement));
+                    rest->tokens += sizeof(shiro_token*) * 2;
+                    rest->allocated -= 2;
+                    rest->used -= 2;
+
+                    shiro_binary* b_rest = __compile_statement(rest, line);
+
+                    free(rest);
+
+                    shiro_node* node = new_node(PUSH_BY_NAME, 1, name);
+                    push_node(binary, node);
+                    free_node(node);
+
+                    binary = concat_and_free_binary(binary, b_rest);
+                } else {
+                    __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting NAME", token->value);
+                    return binary;
+                }
+
+            } else if (strcmp(token->value, MARK_OEXPR) == 0) {
+                shiro_statement* expression = __expression(statement, 1);
+                {
+                    shiro_statement* arg = new_statement(1);
+                    shiro_token* tk;
+                    int i;
+                    for (
+                         i = 0, tk = get_token(expression, i, line);
+                         tk != SHIRO_NIL;
+                         tk = get_token(expression, ++i, line)
+                    ) {
+                        if (strcmp(tk->value, MARK_LIST) == 0) {
+                            shiro_binary* b_arg = __compile_statement(arg, line);
+
+                            int j;
+                            bool has_push = false;
+                            for (j = 0; j < b_arg->used; j++)
+                                if (b_arg->nodes[j]->code == PUSH ||
+                                    b_arg->nodes[j]->code == PUSH_BY_NAME)
+                                    has_push = true;
+
+                            if (!has_push) {
+                                __error(*line, ERR_SYNTAX_ERROR,
+                                        "Invalid argument for function '%s':"
+                                        " argument doesn't return any value", name);
+                                return binary;
+                            }
+
+                            free_statement(arg);
+                            arg = new_statement(1);
+                            concat_and_free_binary(binary, b_arg);
+                        } else {
+                            push_token(arg, tk);
+                            free_token(tk);
+                        }
+                    }
+
+                    shiro_binary* b_arg = __compile_statement(arg, line);
+                    free_statement(arg);
+
+                    int j;
+                    bool has_push = false;
+                    for (j = 0; j < b_arg->used; j++)
+                        if (b_arg->nodes[j]->code == PUSH ||
+                            b_arg->nodes[j]->code == PUSH_BY_NAME)
+                            has_push = true;
+
+                    if (!has_push) {
+                        __error(*line, ERR_SYNTAX_ERROR,
+                                "Invalid argument for function '%s':"
+                                " argument doesn't return any value", name);
+                        return binary;
+                    }
+                    concat_and_free_binary(binary, b_arg);
+
+                    shiro_node* fcall = new_node(FN_CALL, 1, name);
+                    push_node(binary, fcall);
+                    free_node(fcall);
+                }
+
+                token = get_token(statement, 2, line);
+
+                if (strcmp(token->value, MARK_PROP) == 0) {
+                    token = get_token(statement, 2, line);
+
+                    if (get_token_type(token) == s_tkName) {
+                        shiro_statement* rest = malloc(sizeof(shiro_statement));
+                        memcpy(rest, statement, sizeof(shiro_statement));
+                        rest->tokens += sizeof(shiro_token*) * 2;
+                        rest->allocated -= 2;
+                        rest->used -= 2;
+
+                        shiro_binary* b_rest = __compile_statement(rest, line);
+
+                        free(rest);
+
+                        shiro_node* node = new_node(PUSH_BY_NAME, 1, name);
+                        push_node(binary, node);
+                        free_node(node);
+
+                        binary = concat_and_free_binary(binary, b_rest);
+                    } else {
+                        __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting NAME", token->value);
+                        return binary;
+                    }
+                } else if (token != SHIRO_NIL && strcmp(token->value, MARK_EOS) != 0) {
+                    __error(*line, ERR_SYNTAX_ERROR, "Unexpected %s, expecting <END>", token->value);
+                    return binary;
+                }
+            } else {
+                __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                return binary;
+            }
+            break;
+        }
+        case s_tkMark:
+            break;
+        case s_tkConst:
+        {
+            const shiro_string value = token->value;
+
+            token = get_token(statement, 1, line);
+            if (token != SHIRO_NIL) {
 
             } else {
-                binary.size = 1;
-                binary.nodes = calloc(1, sizeof(shiro_node));
-
-                shiro_value s_value;
+                shiro_value* s_value = malloc(sizeof(shiro_value));
 
                 if (value[0] == *MARK_STR1 || value[0] == *MARK_STR2) {
-                    s_value.type = s_tString;
-                    s_value.fields = calloc(2, sizeof(union shiro_field));
+                    s_value->type = s_tString;
+                    s_value->fields = calloc(2, sizeof(union shiro_field));
 
                     shiro_string v = malloc(strlen(value) - 1);
                     memset(v, 0, strlen(value) - 1);
-                    memcpy(v, value + 1, strlen(value) - 1);
+                    memcpy(v, value + 1, strlen(value) - 2);
 
-                    s_value.fields[0].str = (shiro_string)v;
-                    s_value.fields[1].i   = (shiro_fixnum)strlen(s_value.fields[0].str);
-                    s_value.n_fields = 2;
+                    s_value->fields[0].str = v;
+                    s_value->fields[1].i   = (shiro_fixnum)strlen(s_value->fields[0].str);
+                    s_value->n_fields = 2;
                 } else {
-                    s_value.type = s_tInt;
-                    s_value.fields = calloc(1, sizeof(union shiro_field));
+                    s_value->type = s_tInt;
+                    s_value->fields = calloc(1, sizeof(union shiro_field));
 
                     char* end;
-                    s_value.fields[0].i = (shiro_fixnum)strtol(value, &end, 10);
-                    s_value.n_fields = 1;
+                    s_value->fields[0].i = (shiro_fixnum)strtol(value, &end, 10);
+                    s_value->n_fields = 1;
                 }
 
-                shiro_value* args = calloc(1, sizeof(shiro_value));
-                args[0] = s_value;
-
-                binary.nodes[0] = (shiro_node){PUSH, (void**)&args, 1};
+                shiro_node* node = new_node(PUSH, 1, s_value);
+                push_node(binary, node);
+                free_node(node);
             }
             break;
         }
         default:
-            __error(*line, ERR_SYNTAX_ERROR, "Unexpected token '%s'", token);
+            __error(*line, ERR_SYNTAX_ERROR, "Unexpected token '%s'", token->value);
             break;
     }
 
     return binary;
 }
 //-----------------------------------------------------------------------------
+// Processa uma token no processo de compilação
+//      token   : Ponteiro para a shiro_token sendo processada
+//      line    : Ponteiro para o shiro_uint representando o número da linha
+//                atual
+//      cline   : Ponteiro para o shiro_uint representando o número da linha
+//                até a qual o código foi compilado
+//      stack   : Número de chaves abertas e não fechadas
+//      p_stack : Número de parêntesis abertos e não fechados
+//      stmt    : Ponteiro para o shiro_statement sendo processado
+//      binary  : Ponteiro para o shiro_binary que será alterado pelo
+//                processamento da token
+//-----------------------------------------------------------------------------
+void __process_token(
+    shiro_token*        token,
+    shiro_uint*         line,
+    shiro_uint*         cline,
+    shiro_uint*         stack,
+    shiro_uint*         p_stack,
+    shiro_statement*    stmt,
+    shiro_binary*       binary
+) {
+    if (token == SHIRO_NIL)
+        return;
+
+    if (strcmp(token->value, MARK_EOL) == 0) {
+        (*line)++;
+    } else if (strcmp(token->value, MARK_OBLOCK) == 0)
+        if ((*p_stack) != 0) {
+            __error(*line, ERR_SYNTAX_ERROR,
+                        "Unexpected '%s', expecting '%s'",
+                        MARK_OBLOCK, MARK_CEXPR);
+            return;
+        } else
+            (*stack)++;
+    else if (strcmp(token->value, MARK_CBLOCK) == 0) {
+        if ((*stack) > 0)
+            (*stack)--;
+        else {
+            __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s'", MARK_CBLOCK);
+            return;
+        }
+    } else if (strcmp(token->value, MARK_OEXPR) == 0) {
+        (*p_stack)++;
+    } else if (strcmp(token->value, MARK_CEXPR) == 0) {
+        if ((*p_stack) > 0)
+            (*p_stack)--;
+        else {
+            __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s'", MARK_CEXPR);
+            return;
+        }
+    }
+    push_token(stmt, token);
+
+    if (strcmp(token->value, MARK_EOS) == 0 && stack == 0 && p_stack == 0) {
+        shiro_binary* other = __compile_statement(stmt, cline);
+
+        if (other->used > 0) {
+            if (binary->used > 0)
+                binary = concat_and_free_binary(binary, other);
+            else {
+                free_binary(binary);
+                binary = other;
+            }
+        }
+
+        stmt->used = 0;
+        memset(stmt->tokens, 0, stmt->allocated * sizeof(shiro_token*));
+    }
+}
+//-----------------------------------------------------------------------------
 // Compila o código passado
 //      code    : Código
 //-----------------------------------------------------------------------------
-shiro_binary shiro_compile(const char* code) {
-    char* tokens = malloc(strlen(code) * 2 + 1);
-    memset(tokens, 0, strlen(code) * 2 + 1);
-    shiro_tokenize(code, tokens);
+shiro_binary* shiro_compile(const shiro_string code) {
+    shiro_binary* binary = new_binary();
 
-    unsigned int i = 0, t_sz = DF_TOKEN_SIZE, t = 0;
-    char* token = malloc(t_sz);
-    memset(token, 0, t_sz);
+    shiro_statement* tokens = shiro_tokenize(code);
 
-    unsigned int s_sz = strlen(code) / 2 + 1, s = 0;
-    char* statement = malloc(s_sz);
-    memset(statement, 0, s_sz);
+    shiro_statement* statement = new_statement(strlen(code) / 2 + 1);
 
-    shiro_binary binary;
-    binary.size = 0;
-
-    unsigned int line_compiled = 1,
+    shiro_uint   line_compiled = 1,
                  line = 1,
                  stack = 0,
                  p_stack = 0;
 
-    void __process_token() {
-        if (*token == 0)
-            return;
-
-        if (strcmp(token, MARK_EOL) == 0) {
-            line++;
-        } else if (strcmp(token, MARK_OBLOCK) == 0)
-            if (p_stack != 0) {
-                __error(line, ERR_SYNTAX_ERROR,
-                            "Unexpected '%s', expecting '%s'",
-                            MARK_OBLOCK, MARK_CEXPR);
-                return;
-            } else
-                stack++;
-        else if (strcmp(token, MARK_CBLOCK) == 0) {
-            if (stack > 0)
-                stack--;
-            else {
-                __error(line, ERR_SYNTAX_ERROR, "Unexpected '%s'", MARK_CBLOCK);
-                return;
-            }
-        } else if (strcmp(token, MARK_OEXPR) == 0) {
-            p_stack++;
-        } else if (strcmp(token, MARK_CEXPR) == 0) {
-            if (p_stack > 0)
-                p_stack--;
-            else {
-                __error(line, ERR_SYNTAX_ERROR, "Unexpected '%s'", MARK_CEXPR);
-                return;
-            }
-        }
-        statement = push_token(statement, &s_sz, &s, token);
-
-        if (strcmp(token, MARK_EOS) == 0 && stack == 0 && p_stack == 0) {
-            shiro_binary other = __compile_statement(statement, &line_compiled);
-
-            if (other.size > 0) {
-                if (binary.size > 0)
-                    binary = __binary_concat_and_destroy(&binary, &other);
-                else
-                    binary = other;
-            }
-
-            free(statement);
-            statement = malloc(s_sz);
-            memset(statement, 0, s_sz);
-            s = 0;
-        }
-    }
-
-    for (; (tokens[i] + tokens[i + 1]) != 0; i++) {
-        if (tokens[i] == 0) {
-            __process_token();
-            token = clear_token(token, &t_sz, &t);
-        } else
-            token = append_to_string(token, &t_sz, &t, tokens[i]);
-    }
-    free(tokens);
-
-    __process_token();
-
-    free(token);
+    shiro_uint i = 0;
+    for (i = 0; i < tokens->used; i++)
+        __process_token(
+            tokens->tokens[i], &line, &line_compiled, &stack, &p_stack,
+            statement, binary
+        );
+    free_statement(tokens);
 
     if (stack > 0)
         __error(line, ERR_SYNTAX_ERROR,
@@ -386,16 +440,18 @@ shiro_binary shiro_compile(const char* code) {
         __error(line, ERR_SYNTAX_ERROR,
                     "Unexpected <EOF>, expecting '%s'", MARK_CEXPR);
 
-    shiro_binary other = __compile_statement(statement, &line_compiled);
+    shiro_binary* other = __compile_statement(statement, &line_compiled);
 
-    if (other.size > 0) {
-        if (binary.size > 0)
-            binary = __binary_concat_and_destroy(&binary, &other);
-        else
+    if (other->used > 0) {
+        if (binary->used > 0)
+            binary = concat_and_free_binary(binary, other);
+        else {
+            free_binary(binary);
             binary = other;
+        }
     }
 
-    free(statement);
+    free_statement(statement);
 
     return binary;
 }
@@ -403,7 +459,7 @@ shiro_binary shiro_compile(const char* code) {
 // Ponto de entrada para teste
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv) {
-    static const char* code = "if (1) { print('Hello World'); };";
+    static const shiro_string code = "if (1) { print('Hello World'); }";
 
     double get_time() {
         LARGE_INTEGER t, f;
@@ -413,12 +469,13 @@ int main(int argc, char** argv) {
     }
 
     double t0 = get_time();
+    shiro_binary* bin = shiro_compile(code);
+    double d = (get_time() - t0) * 1000;
 
-    for (;;) {
-        shiro_binary bin = shiro_compile(code);
-        printf("%d node(s) compiled\n", bin.size);
-    }
-    printf("\n\n%f ms\n", (get_time() - t0) * 1000);
+    printf("Code compiled succesfully, output has %d nodes\n", bin->used);
+    printf("Compilation has taken about %f milliseconds\n", d);
+
+    free_binary(bin);
 
     return 0;
 }

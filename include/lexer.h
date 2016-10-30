@@ -1,12 +1,12 @@
 #ifndef LEXER_H_INCLUDED
 #define LEXER_H_INCLUDED
 
+#include "types.h"
+
 #include <stdbool.h>
 #include <ctype.h>
 
-#ifndef NULL
-#define NULL (void*)0
-#endif // NULL
+#define SHIRO_NIL (void*)0
 
 #define DF_TOKEN_SIZE   32
 
@@ -69,30 +69,48 @@
 #define WS_CARET_RETURN '\r'
 #define WS_TAB          '\t'
 
-enum __token_type {
-    TK_KEYWORD,
-    TK_MARK,
-    TK_B_OPERATOR,
-    TK_COMPARATOR,
-    TK_U_OPERATOR,
-    TK_WHITESPACE,
-    TK_CONST,
-    TK_NAME,
-    TK_UNKNOWN
-};
+typedef enum __token_type {
+    s_tkKeyword,
+    s_tkMark,
+    s_tkBinaryOperator,
+    s_tkComparator,
+    s_tkUnaryOperator,
+    s_tkWhitespace,
+    s_tkConst,
+    s_tkName,
+    s_tkUnknown
+} shiro_token_type;
 
-typedef enum __token_type burn_token_type;
+typedef struct __token {
+    shiro_string    value;
+    shiro_uint      allocated;
+    shiro_uint      used;
+} shiro_token;
 
-bool            is_operator       (const char*);
-bool            is_operator_c     (const char);
-bool            is_symbol         (const char);
-bool            is_whitespace     (const char);
-char*           append_to_string  (char*, unsigned int*, unsigned int*, char c);
-char*           clear_token       (char*, unsigned int*, unsigned int*);
-char*           push_token        (char*, unsigned int*, unsigned int*, const char*);
-burn_token_type get_token_type    (const char*);
+typedef struct __statement {
+    shiro_token** tokens;
+    shiro_uint  allocated;
+    shiro_uint  used;
+} shiro_statement;
 
-unsigned int shiro_tokenize(const char*, char*);
+bool                is_operator       (const shiro_string);
+bool                is_operator_c     (const shiro_character);
+bool                is_symbol         (const shiro_character);
+bool                is_whitespace     (const shiro_character);
+
+shiro_token*        new_token         (void);
+shiro_token*        clone_token       (const shiro_token*);
+shiro_token*        append_to_token   (shiro_token*, const shiro_character c);
+shiro_token*        clear_token       (shiro_token*);
+shiro_token_type    get_token_type    (const shiro_token*);
+void                free_token        (shiro_token*);
+
+shiro_statement*    new_statement     (shiro_uint);
+shiro_statement*    push_token        (shiro_statement*, const shiro_token*);
+shiro_token*        get_token         (const shiro_statement*, const shiro_uint, shiro_uint*);
+void                free_statement    (shiro_statement*);
+
+shiro_statement*    shiro_tokenize    (const shiro_string);
 
 
 #endif // LEXER_H_INCLUDED
