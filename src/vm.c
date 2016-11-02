@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 //-----------------------------------------------------------------------------
 // Clona um campo shiro_field
@@ -16,8 +17,10 @@ shiro_field* clone_field(shiro_field* f) {
             field->value.val = clone_value(f->value.val);
             break;
         case s_fString:
-            field->value.str = calloc(1, sizeof(shiro_character));
-            memcpy(field->value.str, f->value.str, strlen(f->value.str));
+            if (f->value.str == NULL) break;
+            shiro_uint len = strlen(f->value.str);
+            field->value.str = calloc(len + 1, sizeof(shiro_character));
+            memcpy(field->value.str, f->value.str, len);
             break;
         default:
             field->value = f->value;
@@ -31,6 +34,9 @@ shiro_field* clone_field(shiro_field* f) {
 //      f   : Ponteiro para o campo que será liberado
 //-----------------------------------------------------------------------------
 void free_field(shiro_field* f) {
+    if (f == NULL)
+        return;
+
     switch (f->type) {
         case s_fValue:
             free(f->value.val);
@@ -51,7 +57,7 @@ shiro_value* new_value() {
     shiro_value* val = malloc(sizeof(shiro_value));
     shiro_value v = {s_tObject, 0, NULL};
     memcpy(val, &v, sizeof(shiro_value));
-    val->fields = calloc(1, sizeof(shiro_field));
+    val->fields = calloc(1, sizeof(shiro_field*));
     return val;
 }
 //-----------------------------------------------------------------------------
@@ -61,11 +67,12 @@ shiro_value* new_value() {
 shiro_value* clone_value(const shiro_value* v) {
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, v, sizeof(shiro_value));
-    val->fields = calloc(v->n_fields, sizeof(shiro_field));
+    val->fields = calloc(v->n_fields, sizeof(shiro_field*));
 
     int i;
     for (i = 0; i < val->n_fields; i++)
-        memcpy(val->fields[i], clone_field(v->fields[i]), sizeof(shiro_field));
+        if (v->fields[i] != NULL)
+            val->fields[i] = clone_field(v->fields[i]);
 
     return val;
 }
@@ -95,16 +102,17 @@ shiro_value* set_value_field(
     shiro_value* v,
     const shiro_id id,
     enum __field_type t,
-    union __field_value fv)
+    const union __field_value fv)
 {
     shiro_field* pfield = malloc(sizeof(shiro_field));
+
     shiro_field  field = {id, t, fv};
     memcpy(pfield, &field, sizeof(shiro_field));
 
     shiro_uint i;
     if (value_get_field(v, id, &i) == NULL) {
         v->n_fields++;
-        v->fields = realloc(v->fields, sizeof(shiro_field) * v->n_fields);
+        v->fields = realloc(v->fields, sizeof(shiro_field*) * v->n_fields);
         v->fields[v->n_fields - 1] = pfield;
     } else
         v->fields[i] = pfield;
@@ -125,7 +133,7 @@ shiro_field* value_get_field(
 ) {
     shiro_field* field = NULL;
     for (*pos = 0; (*pos) < v->n_fields && field == NULL; (*pos)++)
-        if (v->fields[*pos]->id == id)
+        if (v->fields[*pos] != NULL && v->fields[*pos]->id == id)
             field = v->fields[*pos];
     return field;
 }
@@ -137,14 +145,15 @@ shiro_value* new_shiro_string(const shiro_string str) {
     shiro_value v = {s_tString, 2, NULL};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
-    val->fields = calloc(2, sizeof(shiro_field));
+    val->fields = calloc(2, sizeof(shiro_field*));
 
     shiro_uint len = strlen(str);
-    set_value_field(val, ID("length"), s_fFixnum, (union __field_value)len);
 
-    shiro_string string = calloc(len, sizeof(shiro_character));
+    shiro_string string = calloc(len + 1, sizeof(shiro_character));
     memcpy(string, str, len);
+
     set_value_field(val, ID("__value"), s_fString, (union __field_value)string);
+    set_value_field(val, ID("length"), s_fUInt, (union __field_value)len);
 
     return val;
 }
@@ -157,7 +166,7 @@ shiro_value* new_shiro_fixnum(const shiro_fixnum fix) {
     shiro_value  v   = {s_tInt, 1, NULL};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
-    val->fields = calloc(1, sizeof(shiro_field));
+    val->fields = calloc(1, sizeof(shiro_field*));
 
     set_value_field(val, ID("__value"), s_fFixnum, (union __field_value)fix);
 
@@ -172,7 +181,7 @@ shiro_value* new_shiro_bignum(const shiro_bignum big) {
     shiro_value  v   = {s_tInt, 1, NULL};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
-    val->fields = calloc(1, sizeof(shiro_field));
+    val->fields = calloc(1, sizeof(shiro_field*));
 
     set_value_field(val, ID("__value"), s_fBignum, (union __field_value)big);
 
@@ -187,7 +196,7 @@ shiro_value* new_shiro_uint(const shiro_uint u) {
     shiro_value  v   = {s_tInt, 1, NULL};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
-    val->fields = calloc(1, sizeof(shiro_field));
+    val->fields = calloc(1, sizeof(shiro_field*));
 
     set_value_field(val, ID("__value"), s_fUInt, (union __field_value)u);
 
@@ -201,7 +210,7 @@ shiro_value* new_shiro_float(const shiro_float f) {
     shiro_value  v   = {s_tFloat, 1, NULL};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
-    val->fields = calloc(1, sizeof(shiro_field));
+    val->fields = calloc(1, sizeof(shiro_field*));
 
     set_value_field(val, ID("__value"), s_fFloat, (union __field_value)f);
 
@@ -217,7 +226,7 @@ shiro_value* new_shiro_function(const shiro_function* fn) {
     shiro_value  v   = {s_tFunction, 1, NULL};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
-    val->fields = calloc(1, sizeof(shiro_field));
+    val->fields = calloc(1, sizeof(shiro_field*));
 
     set_value_field(val, ID("__value"), s_fFunction, (union __field_value)fn);
 

@@ -309,12 +309,10 @@ shiro_binary* __compile_statement(
                 shiro_value* s_value;// = malloc(sizeof(shiro_value));
 
                 if (value[0] == *MARK_STR1 || value[0] == *MARK_STR2) {
-                    shiro_string v = malloc(strlen(value) - 1);
-                    memset(v, 0, strlen(value) - 1);
-                    memcpy(v, value + 1, strlen(value) - 2);
-
+                    shiro_uint len = strlen(value);
+                    shiro_string v = calloc(len - 1, sizeof(shiro_character));
+                    memcpy(v, value + 1, len - 2);
                     s_value = new_shiro_string(v);
-
                     free(v);
                 } else {
                     char* end;
