@@ -141,8 +141,7 @@ shiro_binary* __compile_statement(
                             push_node(binary, cond);
                             free_node(cond);
 
-                            shiro_uint sz = b_block->used;
-                            shiro_node* jmp = new_node(JUMP, 1, &sz);
+                            shiro_node* jmp = new_node(JUMP, 1, new_shiro_fixnum(b_block->used));
                             push_node(binary, jmp);
                             free_node(jmp);
 
@@ -172,7 +171,7 @@ shiro_binary* __compile_statement(
             token = get_token(statement, 1, line);
 
             if (token == SHIRO_NIL || strcmp(token->value, MARK_EOS) == 0) {
-                shiro_node* node = new_node(PUSH_BY_NAME, 1, name);
+                shiro_node* node = new_node(PUSH_BY_NAME, 1, new_shiro_string(name));
                 push_node(binary, node);
                 free_node(node);
             } else if (strcmp(token->value, MARK_PROP) == 0) {
@@ -189,7 +188,7 @@ shiro_binary* __compile_statement(
 
                     free(rest);
 
-                    shiro_node* node = new_node(PUSH_BY_NAME, 1, name);
+                    shiro_node* node = new_node(PUSH_BY_NAME, 1, new_shiro_string(name));
                     push_node(binary, node);
                     free_node(node);
 
@@ -254,14 +253,14 @@ shiro_binary* __compile_statement(
                     }
                     concat_and_free_binary(binary, b_arg);
 
-                    shiro_node* fcall = new_node(FN_CALL, 1, name);
+                    shiro_node* fcall = new_node(FN_CALL, 1, new_shiro_string(name));
                     push_node(binary, fcall);
                     free_node(fcall);
                 }
 
                 token = get_token(statement, 2, line);
 
-                if (strcmp(token->value, MARK_PROP) == 0) {
+                if (token != SHIRO_NIL && strcmp(token->value, MARK_PROP) == 0) {
                     token = get_token(statement, 2, line);
 
                     if (get_token_type(token) == s_tkName) {
@@ -275,7 +274,7 @@ shiro_binary* __compile_statement(
 
                         free(rest);
 
-                        shiro_node* node = new_node(PUSH_BY_NAME, 1, name);
+                        shiro_node* node = new_node(PUSH_BY_NAME, 1, new_shiro_string(name));
                         push_node(binary, node);
                         free_node(node);
 
@@ -393,17 +392,9 @@ void __process_token(
     }
     push_token(stmt, token);
 
-    if (strcmp(token->value, MARK_EOS) == 0 && stack == 0 && p_stack == 0) {
+    if (strcmp(token->value, MARK_EOS) == 0 && (*stack) == 0 && (*p_stack) == 0) {
         shiro_binary* other = __compile_statement(stmt, cline);
-
-        if (other->used > 0) {
-            if (binary->used > 0)
-                binary = concat_and_free_binary(binary, other);
-            else {
-                free_binary(binary);
-                binary = other;
-            }
-        }
+        binary = concat_and_free_binary(binary, other);
 
         stmt->used = 0;
         memset(stmt->tokens, 0, stmt->allocated * sizeof(shiro_token*));
@@ -442,14 +433,7 @@ shiro_binary* shiro_compile(const shiro_string code) {
 
     shiro_binary* other = __compile_statement(statement, &line_compiled);
 
-    if (other->used > 0) {
-        if (binary->used > 0)
-            binary = concat_and_free_binary(binary, other);
-        else {
-            free_binary(binary);
-            binary = other;
-        }
-    }
+    binary = concat_and_free_binary(binary, other);
 
     free_statement(statement);
 
@@ -459,7 +443,7 @@ shiro_binary* shiro_compile(const shiro_string code) {
 // Ponto de entrada para teste
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv) {
-    static const shiro_string code = "if (1) { print('Hello World'); }";
+    static const shiro_string code = "if (1) { print('Hello World'); }; print('asd');";
 
     double get_time() {
         LARGE_INTEGER t, f;
@@ -473,6 +457,15 @@ int main(int argc, char** argv) {
     double d = (get_time() - t0) * 1000;
 
     printf("Code compiled succesfully, output has %d nodes\n", bin->used);
+    int i;
+    for (i = 0; i < bin->used; i++) {
+        shiro_node* node = bin->nodes[i];
+        printf("0x%x ", node->code);
+        int j;
+        for (j = 0; j < node->n_args; j++)
+            printf("%s ", node->args[j]->fields[0].str);
+    }
+    printf("\n");
     printf("Compilation has taken about %f milliseconds\n", d);
 
     free_binary(bin);

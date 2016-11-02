@@ -27,7 +27,7 @@ shiro_node* new_node(const shiro_bytecode code, const shiro_uint n_args, ...) {
 
     int i;
     for (i = 0; i < n_args; i++) {
-        void* arg = va_arg(args, void*);
+        shiro_value* arg = va_arg(args, shiro_value*);
         node->args[i] = arg;
     }
 
@@ -53,6 +53,9 @@ shiro_node* clone_node(const shiro_node* other) {
 //      node    : Nó a ser limpo da memória
 //-----------------------------------------------------------------------------
 void free_node(shiro_node* node) {
+    int i;
+    for (i = 0; i < node->n_args; i++)
+        free_value(node->args[i]);
     free(node->args);
     free(node);
 }
