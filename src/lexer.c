@@ -143,8 +143,8 @@ shiro_statement* push_token(
     shiro_statement* statement,
     const shiro_token* token
 ) {
-    if (statement == SHIRO_NIL || token == SHIRO_NIL ||
-        token->value == SHIRO_NIL ||
+    if (statement == NULL || token == NULL ||
+        token->value == NULL ||
         strlen(token->value) == 0)
         return statement;
 
@@ -164,7 +164,7 @@ shiro_statement* push_token(
 // expressões entre parêntesis e blocos de código
 //      statement   : Ponteiro para o shiro_statement que contém a token
 //      index       : Posição da token
-// Retorna SHIRO_NIL se o índice estiver fora do intervalo
+// Retorna NULL se o índice estiver fora do intervalo
 //-----------------------------------------------------------------------------
 shiro_token* get_token(
     const shiro_statement* statement,
@@ -172,7 +172,7 @@ shiro_token* get_token(
     shiro_uint* line
 ) {
     if (index >= statement->used)
-        return SHIRO_NIL;
+        return NULL;
     size_t i, j;
 
     for (i = j = 0; j < index && i < statement->used; i++, j++) {
@@ -188,7 +188,7 @@ shiro_token* get_token(
     }
 
     if (i >= statement->used)
-        return SHIRO_NIL;
+        return NULL;
 
     return statement->tokens[i];
 }
@@ -209,12 +209,12 @@ void free_statement(shiro_statement* statement) {
 //-----------------------------------------------------------------------------
 shiro_token_type get_token_type(const shiro_token* token) {
 
-    if (token == SHIRO_NIL)
+    if (token == NULL)
         return s_tkUnknown;
 
     const shiro_string string = token->value;
 
-    if (string == SHIRO_NIL || *string == 0)
+    if (string == NULL || *string == 0)
         return s_tkUnknown;
 
     if (strcmp(string, KW_BREAK)     == 0 || strcmp(string, KW_CASE)    == 0 ||

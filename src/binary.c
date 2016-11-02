@@ -41,10 +41,14 @@ shiro_node* new_node(const shiro_bytecode code, const shiro_uint n_args, ...) {
 //-----------------------------------------------------------------------------
 shiro_node* clone_node(const shiro_node* other) {
     shiro_node* node = malloc(sizeof(shiro_node));
+
     node->code = other->code;
     node->n_args = other->n_args;
     node->args = malloc(node->n_args * sizeof(void*));
-    memcpy(node->args, other->args, other->n_args * sizeof(void*));
+
+    int i;
+    for (i = 0; i < node->n_args; i++)
+        node->args[i] = clone_value(other->args[i]);
 
     return node;
 }
@@ -78,7 +82,7 @@ shiro_binary* new_binary(void) {
 // pode ser liberado da memória assim que necessário
 //-----------------------------------------------------------------------------
 shiro_binary* push_node(shiro_binary* binary, const shiro_node* node) {
-    if (binary == SHIRO_NIL || node == SHIRO_NIL)
+    if (binary == NULL || node == NULL)
         return binary;
 
     if (binary->used >= binary->allocated) {
@@ -99,7 +103,7 @@ shiro_binary* push_node(shiro_binary* binary, const shiro_node* node) {
 //      other   : Outro binário que será adicionado ao final do outro
 //------------------------------------------------- ----------------------------
 shiro_binary* concat_binary(shiro_binary* binary, const shiro_binary* other) {
-    if (binary == SHIRO_NIL || other == SHIRO_NIL)
+    if (binary == NULL || other == NULL)
         return binary;
 
     int i;

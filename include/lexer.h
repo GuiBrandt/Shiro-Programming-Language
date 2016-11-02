@@ -6,8 +6,6 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#define SHIRO_NIL (void*)0
-
 #define DF_TOKEN_SIZE   32
 
 #define KW_COND         "if"
