@@ -9,6 +9,7 @@ typedef enum types {
     s_tInt          = 0x10,
     s_tFloat        = 0x11,
     s_tString       = 0x20,
+    s_tFunction     = 0x30,
     s_tVoid         = -1
 } shiro_type;
 
@@ -30,6 +31,10 @@ typedef shiro_value* (*shiro_c_function)(shiro_value, shiro_fixnum);
 
 typedef struct __func {
     shiro_type type;
+    enum shiro_function_type {
+        s_ftShiroBinary,
+        s_ftNative
+    } ftype;
     union {
         shiro_c_function native;
         shiro_binary     natural;
