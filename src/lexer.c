@@ -145,7 +145,7 @@ shiro_statement* push_token(
 ) {
     if (statement == NULL || token == NULL ||
         token->value == NULL ||
-        strlen(token->value) == 0)
+        *token->value == 0)
         return statement;
 
     if (statement->used >= statement->allocated) {
@@ -173,18 +173,29 @@ shiro_token* get_token(
 ) {
     if (index >= statement->used)
         return NULL;
-    size_t i, j;
 
-    for (i = j = 0; j < index && i < statement->used; i++, j++) {
-        shiro_token* token = statement->tokens[i];
-        if (strcmp(token->value, MARK_OBLOCK) == 0)
-            while (strcmp(statement->tokens[i]->value, MARK_CBLOCK) != 0)
-                i++;
-        else if (strcmp(token->value, MARK_OEXPR) == 0)
-            while (strcmp(statement->tokens[i]->value, MARK_CEXPR) != 0)
-                i++;
-        else if (strcmp(token->value, MARK_EOL) == 0)
+    *line = 1;
+    shiro_uint i, j, p_stack = 0, b_stack = 0;
+
+    for (i = j = 0; (j < index || p_stack != 0 || b_stack != 0) && i < statement->used; i++) {
+        if (strcmp(statement->tokens[i]->value, MARK_CEXPR) == 0)
+            p_stack--;
+        else if (strcmp(statement->tokens[i]->value, MARK_CBLOCK) == 0)
+            b_stack--;
+        else if (strcmp(statement->tokens[i]->value, MARK_OBLOCK) == 0)
+            b_stack++;
+        else if (strcmp(statement->tokens[i]->value, MARK_OEXPR) == 0)
+            p_stack++;
+
+        if (strcmp(statement->tokens[i]->value, MARK_EOL) == 0)
             (*line)++;
+        else if (p_stack == 0 && b_stack == 0)
+            j++;
+    }
+
+    while (i < statement->used && strcmp(statement->tokens[i]->value, MARK_EOL) == 0) {
+        (*line)++;
+        i++;
     }
 
     if (i >= statement->used)

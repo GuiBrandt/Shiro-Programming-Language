@@ -104,18 +104,20 @@ shiro_value* set_value_field(
     enum __field_type t,
     const union __field_value fv)
 {
-    shiro_field* pfield = malloc(sizeof(shiro_field));
-
-    shiro_field  field = {id, t, fv};
-    memcpy(pfield, &field, sizeof(shiro_field));
-
-    shiro_uint i;
-    if (value_get_field(v, id, &i) == NULL) {
+    shiro_field* field;
+    if ((field = value_get_field(v, id)) == NULL) {
         v->n_fields++;
         v->fields = realloc(v->fields, sizeof(shiro_field*) * v->n_fields);
-        v->fields[v->n_fields - 1] = pfield;
-    } else
-        v->fields[i] = pfield;
+
+        field = malloc(sizeof(shiro_field));
+        shiro_field f = {id, t, fv};
+        memcpy(field, &f, sizeof(shiro_field));
+
+        v->fields[v->n_fields - 1] = field;
+    } else {
+        field->type = t;
+        field->value = fv;
+    }
 
     return v;
 }
@@ -128,13 +130,13 @@ shiro_value* set_value_field(
 //-----------------------------------------------------------------------------
 shiro_field* value_get_field(
     const shiro_value* v,
-    const shiro_id id,
-    shiro_uint* pos
+    const shiro_id id
 ) {
     shiro_field* field = NULL;
-    for (*pos = 0; (*pos) < v->n_fields && field == NULL; (*pos)++)
-        if (v->fields[*pos] != NULL && v->fields[*pos]->id == id)
-            field = v->fields[*pos];
+    shiro_uint i;
+    for (i = 0; i < v->n_fields && field == NULL; i++)
+        if (v->fields[i] != NULL && v->fields[i]->id == id)
+            field = v->fields[i];
     return field;
 }
 //-----------------------------------------------------------------------------
