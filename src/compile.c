@@ -203,7 +203,7 @@ shiro_binary* __compile_statement(
             token = get_token(statement, 1, line);
 
             if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
-                shiro_node* node = new_node(PUSH_BY_NAME, 1, new_shiro_string(name));
+                shiro_node* node = new_node(PUSH_BY_NAME, 1, new_shiro_uint(ID(name)));
                 push_node(binary, node);
                 free_node(node);
             } else if (strcmp(token->value, MARK_PROP) == 0) {
@@ -220,7 +220,7 @@ shiro_binary* __compile_statement(
 
                     free(rest);
 
-                    shiro_node* node = new_node(PUSH_BY_NAME, 1, new_shiro_string(name));
+                    shiro_node* node = new_node(PUSH_BY_NAME, 1, new_shiro_uint(ID(name)));
                     push_node(binary, node);
                     free_node(node);
 
@@ -284,7 +284,7 @@ shiro_binary* __compile_statement(
                     }
                     concat_and_free_binary(binary, b_arg);
 
-                    shiro_node* fcall = new_node(FN_CALL, 1, new_shiro_string(name));
+                    shiro_node* fcall = new_node(FN_CALL, 1, new_shiro_uint(ID(name)));
                     push_node(binary, fcall);
                     free_node(fcall);
                 }
@@ -474,7 +474,7 @@ shiro_binary* shiro_compile(const shiro_string code) {
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv) {
     static const shiro_string code = "if (1) {\n\tprint('oe');\n} else {\n\tprint('tiao');\n};\n\nprint('asd');\nprint('bsd');";
-    static const shiro_uint   iterations = 16384;
+    static const shiro_uint   iterations = 16384 * 2;
 
     printf("Code:\n\n%s\n\n\n", code);
 

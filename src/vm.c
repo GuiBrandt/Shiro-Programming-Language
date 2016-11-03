@@ -80,7 +80,7 @@ shiro_value* clone_value(const shiro_value* v) {
 // Obtém um shiro_id a partir de um nome
 //      name    : Nome para o qual obter o ID
 //-----------------------------------------------------------------------------
-shiro_id __shiro_parse_field_id_from_name(const shiro_string name) {
+shiro_id __shiro_parse_id_from_name(const shiro_string name) {
     shiro_uint i = 0, id = 5381;
     shiro_character c;
     for (i = 0; (c = name[i]) != 0; i++)

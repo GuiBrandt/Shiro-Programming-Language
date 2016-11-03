@@ -37,8 +37,8 @@ typedef struct __field {
     } value;
 } shiro_field;
 
-shiro_id __shiro_parse_field_id_from_name(const shiro_string);
-#define ID(str) __shiro_parse_field_id_from_name(str)
+shiro_id __shiro_parse_id_from_name(const shiro_string);
+#define ID(str) __shiro_parse_id_from_name(str)
 
 typedef struct __value {
     const shiro_type    type;
@@ -59,6 +59,15 @@ typedef struct __func {
     };
     int n_args;
 } shiro_function;
+
+typedef struct __runtime {
+    struct {
+        shiro_uint   size;
+        shiro_value* values;
+    } stack;
+
+    shiro_field** globals;
+} shiro_runtime;
 
 shiro_field*    clone_field         (shiro_field*);
 void            free_field          (shiro_field*);
