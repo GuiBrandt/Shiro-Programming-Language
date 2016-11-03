@@ -65,8 +65,7 @@ typedef struct __runtime {
     shiro_uint      allocated_stack;
     shiro_value**   stack;
 
-    shiro_uint      used_globals;
-    shiro_uint      allocated_globals;
+    shiro_uint      n_globals;
     shiro_field**   globals;
 } shiro_runtime;
 
@@ -91,10 +90,12 @@ void            free_function       (shiro_function*);
 shiro_runtime*  shiro_init          ();
 void            shiro_terminate     (shiro_runtime*);
 
-void            push_value          (shiro_runtime*, shiro_value*);
-void            drop_value          (shiro_runtime*, shiro_uint);
-shiro_value*    get_value           (shiro_runtime*, shiro_uint);
-void            set_global          (shiro_runtime*, shiro_field*);
+shiro_runtime*  stack_push_value    (shiro_runtime*, shiro_value*);
+shiro_runtime*  stack_drop_value    (shiro_runtime*);
+shiro_value*    stack_get_value     (shiro_runtime*);
+
+shiro_runtime*  def_global          (shiro_runtime*, shiro_field*);
+shiro_runtime*  set_global          (shiro_runtime*, shiro_id, enum __field_type, union __field_value);
 shiro_field*    get_global          (shiro_runtime*, shiro_id);
 
 #endif // VM_H_INCLUDED

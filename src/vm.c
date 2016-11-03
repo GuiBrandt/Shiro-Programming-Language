@@ -132,12 +132,11 @@ shiro_field* value_get_field(
     const shiro_value* v,
     const shiro_id id
 ) {
-    shiro_field* field = NULL;
     shiro_uint i;
-    for (i = 0; i < v->n_fields && field == NULL; i++)
+    for (i = 0; i < v->n_fields; i++)
         if (v->fields[i] != NULL && v->fields[i]->id == id)
-            field = v->fields[i];
-    return field;
+            return v->fields[i];
+    return NULL;
 }
 //-----------------------------------------------------------------------------
 // Inicializa um shiro_value com o tipo String a partir de uma string em C
@@ -249,19 +248,28 @@ void free_value(shiro_value* v) {
 // Inicializa um runtime do shiro
 //-----------------------------------------------------------------------------
 shiro_runtime* shiro_init() {
+    shiro_runtime* runtime = malloc(sizeof(shiro_runtime));
+    runtime->used_stack = 0;
+    runtime->n_globals = 0;
 
+    runtime->allocated_stack = 1;
+
+    runtime->stack = malloc(sizeof(shiro_value*));
+    runtime->globals = malloc(sizeof(shiro_field*));
+
+    return runtime;
 }
 //-----------------------------------------------------------------------------
 // Termina um runtime do shiro
 //      runtime : Runtime a ser finalizado
 //-----------------------------------------------------------------------------
 void shiro_terminate(shiro_runtime* runtime) {
-    int i;
-    for (i = 0; i < runtime->used_stack; i++)
-        free_value(runtime->stack[i]);
+    free(runtime->stack);
 
-    for (i = 0; i < runtime->used_globals; i++)
+    int i;
+    for (i = 0; i < runtime->n_globals; i++)
         free_field(runtime->globals[i]);
+    free(runtime->globals);
 
     free(runtime);
 }
@@ -270,37 +278,85 @@ void shiro_terminate(shiro_runtime* runtime) {
 //      runtime : Runtime onde o valor será adicionado
 //      value   : Valor que será adicionado
 //-----------------------------------------------------------------------------
-void push_value(shiro_runtime* runtime, shiro_value* value) {
-    if (runtime == NULL || value == NULL)
-        return;
+shiro_runtime* stack_push_value(shiro_runtime* runtime, shiro_value* value) {
+    if (value == NULL)
+        return runtime;
 
     if (runtime->used_stack >= runtime->allocated_stack) {
-        runtime->allocated_stack = runtime->used_stack * 2;
+        runtime->allocated_stack += runtime->used_stack;
         runtime->stack = realloc(
             runtime->stack,
             runtime->allocated_stack * sizeof(shiro_value*)
         );
     }
 
-    runtime->stack[runtime->used_stack++] = clone_value(value);
+    runtime->stack[runtime->used_stack++] = value;
+
+    return runtime;
 }
 //-----------------------------------------------------------------------------
-// Remove n valores do topo da pilha
-//      runtime : Runtime onde o valor será adicionado
-//      n       : Quantidade de valores que serão removidos da pilha
+// Remove o primeiro valor da pilha
+//      runtime : Runtime de onde o valor será removido
 //-----------------------------------------------------------------------------
-void drop_value(shiro_runtime* runtime, shiro_uint n) {
-
+shiro_runtime* stack_drop_value(shiro_runtime* runtime) {
+    runtime->used_stack--;
+    return runtime;
 }
-
-shiro_value* get_value(shiro_runtime*, shiro_uint) {
-
+//-----------------------------------------------------------------------------
+// Obtém o primeiro valor na pilha
+//      runtime : Runtime onde o valor está
+//-----------------------------------------------------------------------------
+shiro_value* stack_get_value(shiro_runtime* runtime) {
+    return runtime->stack[runtime->used_stack - 1];
 }
-
-void set_global(shiro_runtime*, shiro_field*) {
-
+//-----------------------------------------------------------------------------
+// Define um valor global em um runtime
+//      runtime : Runtime onde o global será definido
+//      field   : Valor a ser definido
+//-----------------------------------------------------------------------------
+shiro_runtime* def_global(shiro_runtime* runtime, shiro_field* field) {
+    return set_global(runtime, field->id, field->type, field->value);
 }
+//-----------------------------------------------------------------------------
+// Define um valor global em um runtime
+//      runtime : Runtime onde o global será definido
+//      id      : shiro_id do global
+//      g_type  : Tipo do global
+//      g_val   : Valor do global
+//-----------------------------------------------------------------------------
+shiro_runtime* set_global(
+    shiro_runtime* runtime,
+    shiro_id id,
+    enum __field_type g_type,
+    union __field_value g_val
+) {
+    shiro_field* field;
+    if ((field = get_global(runtime, id)) == NULL) {
+        runtime->n_globals++;
+        runtime->globals = realloc(runtime->globals,
+                                   sizeof(shiro_field*) * runtime->n_globals);
 
-shiro_field* get_global(shiro_runtime*, shiro_id) {
+        field = malloc(sizeof(shiro_field));
+        shiro_field f = {id, g_type, g_val};
+        memcpy(field, &f, sizeof(shiro_field));
 
+        runtime->globals[runtime->n_globals - 1] = field;
+    } else {
+        field->type = g_type;
+        field->value = g_val;
+    }
+
+    return runtime;
+};
+//-----------------------------------------------------------------------------
+// Obtém um valor global de um runtime
+//      runtime : Runtime de onde o global será obtido
+//      id      : Identificador do global
+//-----------------------------------------------------------------------------
+shiro_field* get_global(shiro_runtime* runtime, shiro_id id) {
+    int i;
+    for (i = 0; i < runtime->n_globals; i++)
+        if (runtime->globals[i] != NULL && runtime->globals[i]->id == id)
+            return runtime->globals[i];
+    return NULL;
 }

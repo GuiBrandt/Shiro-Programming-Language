@@ -474,7 +474,7 @@ shiro_binary* shiro_compile(const shiro_string code) {
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv) {
     static const shiro_string code = "if (1) {\n\tprint('oe');\n} else {\n\tprint('tiao');\n};\n\nprint('asd');\nprint('bsd');";
-    static const shiro_uint   iterations = 16384 * 2;
+    static const shiro_uint   iterations = 2048;
 
     printf("Code:\n\n%s\n\n\n", code);
 
