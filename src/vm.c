@@ -245,3 +245,62 @@ void free_value(shiro_value* v) {
     free(v->fields);
     free(v);
 }
+//-----------------------------------------------------------------------------
+// Inicializa um runtime do shiro
+//-----------------------------------------------------------------------------
+shiro_runtime* shiro_init() {
+
+}
+//-----------------------------------------------------------------------------
+// Termina um runtime do shiro
+//      runtime : Runtime a ser finalizado
+//-----------------------------------------------------------------------------
+void shiro_terminate(shiro_runtime* runtime) {
+    int i;
+    for (i = 0; i < runtime->used_stack; i++)
+        free_value(runtime->stack[i]);
+
+    for (i = 0; i < runtime->used_globals; i++)
+        free_field(runtime->globals[i]);
+
+    free(runtime);
+}
+//-----------------------------------------------------------------------------
+// Adiciona um valor ao topo da pilha
+//      runtime : Runtime onde o valor será adicionado
+//      value   : Valor que será adicionado
+//-----------------------------------------------------------------------------
+void push_value(shiro_runtime* runtime, shiro_value* value) {
+    if (runtime == NULL || value == NULL)
+        return;
+
+    if (runtime->used_stack >= runtime->allocated_stack) {
+        runtime->allocated_stack = runtime->used_stack * 2;
+        runtime->stack = realloc(
+            runtime->stack,
+            runtime->allocated_stack * sizeof(shiro_value*)
+        );
+    }
+
+    runtime->stack[runtime->used_stack++] = clone_value(value);
+}
+//-----------------------------------------------------------------------------
+// Remove n valores do topo da pilha
+//      runtime : Runtime onde o valor será adicionado
+//      n       : Quantidade de valores que serão removidos da pilha
+//-----------------------------------------------------------------------------
+void drop_value(shiro_runtime* runtime, shiro_uint n) {
+
+}
+
+shiro_value* get_value(shiro_runtime*, shiro_uint) {
+
+}
+
+void set_global(shiro_runtime*, shiro_field*) {
+
+}
+
+shiro_field* get_global(shiro_runtime*, shiro_id) {
+
+}

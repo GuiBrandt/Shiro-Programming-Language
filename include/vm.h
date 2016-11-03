@@ -61,12 +61,13 @@ typedef struct __func {
 } shiro_function;
 
 typedef struct __runtime {
-    struct {
-        shiro_uint   size;
-        shiro_value* values;
-    } stack;
+    shiro_uint      used_stack;
+    shiro_uint      allocated_stack;
+    shiro_value**   stack;
 
-    shiro_field** globals;
+    shiro_uint      used_globals;
+    shiro_uint      allocated_globals;
+    shiro_field**   globals;
 } shiro_runtime;
 
 shiro_field*    clone_field         (shiro_field*);
@@ -86,5 +87,14 @@ shiro_value*    new_shiro_function  (const shiro_function*);
 void            free_value          (shiro_value*);
 
 void            free_function       (shiro_function*);
+
+shiro_runtime*  shiro_init          ();
+void            shiro_terminate     (shiro_runtime*);
+
+void            push_value          (shiro_runtime*, shiro_value*);
+void            drop_value          (shiro_runtime*, shiro_uint);
+shiro_value*    get_value           (shiro_runtime*, shiro_uint);
+void            set_global          (shiro_runtime*, shiro_field*);
+shiro_field*    get_global          (shiro_runtime*, shiro_id);
 
 #endif // VM_H_INCLUDED
