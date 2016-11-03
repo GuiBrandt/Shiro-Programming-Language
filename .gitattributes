@@ -1,1 +1,2 @@
-*.* linguist-language=Shiro
+*.c linguist-language=C
+*.h linguist-language=C
