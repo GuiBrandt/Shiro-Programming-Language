@@ -28,7 +28,7 @@ typedef struct __field {
     } type;
     union __field_value {
         struct __value*         val;
-        const struct __func*    func;
+        struct __func*          func;
         shiro_fixnum            i;
         shiro_bignum            l;
         shiro_uint              u;
@@ -46,7 +46,15 @@ typedef struct __value {
     shiro_field**       fields;
 } shiro_value;
 
-typedef shiro_value* (*shiro_c_function)(shiro_value, shiro_fixnum);
+typedef struct __runtime {
+    shiro_uint      used_stack;
+    shiro_uint      allocated_stack;
+    shiro_value**   stack;
+
+    shiro_value*    self;
+} shiro_runtime;
+
+typedef shiro_value* (*shiro_c_function)(struct __runtime*, shiro_fixnum);
 
 typedef struct __func {
     enum shiro_function_type {
@@ -59,15 +67,6 @@ typedef struct __func {
     };
     int n_args;
 } shiro_function;
-
-typedef struct __runtime {
-    shiro_uint      used_stack;
-    shiro_uint      allocated_stack;
-    shiro_value**   stack;
-
-    shiro_uint      n_globals;
-    shiro_field**   globals;
-} shiro_runtime;
 
 shiro_field*    clone_field         (shiro_field*);
 void            free_field          (shiro_field*);
@@ -82,7 +81,7 @@ shiro_value*    new_shiro_fixnum    (const shiro_fixnum);
 shiro_value*    new_shiro_bignum    (const shiro_bignum);
 shiro_value*    new_shiro_uint      (const shiro_uint);
 shiro_value*    new_shiro_float     (const shiro_float);
-shiro_value*    new_shiro_function  (const shiro_function*);
+shiro_value*    new_shiro_function  (shiro_function*);
 void            free_value          (shiro_value*);
 
 void            free_function       (shiro_function*);

@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
+#include <ctype.h>
 
 typedef int32_t shiro_fixnum;
 typedef int64_t shiro_bignum;

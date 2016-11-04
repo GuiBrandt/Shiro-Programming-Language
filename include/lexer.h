@@ -3,9 +3,6 @@
 
 #include "types.h"
 
-#include <stdbool.h>
-#include <ctype.h>
-
 #define DF_TOKEN_SIZE   32
 
 #define KW_COND         "if"

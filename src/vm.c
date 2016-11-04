@@ -223,7 +223,7 @@ shiro_value* new_shiro_float(const shiro_float f) {
 //      fn  : Estrutura shiro_function usada para criar o shiro_value do tipo
 //            Function
 //-----------------------------------------------------------------------------
-shiro_value* new_shiro_function(const shiro_function* fn) {
+shiro_value* new_shiro_function(shiro_function* fn) {
     shiro_value  v   = {s_tFunction, 1, NULL};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
@@ -250,12 +250,11 @@ void free_value(shiro_value* v) {
 shiro_runtime* shiro_init() {
     shiro_runtime* runtime = malloc(sizeof(shiro_runtime));
     runtime->used_stack = 0;
-    runtime->n_globals = 0;
 
     runtime->allocated_stack = 1;
 
     runtime->stack = malloc(sizeof(shiro_value*));
-    runtime->globals = malloc(sizeof(shiro_field*));
+    runtime->self = new_value();
 
     return runtime;
 }
@@ -265,12 +264,7 @@ shiro_runtime* shiro_init() {
 //-----------------------------------------------------------------------------
 void shiro_terminate(shiro_runtime* runtime) {
     free(runtime->stack);
-
-    int i;
-    for (i = 0; i < runtime->n_globals; i++)
-        free_field(runtime->globals[i]);
-    free(runtime->globals);
-
+    free_value(runtime->self);
     free(runtime);
 }
 //-----------------------------------------------------------------------------
@@ -330,22 +324,7 @@ shiro_runtime* set_global(
     enum __field_type g_type,
     union __field_value g_val
 ) {
-    shiro_field* field;
-    if ((field = get_global(runtime, id)) == NULL) {
-        runtime->n_globals++;
-        runtime->globals = realloc(runtime->globals,
-                                   sizeof(shiro_field*) * runtime->n_globals);
-
-        field = malloc(sizeof(shiro_field));
-        shiro_field f = {id, g_type, g_val};
-        memcpy(field, &f, sizeof(shiro_field));
-
-        runtime->globals[runtime->n_globals - 1] = field;
-    } else {
-        field->type = g_type;
-        field->value = g_val;
-    }
-
+    set_value_field(runtime->self, id, g_type, g_val);
     return runtime;
 };
 //-----------------------------------------------------------------------------
@@ -354,9 +333,5 @@ shiro_runtime* set_global(
 //      id      : Identificador do global
 //-----------------------------------------------------------------------------
 shiro_field* get_global(shiro_runtime* runtime, shiro_id id) {
-    int i;
-    for (i = 0; i < runtime->n_globals; i++)
-        if (runtime->globals[i] != NULL && runtime->globals[i]->id == id)
-            return runtime->globals[i];
-    return NULL;
+    return value_get_field(runtime->self, id);
 }
