@@ -116,7 +116,17 @@ shiro_binary* __compile_statement(
     switch (get_token_type(token)) {
         case s_tkKeyword:
         {
-            if (strcmp(token->value, KW_COND) == 0) {
+            if (strcmp(token->value, KW_DIE) == 0) {
+                token = get_token(statement, 1, line);
+                if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
+                    shiro_node* node = new_node(DIE, 0);
+                    push_node(binary, node);
+                    free_node(node);
+                } else {
+                    __error(ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                    return binary;
+                }
+            } if (strcmp(token->value, KW_COND) == 0) {
                 token = get_token(statement, 1, line);
 
                 if (token != NULL && strcmp(token->value, MARK_OEXPR) == 0) {

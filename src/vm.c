@@ -301,7 +301,10 @@ shiro_runtime* stack_drop_value(shiro_runtime* runtime) {
 //      runtime : Runtime onde o valor está
 //-----------------------------------------------------------------------------
 shiro_value* stack_get_value(shiro_runtime* runtime) {
-    return runtime->stack[runtime->used_stack - 1];
+    if (runtime->used_stack == 0)
+        return NULL;
+    else
+        return runtime->stack[runtime->used_stack - 1];
 }
 //-----------------------------------------------------------------------------
 // Define um valor global em um runtime

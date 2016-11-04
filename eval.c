@@ -39,17 +39,45 @@ shiro_runtime* shiro_execute(shiro_runtime* runtime, shiro_binary* binary) {
                 shiro_id id = value_get_field(node->args[0], ID("__value"))->value.u;
 
                 const shiro_function* f = get_global(runtime, id)->value.func;
+                shiro_uint n_args = value_get_field(node->args[1], ID("__value"))->value.u;
 
-                if (f->type == s_fnShiroBinary)
+                shiro_value* returned;
+                if (f->type == s_fnShiroBinary) {
+                    shiro_value* self = runtime->self;
+
+                    shiro_value* func_scope = clone_value(self);
+                    shiro_id base_id = 0x7C94327F;
+                    shiro_uint i;
+                    for (i = 0; i < n_args; i++) {
+                        set_value_field(func_scope, base_id + '0' + i, s_fValue, (union __field_value)stack_get_value(runtime));
+                        stack_drop_value(runtime);
+                    }
+                    runtime->self = func_scope;
                     shiro_execute(runtime, f->s_binary);
-                else
-                    stack_push_value(runtime, (*f->native)(runtime, value_get_field(node->args[1], ID("__value"))->value.u));
+                    returned = stack_get_value(runtime);
+                    runtime->self = self;
+                    free_value(func_scope);
+                } else {
+                    returned = (*f->native)(runtime, n_args);
+                    int i;
+                    for (i = 0; i < n_args; i++)
+                        stack_drop_value(runtime);
+                }
 
+                stack_push_value(runtime, returned);
                 break;
             }
             case PUSH:
                 stack_push_value(runtime, node->args[0]);
                 break;
+            case PUSH_BY_NAME:
+                stack_push_value(runtime, get_global(runtime, value_get_field(node->args[0], ID("__value"))->value.u)->value.val);
+                break;
+            case DROP:
+                stack_drop_value(runtime);
+                break;
+            case DIE:
+                return runtime;
             default:
                 break;
         }

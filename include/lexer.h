@@ -23,6 +23,7 @@
 #define KW_VAR          "var"
 #define KW_CONST        "const"
 #define KW_CLASS        "class"
+#define KW_DIE          "exit"
 
 #define MARK_SEPP       ":"
 #define MARK_COND       "?"

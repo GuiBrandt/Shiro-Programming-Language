@@ -236,7 +236,7 @@ shiro_token_type get_token_type(const shiro_token* token) {
         strcmp(string, KW_FUNC)      == 0 || strcmp(string, KW_SWITCH)  == 0 ||
         strcmp(string, KW_DO)        == 0 || strcmp(string, KW_PRIVATE) == 0 ||
         strcmp(string, KW_PROTECTED) == 0 || strcmp(string, KW_PUBLIC)  == 0 ||
-        strcmp(string, KW_NEXT)      == 0)
+        strcmp(string, KW_NEXT)      == 0 || strcmp(string, KW_DIE)     == 0)
         return s_tkKeyword;
 
     const shiro_character c = *string;
