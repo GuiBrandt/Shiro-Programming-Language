@@ -15,10 +15,17 @@
 #include "errors.h"
 //-----------------------------------------------------------------------------
 // Lança uma mensagem de erro e aborta a execução do programa
+//      line        : Linha do erro
 //      errcode     : Nome do tipo de erro
 //      message     : Mensagem de erro
+//      ...         : Parâmetros usados para formatação
 //-----------------------------------------------------------------------------
-void __error(unsigned int line, const char* errcode, const char* message, ...) {
+void __error(
+    const shiro_uint line,
+    const shiro_string errcode,
+    const shiro_string message,
+    ...
+) {
     char* err = malloc(1024);
     sprintf(err, "%s on line %d: %s", errcode, line, message);
 
@@ -123,16 +130,19 @@ shiro_binary* __compile_statement(
                     push_node(binary, node);
                     free_node(node);
                 } else {
-                    __error(ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                    __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
                     return binary;
                 }
-            } if (strcmp(token->value, KW_COND) == 0) {
+            } else if (strcmp(token->value, KW_COND) == 0) {
                 token = get_token(statement, 1, line);
 
                 if (token != NULL && strcmp(token->value, MARK_OEXPR) == 0) {
                     shiro_statement* expression = __expression(statement, 1);
                     shiro_binary* b_expr = __compile_statement(expression, line);
                     free_statement(expression);
+
+                    if (!binary_returns_value(b_expr))
+                        __error(*line, ERR_SYNTAX_ERROR, "Invalid conditional statement");
 
                     token = get_token(statement, 2, line);
                     if (token != NULL && strcmp(token->value, MARK_OBLOCK) == 0) {
@@ -150,41 +160,48 @@ shiro_binary* __compile_statement(
                                 shiro_binary* b_block2 = __compile_statement(block2, line);
                                 free_statement(block2);
 
+                                shiro_binary* bin = new_binary();
+
                                 shiro_node* cond = new_node(COND, 0);
-                                push_node(binary, cond);
+                                push_node(bin, cond);
                                 free_node(cond);
 
                                 shiro_node* jmp0 = new_node(JUMP, 1, new_shiro_fixnum(1));
-                                push_node(binary, jmp0);
+                                push_node(bin, jmp0);
                                 free_node(jmp0);
 
                                 shiro_node* jmp1 = new_node(JUMP, 1, new_shiro_fixnum(b_block2->used + 1));
-                                push_node(binary, jmp1);
+                                push_node(bin, jmp1);
                                 free_node(jmp1);
 
-                                binary = concat_and_free_binary(binary, b_block2);
+                                bin = concat_and_free_binary(bin, b_block2);
 
                                 shiro_node* jmp2 = new_node(JUMP, 1, new_shiro_fixnum(b_block->used));
-                                push_node(binary, jmp2);
+                                push_node(bin, jmp2);
                                 free_node(jmp2);
 
-                                binary = concat_and_free_binary(b_expr, binary);
-                                binary = concat_and_free_binary(binary, b_block);
+                                bin = concat_and_free_binary(b_expr, bin);
+                                bin = concat_and_free_binary(bin, b_block);
+                                binary = concat_and_free_binary(binary, bin);
                             } else {
                                 __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OBLOCK);
                                 return binary;
                             }
                         } else if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
+
+                            shiro_binary* bin = new_binary();
+
                             shiro_node* cond = new_node(COND, 0);
-                            push_node(binary, cond);
+                            push_node(bin, cond);
                             free_node(cond);
 
                             shiro_node* jmp = new_node(JUMP, 1, new_shiro_fixnum(b_block->used));
-                            push_node(binary, jmp);
+                            push_node(bin, jmp);
                             free_node(jmp);
 
-                            binary = concat_and_free_binary(b_expr, binary);
-                            binary = concat_and_free_binary(binary, b_block);
+                            bin = concat_and_free_binary(b_expr, bin);
+                            bin = concat_and_free_binary(bin, b_block);
+                            binary = concat_and_free_binary(binary, bin);
                         } else {
                             __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OBLOCK);
                             return binary;
@@ -251,14 +268,7 @@ shiro_binary* __compile_statement(
                         if (strcmp(tk->value, MARK_LIST) == 0) {
                             shiro_binary* b_arg = __compile_statement(arg, line);
 
-                            int j;
-                            bool has_push = false;
-                            for (j = 0; j < b_arg->used; j++)
-                                if (b_arg->nodes[j]->code == PUSH ||
-                                    b_arg->nodes[j]->code == PUSH_BY_NAME)
-                                    has_push = true;
-
-                            if (!has_push) {
+                            if (!binary_returns_value(b_arg)) {
                                 __error(*line, ERR_SYNTAX_ERROR,
                                         "Invalid argument for function '%s':"
                                         " argument doesn't return any value", name);
@@ -278,14 +288,7 @@ shiro_binary* __compile_statement(
                     free_statement(arg);
 
                     if (b_arg->used > 0) {
-                        int j;
-                        bool has_push = false;
-                        for (j = 0; j < b_arg->used; j++)
-                            if (b_arg->nodes[j]->code == PUSH ||
-                                b_arg->nodes[j]->code == PUSH_BY_NAME)
-                                has_push = true;
-
-                        if (!has_push) {
+                        if (!binary_returns_value(b_arg)) {
                             __error(*line, ERR_SYNTAX_ERROR,
                                     "Invalid argument for function '%s':"
                                     " argument doesn't return any value", name);

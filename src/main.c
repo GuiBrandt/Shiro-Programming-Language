@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #ifdef __DEBUG__
-#include <windows.h> // PARA BENCHMARK, APAGAR DEPOIS!
+#include <windows.h>
 #endif // __DEBUG__
 //-----------------------------------------------------------------------------
 // Ponto de entrada para teste
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
         shiro_function* p = malloc(sizeof(shiro_function));
         p->type = s_fnNative;
         p->n_args = 1;
-        p->native = (shiro_c_function*)&shiro_print;
+        p->native = (shiro_c_function)&shiro_print;
         set_global(runtime, ID("print"), s_fFunction, (union __field_value)p);
     }
     double t_exec = 0.0;

@@ -14,6 +14,7 @@
 //-----------------------------------------------------------------------------
 // Cria um novo nó do shiro
 //      code    : Código do bytecode do nó
+//      n_args  : Número de argumentos do nó
 //      ...     : Argumentos do nó
 //-----------------------------------------------------------------------------
 shiro_node* new_node(const shiro_bytecode code, const shiro_uint n_args, ...) {
@@ -101,7 +102,7 @@ shiro_binary* push_node(shiro_binary* binary, const shiro_node* node) {
 // Combina dois binários em um só
 //      binary  : Binário que receberá a combinação (e será combinado)
 //      other   : Outro binário que será adicionado ao final do outro
-//------------------------------------------------- ----------------------------
+//-----------------------------------------------------------------------------
 shiro_binary* concat_binary(shiro_binary* binary, const shiro_binary* other) {
     if (binary == NULL || other == NULL)
         return binary;
@@ -111,6 +112,20 @@ shiro_binary* concat_binary(shiro_binary* binary, const shiro_binary* other) {
         push_node(binary, other->nodes[i]);
 
     return binary;
+}
+//-----------------------------------------------------------------------------
+// Verifica se um binário retorna alguma coisa
+//      binary  : Binário a ser verificado
+//-----------------------------------------------------------------------------
+bool binary_returns_value(const shiro_binary* binary) {
+    int n = 0, i;
+    for (i = 0; i < binary->used; i++)
+        if (binary->nodes[i]->code == PUSH ||
+            binary->nodes[i]->code == PUSH_BY_NAME)
+            n++;
+        else if (binary->nodes[i]->code == DROP)
+            n--;
+    return n > 0;
 }
 //-----------------------------------------------------------------------------
 // Libera a memória usada por um binário do shiro

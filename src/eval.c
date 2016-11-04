@@ -4,6 +4,7 @@
 // Define as funções usadas para executar código Shiro compilado
 //=============================================================================
 #include "eval.h"
+#include "errors.h"
 //-----------------------------------------------------------------------------
 // * Executa código shiro em um runtime usando um binário pré-compilado
 //      runtime : Runtime usado para executar o programa
@@ -40,6 +41,9 @@ shiro_runtime* shiro_execute(shiro_runtime* runtime, shiro_binary* binary) {
 
                 const shiro_function* f = get_global(runtime, id)->value.func;
                 shiro_uint n_args = value_get_field(node->args[1], ID("__value"))->value.u;
+
+                if (n_args != f->n_args)
+                    __error(0, ERR_ARGUMENT_ERROR, "Wrong number of arguments: expected %d, got %d", f->n_args, n_args);
 
                 shiro_value* returned;
                 if (f->type == s_fnShiroBinary) {

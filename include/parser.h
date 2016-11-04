@@ -42,9 +42,9 @@ typedef enum bytecodes {
 } shiro_bytecode;
 
 typedef struct __node {
-    shiro_bytecode code;
-    struct __value**  args;
-    shiro_uint     n_args;
+    shiro_bytecode      code;
+    struct __value**    args;
+    shiro_uint          n_args;
 } shiro_node;
 
 typedef struct __binary {
@@ -60,6 +60,7 @@ void          free_node                 (shiro_node*);
 shiro_binary* new_binary                (void);
 shiro_binary* push_node                 (shiro_binary*, const shiro_node*);
 shiro_binary* concat_binary             (shiro_binary*, const shiro_binary*);
+bool          binary_returns_value      (const shiro_binary*);
 void          free_binary               (shiro_binary*);
 shiro_binary* concat_and_free_binary    (shiro_binary*, shiro_binary*);
 
