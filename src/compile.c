@@ -273,13 +273,28 @@ shiro_binary* __compile_statement(
                 }
             }
 
+            //
             //  delete <name>
+            //
             else if (strcmp(token->value, KW_DELETE) == 0) {
                 token = get_token(statement, 1, line);
 
                 if (get_token_type(token) == s_tkName) {
                     shiro_string name = token->value;
 
+                    token = get_token(statement, 2, line);
+                    if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
+                        shiro_node* del = new_node(FREE, 1, new_shiro_uint(ID(name)));
+                        push_node(binary, del);
+                        free_node(del);
+
+                        return binary;
+                    } else {
+                        __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                        return binary;
+                    }
+
+                    free(name);
                 } else {
                     __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <NAME>", token->value);
                     return binary;
@@ -306,6 +321,7 @@ shiro_binary* __compile_statement(
                         return binary;
                     }
 
+                    free(name);
                 } else {
                     __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <NAME>", token->value);
                     return binary;

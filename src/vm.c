@@ -139,7 +139,7 @@ shiro_field* value_get_field(
     for (i = 0; i < v->n_fields; i++)
         if (v->fields[i] != NULL && v->fields[i]->id == id)
             return v->fields[i];
-    return {id,  s_fValue, (union __field_value)shiro_nil};
+    return NULL;
 }
 //-----------------------------------------------------------------------------
 // Inicializa um shiro_value com o tipo String a partir de uma string em C
@@ -351,5 +351,12 @@ shiro_runtime* set_global(
 //      id      : Identificador do global
 //-----------------------------------------------------------------------------
 shiro_field* get_global(shiro_runtime* runtime, shiro_id id) {
-    return value_get_field(runtime->self, id);
+    shiro_field* g = value_get_field(runtime->self, id);
+
+    if (g == NULL) {
+        shiro_field nil = { id, s_fValue, (union __field_value)shiro_nil };
+        memcpy(g, &nil, sizeof(shiro_field));
+    }
+
+    return g;
 }
