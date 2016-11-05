@@ -355,6 +355,7 @@ shiro_field* get_global(shiro_runtime* runtime, shiro_id id) {
 
     if (g == NULL) {
         shiro_field nil = { id, s_fValue, (union __field_value)shiro_nil };
+        g = malloc(sizeof(shiro_field));
         memcpy(g, &nil, sizeof(shiro_field));
     }
 

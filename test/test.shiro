@@ -1,16 +1,22 @@
 // Código de teste para o Shiro
 
-fn say(hello) 
+fn say(say_a, msg_a, msg_b) 
 {
-	var msg = if (hello) { "HELLO!" } else { "BYE!" };
+	var msg = if (say_a) { msg_a } else { msg_b };
 	print(msg);
 	delete msg;
 };
 
 fn do_it
 {
-	say(1);
-	say(0);
+	var a = "HELLO";
+	var b = "BYE";
+	
+	say(1, a, b);
+	say(0, a, b);
+	
+	delete a;
+	delete b;
 };
 
 do_it();
