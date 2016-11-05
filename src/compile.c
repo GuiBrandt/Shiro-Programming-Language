@@ -51,7 +51,7 @@ shiro_statement* __expression(
     shiro_token* token = get_token(stmt, offset, &line);
 
     shiro_uint i = 0;
-    while (stmt->tokens[i] != token)
+    while (stmt->tokens[i] != token && i < stmt->used)
         i++;
 
     token = stmt->tokens[++i];
@@ -123,6 +123,9 @@ shiro_binary* __compile_statement(
     switch (get_token_type(token)) {
         case s_tkKeyword:
         {
+            //
+            //  exit
+            //
             if (strcmp(token->value, KW_DIE) == 0) {
                 token = get_token(statement, 1, line);
                 if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
@@ -133,6 +136,10 @@ shiro_binary* __compile_statement(
                     __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
                     return binary;
                 }
+
+            //
+            //  if (<expr>) { <code> } [else { <code> }]
+            //
             } else if (strcmp(token->value, KW_COND) == 0) {
                 token = get_token(statement, 1, line);
 
@@ -258,20 +265,18 @@ shiro_binary* __compile_statement(
                 {
                     shiro_uint n_args = 0;
                     shiro_statement* arg = new_statement(1);
-                    shiro_token* tk;
+                    shiro_token* tk = expression->tokens[0];
+
                     int i;
-                    for (
-                         i = 0, tk = get_token(expression, i, line);
-                         tk != NULL;
-                         tk = get_token(expression, ++i, line)
-                    ) {
+                    for (i = 0; i < expression->used; i++) {
+                        tk = expression->tokens[i];
                         if (strcmp(tk->value, MARK_LIST) == 0) {
                             shiro_binary* b_arg = __compile_statement(arg, line);
 
                             if (!binary_returns_value(b_arg)) {
                                 __error(*line, ERR_SYNTAX_ERROR,
                                         "Invalid argument for function '%s':"
-                                        " argument doesn't return any value", name);
+                                        " argument doesn't have any value", name);
                                 return binary;
                             }
 
@@ -280,6 +285,8 @@ shiro_binary* __compile_statement(
                             n_args++;
                             concat_and_free_binary(binary, b_arg);
                         } else {
+                            if (strcmp(tk->value, MARK_EOL) == 0)
+                                (*line)++;
                             push_token(arg, tk);
                         }
                     }
@@ -346,13 +353,29 @@ shiro_binary* __compile_statement(
             break;
         }
         case s_tkMark:
+        {
+            if (strcmp(token->value, MARK_OEXPR) == 0) {
+                shiro_statement* expr = __expression(statement, 0);
+                binary = concat_and_free_binary(binary, __compile_statement(expr, line));
+                free_statement(expr);
+                return binary;
+            } else if (strcmp(token->value, MARK_OBLOCK) == 0) {
+                shiro_statement* block = __block(statement, 0);
+                binary = concat_and_free_binary(binary, __compile_statement(block, line));
+                free_statement(block);
+                return binary;
+            } else if (strcmp(token->value, MARK_EOS) == 0)
+                return binary;
+            else
+                __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s'", token->value);
             break;
+        }
         case s_tkConst:
         {
             const shiro_string value = token->value;
 
             token = get_token(statement, 1, line);
-            if (token != NULL) {
+            if (token != NULL && strcmp(token->value, MARK_EOS) != 0) {
 
             } else {
                 shiro_value* s_value;
@@ -411,13 +434,7 @@ shiro_statement* __process_token(
     if (strcmp(token->value, MARK_EOL) == 0) {
         (*line)++;
     } else if (strcmp(token->value, MARK_OBLOCK) == 0)
-        if ((*p_stack) != 0) {
-            __error(*line, ERR_SYNTAX_ERROR,
-                        "Unexpected '%s', expecting '%s'",
-                        MARK_OBLOCK, MARK_CEXPR);
-            return stmt;
-        } else
-            (*stack)++;
+        (*stack)++;
     else if (strcmp(token->value, MARK_CBLOCK) == 0) {
         if ((*stack) > 0)
             (*stack)--;

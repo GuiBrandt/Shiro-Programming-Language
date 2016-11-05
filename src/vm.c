@@ -44,6 +44,9 @@ void free_field(shiro_field* f) {
         case s_fString:
             free(f->value.str);
             break;
+        case s_fFunction:
+            free_function(f->value.func);
+            break;
         default:
             break;
     }
@@ -243,6 +246,15 @@ void free_value(shiro_value* v) {
         free_field(v->fields[i]);
     free(v->fields);
     free(v);
+}
+//-----------------------------------------------------------------------------
+// Libera a memória usada por uma shiro_function
+//      f   : shiro_function que será liberada da memória
+//-----------------------------------------------------------------------------
+void free_function(shiro_function* f) {
+    if (f->type == s_fnShiroBinary)
+        free_binary(f->s_binary);
+    free(f);
 }
 //-----------------------------------------------------------------------------
 // Inicializa um runtime do shiro

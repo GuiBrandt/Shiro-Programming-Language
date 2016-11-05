@@ -3,6 +3,7 @@
 
 #include <io.h>
 #include <stdio.h>
+#include <locale.h>
 
 #ifdef __DEBUG__
 #include <windows.h>
@@ -11,9 +12,21 @@
 // Ponto de entrada para teste
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv) {
+    setlocale(LC_ALL, "en_US.UTF-8");
 
-    static const shiro_string code = "if (1) {\n\tprint('oe');\n} else {\n\tprint('tiao');\n};\n\nprint('asd');\nprint('bsd');";
-    static const shiro_uint   iterations = 1;
+    shiro_uint i = 0;
+    shiro_string code = calloc(1, sizeof(shiro_character));
+
+    FILE* test_file = fopen("test/test.shiro", "r");
+    shiro_character c;
+    while ((c = fgetc(test_file)) != EOF) {
+        code[i++] = c;
+        code = realloc(code, i + 1);
+        code[i] = 0;
+    }
+    fclose(test_file);
+
+    static const shiro_uint iterations = 1;
 
     printf("Code:\n\n%s\n\n\n", code);
 
@@ -28,7 +41,7 @@ int main(int argc, char** argv) {
 
     printf("Iterations: %d\n", iterations);
     printf("Total of %d node(s) generated:\n", bin->used);
-    int i;
+
     for (i = 0; i < bin->used; i++) {
         printf("    0x%02x", bin->nodes[i]->code);
 
@@ -87,6 +100,7 @@ int main(int argc, char** argv) {
     }
     t_exec /= iterations;
 
+    free_function((shiro_function*)get_global(runtime, ID("print"))->value.func);
     shiro_terminate(runtime);
     free_binary(bin);
 
@@ -98,6 +112,8 @@ int main(int argc, char** argv) {
 
     printf("\nOutput redirected to 'shiro-output.txt'\n");
     printf("Execution takes about %f milliseconds\n", t_exec * 1000);
+
+    free(code);
 
     return 0;
 }

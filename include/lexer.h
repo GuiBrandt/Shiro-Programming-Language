@@ -37,6 +37,7 @@
 #define MARK_PROP       "."
 #define MARK_EOS        ";"
 #define MARK_EOL        "\n"
+#define MARK_COMMENT    "//"
 
 #define OP_SET          "="
 #define OP_ADD          "+"

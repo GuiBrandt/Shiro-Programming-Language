@@ -1,0 +1,4 @@
+// Código de teste para o Shiro
+print(if (1) { 'oe' } else { 'tiao' });
+print('asd');
+print('bsd');

@@ -52,10 +52,11 @@ bool is_operator(const shiro_string str) {
     if (str[0] == 0) return false;
     if (str[1] == 0) return is_operator_c(str[0]);
     else
-        return  strcmp(CMP_EQU, str)   == 0 || strcmp(CMP_GRTEQU, str) == 0 ||
-                strcmp(CMP_LTEQU, str) == 0 || strcmp(CMP_DIF, str)    == 0 ||
-                strcmp(OP_ASSOC, str)  == 0 || strcmp(U_INC, str)      == 0 ||
-                strcmp(U_DEC, str)     == 0 || (str[1] == *OP_SET && (
+        return  strcmp(CMP_EQU, str)   == 0 || strcmp(CMP_GRTEQU, str)   == 0 ||
+                strcmp(CMP_LTEQU, str) == 0 || strcmp(CMP_DIF, str)      == 0 ||
+                strcmp(OP_ASSOC, str)  == 0 || strcmp(U_INC, str)        == 0 ||
+                strcmp(U_DEC, str)     == 0 || strcmp(MARK_COMMENT, str) == 0 ||
+                (str[1] == *OP_SET && (
                     str[0] == *OP_ADD || str[0] == *OP_SUB ||
                     str[0] == *OP_MUL || str[0] == *OP_DIV ||
                     str[0] == *OP_MOD || str[0] == *OP_AND ||
@@ -241,6 +242,11 @@ shiro_token_type get_token_type(const shiro_token* token) {
 
     const shiro_character c = *string;
 
+    if (c == *MARK_OEXPR    || c == *MARK_CEXPR || c == *MARK_OBLOCK ||
+        c == *MARK_CBLOCK   || c == *MARK_EOS   || c == *MARK_PROP   ||
+        c == *MARK_SEPP)
+        return s_tkMark;
+
     if (c == *OP_SET || c == *OP_ADD || c == *OP_SUB || c == *OP_MUL ||
         c == *OP_DIV || c == *OP_MOD || c == *OP_AND || c == *OP_OR  ||
         c == *OP_XOR || strcmp(OP_ASSOC, string) == 0 ||
@@ -303,9 +309,15 @@ shiro_statement* shiro_tokenize(
                     tk->value = calloc(3, sizeof(shiro_character));
                     memcpy(tk->value, str, 3);
 
-                    push_token(tokens, tk);
+                    if (strcmp(tk->value, MARK_COMMENT) == 0) {
+                        while (code[i] != *MARK_EOL)
+                            i++;
+                        i--;
+                    } else {
+                        push_token(tokens, tk);
+                        i++;
+                    }
                     free_token(tk);
-                    i++;
                     op2 = true;
                 }
 
