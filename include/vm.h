@@ -97,4 +97,6 @@ shiro_runtime*  def_global          (shiro_runtime*, shiro_field*);
 shiro_runtime*  set_global          (shiro_runtime*, shiro_id, enum __field_type, union __field_value);
 shiro_field*    get_global          (shiro_runtime*, shiro_id);
 
+shiro_value* shiro_nil;
+
 #endif // VM_H_INCLUDED

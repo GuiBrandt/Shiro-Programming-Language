@@ -80,6 +80,32 @@ shiro_runtime* shiro_execute(shiro_runtime* runtime, shiro_binary* binary) {
             case DROP:
                 stack_drop_value(runtime);
                 break;
+            case ALLOC_VAR:
+            {
+                set_global(
+                    runtime,
+                    value_get_field(node->args[0], ID("__value"))->value.u,
+                    s_fValue,
+                    (union __field_value)shiro_nil
+                );
+                break;
+            }
+            case SET_VAR:
+            {
+                shiro_id id = value_get_field(node->args[0], ID("__value"))->value.u;
+                shiro_field* g = get_global(runtime, id);
+
+                if (g != NULL)
+                    free_field(g);
+
+                set_global(
+                    runtime,
+                    id,
+                    s_fValue,
+                    (union __field_value)stack_get_value(runtime)
+                );
+                break;
+            }
             case DIE:
                 return runtime;
             default:

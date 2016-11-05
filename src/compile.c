@@ -137,10 +137,13 @@ shiro_binary* __compile_statement(
                     return binary;
                 }
 
+
+            }
+
             //
             //  if (<expr>) { <code> } [else { <code> }]
             //
-            } else if (strcmp(token->value, KW_COND) == 0) {
+            else if (strcmp(token->value, KW_COND) == 0) {
                 token = get_token(statement, 1, line);
 
                 if (token != NULL && strcmp(token->value, MARK_OEXPR) == 0) {
@@ -219,6 +222,53 @@ shiro_binary* __compile_statement(
                     }
                 } else {
                     __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OEXPR);
+                    return binary;
+                }
+            }
+
+            //
+            //  var <name>[ = <value>]
+            //
+            else if (strcmp(token->value, KW_VAR) == 0) {
+                token = get_token(statement, 1, line);
+
+                if (get_token_type(token) == s_tkName) {
+                    shiro_string name = token->value;
+
+                    token = get_token(statement, 2, line);
+                    if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
+
+                        shiro_node* alloc = new_node(ALLOC_VAR, 1, new_shiro_uint(ID(name)));
+                        push_node(binary, alloc);
+                        free_node(alloc);
+
+                    } else if (strcmp(token->value, OP_SET) == 0) {
+                        shiro_statement* val_stmt = offset_statement(statement, 3);
+                        shiro_binary* b_val = __compile_statement(val_stmt, line);
+                        free_statement(val_stmt);
+
+                        if (!binary_returns_value(b_val)) {
+                            __error(*line, ERR_SYNTAX_ERROR, "Invalid variable value: statement doesn't have any value");
+                            return binary;
+                        }
+
+                        binary = concat_and_free_binary(binary, b_val);
+
+                        shiro_node* set = new_node(SET_VAR, 1, new_shiro_uint(ID(name)));
+                        push_node(binary, set);
+                        free_node(set);
+
+                        shiro_node* drop = new_node(DROP, 0);
+                        push_node(binary, drop);
+                        free_node(drop);
+                    } else {
+                        __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END> or '%s'", token->value, OP_SET);
+                        return binary;
+                    }
+
+                    free(name);
+                } else {
+                    __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <NAME>", token->value);
                     return binary;
                 }
             }
@@ -376,7 +426,8 @@ shiro_binary* __compile_statement(
 
             token = get_token(statement, 1, line);
             if (token != NULL && strcmp(token->value, MARK_EOS) != 0) {
-
+                __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                return binary;
             } else {
                 shiro_value* s_value;
 

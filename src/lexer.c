@@ -205,6 +205,33 @@ shiro_token* get_token(
     return statement->tokens[i];
 }
 //-----------------------------------------------------------------------------
+// Retorna uma cópia de um statement com n tokens removidos do começo
+//      statement   : Statement a ser copiado e deslocado
+//      off         : Número de tokens a deslocar
+//-----------------------------------------------------------------------------
+shiro_statement* offset_statement(
+    const shiro_statement* statement,
+    const shiro_uint off
+) {
+    shiro_statement* stmt = new_statement(statement->used - off);
+
+    shiro_uint line;
+    shiro_token* tk = get_token(statement, off - 1, &line);
+
+    if (tk == NULL)
+        return stmt;
+
+    shiro_uint i = 0;
+    while (statement->tokens[i] != tk)
+        i++;
+    i++;
+
+    for (; i < statement->used; i++)
+        push_token(stmt, statement->tokens[i]);
+
+    return stmt;
+}
+//-----------------------------------------------------------------------------
 // Libera a memória usada por uma sentença
 //      statement   : shiro_statement que será liberado da memória
 //-----------------------------------------------------------------------------
@@ -237,7 +264,8 @@ shiro_token_type get_token_type(const shiro_token* token) {
         strcmp(string, KW_FUNC)      == 0 || strcmp(string, KW_SWITCH)  == 0 ||
         strcmp(string, KW_DO)        == 0 || strcmp(string, KW_PRIVATE) == 0 ||
         strcmp(string, KW_PROTECTED) == 0 || strcmp(string, KW_PUBLIC)  == 0 ||
-        strcmp(string, KW_NEXT)      == 0 || strcmp(string, KW_DIE)     == 0)
+        strcmp(string, KW_NEXT)      == 0 || strcmp(string, KW_DIE)     == 0 ||
+        strcmp(string, KW_VAR)       == 0)
         return s_tkKeyword;
 
     const shiro_character c = *string;

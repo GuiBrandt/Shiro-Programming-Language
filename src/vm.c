@@ -260,6 +260,9 @@ void free_function(shiro_function* f) {
 // Inicializa um runtime do shiro
 //-----------------------------------------------------------------------------
 shiro_runtime* shiro_init() {
+    if (shiro_nil == NULL)
+        shiro_nil = new_value();
+
     shiro_runtime* runtime = malloc(sizeof(shiro_runtime));
     runtime->used_stack = 0;
 

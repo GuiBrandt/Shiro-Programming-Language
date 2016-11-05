@@ -5,7 +5,6 @@
 #include "lexer.h"
 
 typedef enum bytecodes {
-
     COND            = 0x04,
     JUMP            = 0x05,
     FN_CALL         = 0x06,
@@ -18,6 +17,11 @@ typedef enum bytecodes {
     ALLOC_VAR       = ALLOC | VAR,
     ALLOC_FN        = ALLOC | FN,
     ALLOC_CLASS     = ALLOC | CLASS,
+
+    SET             = 0x50,
+    SET_VAR         = SET | VAR,
+    SET_FN          = SET | FN,
+    SET_CLASS       = SET | CLASS,
 
     FREE            = 0x20,
     FREE_VAR        = FREE | VAR,
