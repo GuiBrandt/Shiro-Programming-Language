@@ -238,7 +238,7 @@ shiro_binary* __compile_statement(
                     token = get_token(statement, 2, line);
                     if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
 
-                        shiro_node* alloc = new_node(ALLOC_VAR, 1, new_shiro_uint(ID(name)));
+                        shiro_node* alloc = new_node(ALLOC, 1, new_shiro_uint(ID(name)));
                         push_node(binary, alloc);
                         free_node(alloc);
 
@@ -254,7 +254,7 @@ shiro_binary* __compile_statement(
 
                         binary = concat_and_free_binary(binary, b_val);
 
-                        shiro_node* set = new_node(SET_VAR, 1, new_shiro_uint(ID(name)));
+                        shiro_node* set = new_node(SET, 1, new_shiro_uint(ID(name)));
                         push_node(binary, set);
                         free_node(set);
 
@@ -267,6 +267,45 @@ shiro_binary* __compile_statement(
                     }
 
                     free(name);
+                } else {
+                    __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <NAME>", token->value);
+                    return binary;
+                }
+            }
+
+            //  delete <name>
+            else if (strcmp(token->value, KW_DELETE) == 0) {
+                token = get_token(statement, 1, line);
+
+                if (get_token_type(token) == s_tkName) {
+                    shiro_string name = token->value;
+
+                } else {
+                    __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <NAME>", token->value);
+                    return binary;
+                }
+            }
+
+            //
+            //  fn <name>[([<name>[, <name>[, ...]])] { <code> }
+            //
+            else if (strcmp(token->value, KW_FUNC) == 0) {
+                token = get_token(statement, 1, line);
+
+                if (get_token_type(token) == s_tkName) {
+                    shiro_string name = token->value;
+
+                    token = get_token(statement, 2, line);
+
+                    if (strcmp(token, MARK_OEXPR) == 0) {
+
+                    } else if (strcmp(token, MARK_OBLOCK) == 0) {
+
+                    } else {
+                        __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OBLOCK);
+                        return binary;
+                    }
+
                 } else {
                     __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <NAME>", token->value);
                     return binary;

@@ -1,7 +1,16 @@
 // Código de teste para o Shiro
-var msg = 'oe';
-print(if (1) { msg } else { 'tiao' });
-var msg = 'tiao';
-print(msg);
 
-print('bsd');
+fn say(hello) 
+{
+	var msg = if (hello) { "HELLO!" } else { "BYE!" };
+	print(msg);
+	delete msg;
+};
+
+fn do_it
+{
+	say(1);
+	say(0);
+};
+
+do_it();

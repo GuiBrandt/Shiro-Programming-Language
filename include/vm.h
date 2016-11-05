@@ -40,6 +40,16 @@ typedef struct __field {
 shiro_id __shiro_parse_id_from_name(const shiro_string);
 #define ID(str) __shiro_parse_id_from_name(str)
 
+#define ID_VALUE ID("__value")
+
+#define get_value(val)  value_get_field(val, ID_VALUE)->value
+#define get_func(val)   get_value(val).func
+#define get_uint(val)   get_value(val).u
+#define get_fixnum(val) get_value(val).i
+#define get_bignum(val) get_value(val).l
+#define get_float(val)  get_value(val).f
+#define get_string(val) get_value(val).str
+
 typedef struct __value {
     const shiro_type    type;
     shiro_uint          n_fields;
@@ -67,6 +77,8 @@ typedef struct __func {
     };
     int n_args;
 } shiro_function;
+
+#define ARG(n) (shiro_id)(0x7C9432C7 + n)
 
 shiro_field*    clone_field         (shiro_field*);
 void            free_field          (shiro_field*);

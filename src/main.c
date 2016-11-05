@@ -12,6 +12,7 @@
 // Ponto de entrada para teste
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv) {
+
     setlocale(LC_ALL, "en_US.UTF-8");
 
     shiro_uint i = 0;
@@ -50,9 +51,9 @@ int main(int argc, char** argv) {
             shiro_value* arg = bin->nodes[i]->args[j];
 
             if (arg->type == s_tString)
-                printf(" \"%s\"", value_get_field(arg, ID("__value"))->value.str);
+                printf(" \"%s\"", get_string(arg));
             else if (arg->type == s_tInt)
-                printf(" %d", value_get_field(arg, ID("__value"))->value.i);
+                printf(" %d", get_fixnum(arg));
         }
         printf("\n");
     }
@@ -79,7 +80,7 @@ int main(int argc, char** argv) {
         //  Print do shiro
         //
         shiro_value* shiro_print(shiro_runtime* runtime, shiro_uint n_args) {
-            printf(value_get_field(stack_get_value(runtime), ID("__value"))->value.str);
+            printf(get_string(stack_get_value(runtime)));
             return stack_get_value(runtime);
         }
 
@@ -100,7 +101,6 @@ int main(int argc, char** argv) {
     }
     t_exec /= iterations;
 
-    free_function((shiro_function*)get_global(runtime, ID("print"))->value.func);
     shiro_terminate(runtime);
     free_binary(bin);
 

@@ -139,7 +139,7 @@ shiro_field* value_get_field(
     for (i = 0; i < v->n_fields; i++)
         if (v->fields[i] != NULL && v->fields[i]->id == id)
             return v->fields[i];
-    return NULL;
+    return {id,  s_fValue, (union __field_value)shiro_nil};
 }
 //-----------------------------------------------------------------------------
 // Inicializa um shiro_value com o tipo String a partir de uma string em C
@@ -156,7 +156,7 @@ shiro_value* new_shiro_string(const shiro_string str) {
     shiro_string string = calloc(len + 1, sizeof(shiro_character));
     memcpy(string, str, len);
 
-    set_value_field(val, ID("__value"), s_fString, (union __field_value)string);
+    set_value_field(val, ID_VALUE, s_fString, (union __field_value)string);
     set_value_field(val, ID("length"), s_fUInt, (union __field_value)len);
 
     return val;
@@ -172,7 +172,7 @@ shiro_value* new_shiro_fixnum(const shiro_fixnum fix) {
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(1, sizeof(shiro_field*));
 
-    set_value_field(val, ID("__value"), s_fFixnum, (union __field_value)fix);
+    set_value_field(val, ID_VALUE, s_fFixnum, (union __field_value)fix);
 
     return val;
 }
@@ -187,7 +187,7 @@ shiro_value* new_shiro_bignum(const shiro_bignum big) {
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(1, sizeof(shiro_field*));
 
-    set_value_field(val, ID("__value"), s_fBignum, (union __field_value)big);
+    set_value_field(val, ID_VALUE, s_fBignum, (union __field_value)big);
 
     return val;
 }
@@ -202,7 +202,7 @@ shiro_value* new_shiro_uint(const shiro_uint u) {
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(1, sizeof(shiro_field*));
 
-    set_value_field(val, ID("__value"), s_fUInt, (union __field_value)u);
+    set_value_field(val, ID_VALUE, s_fUInt, (union __field_value)u);
 
     return val;
 }
@@ -216,7 +216,7 @@ shiro_value* new_shiro_float(const shiro_float f) {
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(1, sizeof(shiro_field*));
 
-    set_value_field(val, ID("__value"), s_fFloat, (union __field_value)f);
+    set_value_field(val, ID_VALUE, s_fFloat, (union __field_value)f);
 
     return val;
 }
@@ -232,7 +232,7 @@ shiro_value* new_shiro_function(shiro_function* fn) {
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(1, sizeof(shiro_field*));
 
-    set_value_field(val, ID("__value"), s_fFunction, (union __field_value)fn);
+    set_value_field(val, ID_VALUE, s_fFunction, (union __field_value)fn);
 
     return val;
 }

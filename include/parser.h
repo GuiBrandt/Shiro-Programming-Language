@@ -14,9 +14,6 @@ typedef enum bytecodes {
     CLASS           = 0x04,
 
     ALLOC           = 0x10,
-    ALLOC_VAR       = ALLOC | VAR,
-    ALLOC_FN        = ALLOC | FN,
-    ALLOC_CLASS     = ALLOC | CLASS,
 
     SET             = 0x50,
     SET_VAR         = SET | VAR,
@@ -24,9 +21,6 @@ typedef enum bytecodes {
     SET_CLASS       = SET | CLASS,
 
     FREE            = 0x20,
-    FREE_VAR        = FREE | VAR,
-    FREE_FN         = FREE | FN,
-    FREE_CLASS      = FREE | CLASS,
 
     PUSH            = 0x30,
     PUSH_BY_NAME    = 0x31,
