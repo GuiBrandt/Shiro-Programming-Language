@@ -61,9 +61,9 @@ shiro_binary* clone_binary              (const shiro_binary*);
 shiro_binary* push_node                 (shiro_binary*, const shiro_node*);
 shiro_binary* concat_binary             (shiro_binary*, const shiro_binary*);
 bool          binary_returns_value      (const shiro_binary*);
-void          free_binary               (shiro_binary*);
 shiro_binary* concat_and_free_binary    (shiro_binary*, shiro_binary*);
 
-SHIRO_API shiro_binary* shiro_compile   (const shiro_string);
+SHIRO_API void          shiro_free_binary   (shiro_binary*);
+SHIRO_API shiro_binary* shiro_compile       (const shiro_string);
 
 #endif // PARSER_H_INCLUDED

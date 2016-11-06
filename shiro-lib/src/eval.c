@@ -46,20 +46,26 @@ SHIRO_API shiro_runtime* shiro_execute(
 
                 shiro_field* global = shiro_get_global(runtime, id);
 
-                if (global == NULL)
+                if (global == NULL) {
                     __error(0, ERR_NOT_A_FUNCTION, "nil is not a function");
+                    return NULL;
+                }
 
                 if (global->type == s_fValue)
                     global = shiro_get_field(global->value.val, ID_VALUE);
 
-                if (global->type != s_fFunction)
+                if (global->type != s_fFunction) {
                     __error(0, ERR_NOT_A_FUNCTION, "Calling non-function value of ID %d", id);
+                    return NULL;
+                }
 
                 const shiro_function* f = global->value.func;
                 shiro_uint n_args = get_uint(node->args[1]);
 
-                if (n_args != f->n_args)
+                if (n_args != f->n_args) {
                     __error(0, ERR_ARGUMENT_ERROR, "Wrong number of arguments: expected %d, got %d", f->n_args, n_args);
+                    return NULL;
+                }
 
                 shiro_value* returned;
                 if (f->type == s_fnShiroBinary) {
@@ -205,7 +211,9 @@ SHIRO_API shiro_runtime* shiro_execute_for_value(
 
     shiro_value* self = runtime->self;
     runtime->self = value;
-    shiro_execute(runtime, binary);
+    shiro_protect(
+        shiro_execute(runtime, binary);
+    );
     runtime->self = self;
 
     return runtime;

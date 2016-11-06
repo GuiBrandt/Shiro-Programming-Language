@@ -145,7 +145,7 @@ bool binary_returns_value(const shiro_binary* binary) {
 // Libera a memória usada por um binário do shiro
 //      binary  : Binário que será liberado da memória
 //-----------------------------------------------------------------------------
-void free_binary(shiro_binary* binary) {
+SHIRO_API void shiro_free_binary(shiro_binary* binary) {
     int i;
     for (i = 0; i < binary->used; i++)
         free_node(binary->nodes[i]);
@@ -161,7 +161,7 @@ void free_binary(shiro_binary* binary) {
 //-----------------------------------------------------------------------------
 shiro_binary* concat_and_free_binary(shiro_binary* binary, shiro_binary* other) {
     concat_binary(binary, other);
-    free_binary(other);
+    shiro_free_binary(other);
 
     return binary;
 }

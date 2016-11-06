@@ -2,8 +2,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-
 //-----------------------------------------------------------------------------
 // Clona um campo shiro_field
 //      f   : Ponteiro para o campo a ser clonado
@@ -296,7 +294,7 @@ SHIRO_API shiro_function* shiro_clone_function(const shiro_function* f) {
 //-----------------------------------------------------------------------------
 SHIRO_API void shiro_free_function(shiro_function* f) {
     if (f->type == s_fnShiroBinary)
-        free_binary(f->s_binary);
+         shiro_free_binary(f->s_binary);
     free(f);
 }
 //-----------------------------------------------------------------------------

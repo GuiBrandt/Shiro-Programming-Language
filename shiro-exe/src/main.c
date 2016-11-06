@@ -1,13 +1,12 @@
-#include "parser.h"
-#include "eval.h"
+#include <shiro.h>
 
 #include <io.h>
 #include <stdio.h>
 #include <locale.h>
 
-#ifdef __DEBUG__
+//#ifdef __DEBUG__
 #include <windows.h>
-#endif // __DEBUG__
+//#endif // __DEBUG__
 //-----------------------------------------------------------------------------
 // Ponto de entrada para teste
 //-----------------------------------------------------------------------------
@@ -70,7 +69,7 @@ int main(int argc, char** argv) {
         double t0 = get_time();
         shiro_binary* b = shiro_compile(code);
         double d = get_time() - t0;
-        free_binary(b);
+        shiro_free_binary(b);
         average += d;
     }
     average /= iterations;
@@ -144,7 +143,7 @@ int main(int argc, char** argv) {
     t_exec /= iterations;
 
     shiro_terminate(runtime);
-    free_binary(bin);
+    shiro_free_binary(bin);
 
     fflush(stdout);
     fclose(temp_out);
