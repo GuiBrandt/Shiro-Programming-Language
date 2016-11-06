@@ -1,5 +1,3 @@
-// Código de teste para o Shiro
-
 fn say(say_a, msg_a, msg_b) 
 {
 	var msg = if (say_a) { msg_a } else { msg_b };
