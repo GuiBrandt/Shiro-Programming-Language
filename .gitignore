@@ -6,6 +6,7 @@
 *.cbp
 *.layout
 *.depend
+*.workspace
 
 # generated directories
 bin/
