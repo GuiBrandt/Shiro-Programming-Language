@@ -86,6 +86,7 @@ void            free_field          (shiro_field*);
 shiro_value*    new_value           ();
 shiro_value*    clone_value         (const shiro_value*);
 shiro_field*    value_get_field     (const shiro_value*, const shiro_id);
+shiro_value*    value_free_field    (shiro_value*, const shiro_id);
 shiro_value*    value_set_field     (shiro_value*, const shiro_field*);
 shiro_value*    set_value_field     (shiro_value*, const shiro_id, enum __field_type, union __field_value);
 shiro_value*    new_shiro_string    (const shiro_string);
@@ -96,6 +97,7 @@ shiro_value*    new_shiro_float     (const shiro_float);
 shiro_value*    new_shiro_function  (shiro_function*);
 void            free_value          (shiro_value*);
 
+shiro_function* clone_function      (const shiro_function*);
 void            free_function       (shiro_function*);
 
 shiro_runtime*  shiro_init          ();

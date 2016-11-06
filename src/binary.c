@@ -45,7 +45,7 @@ shiro_node* clone_node(const shiro_node* other) {
 
     node->code = other->code;
     node->n_args = other->n_args;
-    node->args = malloc(node->n_args * sizeof(void*));
+    node->args = malloc(node->n_args * sizeof(shiro_value*));
 
     int i;
     for (i = 0; i < node->n_args; i++)
@@ -73,6 +73,19 @@ shiro_binary* new_binary(void) {
     bin->allocated = 1;
     bin->nodes = calloc(bin->allocated, sizeof(shiro_node*));
     return bin;
+}
+//-----------------------------------------------------------------------------
+// Clona um binário do shiro
+//      bin : Binário a ser clonado
+//-----------------------------------------------------------------------------
+shiro_binary* clone_binary(const shiro_binary* bin) {
+    shiro_binary* binary = new_binary();
+
+    shiro_uint i;
+    for (i = 0; i < bin->used; i++)
+        push_node(binary, bin->nodes[i]);
+
+    return binary;
 }
 //-----------------------------------------------------------------------------
 // Adiciona um nó a um binário shiro

@@ -5,6 +5,8 @@
 //=============================================================================
 #include "eval.h"
 #include "errors.h"
+
+#include <stdlib.h>
 //-----------------------------------------------------------------------------
 // * Executa código shiro em um runtime usando um binário pré-compilado
 //      runtime : Runtime usado para executar o programa
@@ -26,6 +28,7 @@ shiro_runtime* shiro_execute(shiro_runtime* runtime, shiro_binary* binary) {
                      value_get_field(value, ID("length"))->value.i != 0))
                     i++;
 
+                free_value(value);
                 stack_drop_value(runtime);
                 break;
             }
@@ -40,7 +43,7 @@ shiro_runtime* shiro_execute(shiro_runtime* runtime, shiro_binary* binary) {
 
                 shiro_field* global = get_global(runtime, id);
 
-                if (global->type != s_fFunction)
+                if (global == NULL || global->type != s_fFunction)
                     __error(0, ERR_NOT_A_FUNCTION, "Calling non-function value of ID %d", id);
 
                 const shiro_function* f = global->value.func;
@@ -54,32 +57,43 @@ shiro_runtime* shiro_execute(shiro_runtime* runtime, shiro_binary* binary) {
                     shiro_value* self = runtime->self;
 
                     shiro_value* func_scope = clone_value(self);
+
                     shiro_uint i;
                     for (i = 0; i < n_args; i++) {
-                        set_value_field(func_scope, ARG(i), s_fValue, (union __field_value)stack_get_value(runtime));
+                        shiro_value* arg = stack_get_value(runtime);
+                        set_value_field(func_scope, ARG(n_args - i - 1), s_fValue, (union __field_value)arg);
                         stack_drop_value(runtime);
                     }
+
                     runtime->self = func_scope;
                     shiro_execute(runtime, f->s_binary);
                     returned = stack_get_value(runtime);
                     runtime->self = self;
+
                     free_value(func_scope);
                 } else {
                     returned = (*f->native)(runtime, n_args);
                     int i;
-                    for (i = 0; i < n_args; i++)
+                    for (i = 0; i < n_args; i++) {
+                        free_value(stack_get_value(runtime));
                         stack_drop_value(runtime);
+                    }
                 }
 
                 stack_push_value(runtime, returned);
                 break;
             }
             case PUSH:
-                stack_push_value(runtime, node->args[0]);
+            {
+                stack_push_value(runtime, clone_value(node->args[0]));
                 break;
+            }
             case PUSH_BY_NAME:
-                stack_push_value(runtime, get_global(runtime, get_uint(node->args[0]))->value.val);
+            {
+                shiro_field* g = get_global(runtime, get_uint(node->args[0]));
+                stack_push_value(runtime, g == NULL ? shiro_nil : clone_value(g->value.val));
                 break;
+            }
             case DROP:
                 stack_drop_value(runtime);
                 break;
@@ -102,25 +116,35 @@ shiro_runtime* shiro_execute(shiro_runtime* runtime, shiro_binary* binary) {
                 if (g != NULL)
                     free_field(g);
 
-                if (node->code == SET_VAR)
+                if (node->code == SET_VAR) {
                     set_global(
                         runtime,
                         id,
                         s_fValue,
                         (union __field_value)stack_get_value(runtime)
                     );
-                else
+                    stack_drop_value(runtime);
+                } else
                     set_global(
                         runtime,
                         id,
                         s_fFunction,
-                        (union __field_value)get_func(node->args[1])
+                        (union __field_value)clone_function(get_func(node->args[1]))
                     );
                 break;
             }
             case FREE:
             {
-                free_field(get_global(runtime, get_uint(node->args[0])));
+                shiro_id id = get_uint(node->args[0]);
+
+                shiro_value* scope = runtime->self;
+
+                shiro_uint i;
+                for (i = 0; i < scope->n_fields; i++)
+                    if (scope->fields[i] != NULL && scope->fields[i]->id == id) {
+                        free_field(scope->fields[i]);
+                        scope->fields[i] = NULL;
+                    }
                 break;
             }
             case DIE:
@@ -131,4 +155,3 @@ shiro_runtime* shiro_execute(shiro_runtime* runtime, shiro_binary* binary) {
     }
     return runtime;
 }
-//shiro_runtime* shiro_eval(shiro_runtime*, shiro_string);

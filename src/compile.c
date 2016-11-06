@@ -273,13 +273,9 @@ shiro_binary* __compile_statement(
 
                         binary = concat_and_free_binary(binary, b_val);
 
-                        shiro_node* set = new_node(SET, 1, new_shiro_uint(ID(name)));
+                        shiro_node* set = new_node(SET_VAR, 1, new_shiro_uint(ID(name)));
                         push_node(binary, set);
                         free_node(set);
-
-                        shiro_node* drop = new_node(DROP, 0);
-                        push_node(binary, drop);
-                        free_node(drop);
                     } else {
                         __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END> or '%s'", token->value, OP_SET);
                         return binary;
@@ -327,32 +323,36 @@ shiro_binary* __compile_statement(
 
                     token = get_token(statement, 2, line);
 
+                    shiro_binary* bin = new_binary();
+
                     int tk_i = 2;
                     shiro_binary* b_args = new_binary();
                     if (strcmp(token->value, MARK_OEXPR) == 0) {
                         shiro_statement* args = __expression(statement, 2);
 
                         shiro_token* tk;
-                        shiro_uint i;
-                        for (i = 0; i < args->used; i += 2) {
+                        shiro_uint i, n = 0;
+                        for (i = 0; i < args->used; i += 2, n++) {
+
                             tk = get_token(args, i, line);
-                            if (get_token_type(tk) == s_tkName) {
+                            if (tk == NULL) {
+                                __error(*line, ERR_SYNTAX_ERROR, "Unexpected <END>, expecting <NAME>");
+                                return binary;
+                            } else if (get_token_type(tk) == s_tkName) {
                                 shiro_string name = tk->value;
 
                                 tk = get_token(args, i + 1, line);
-                                if (tk == NULL)
-                                    break;
-                                else if (strcmp(tk->value, MARK_LIST) == 0) {
-                                    shiro_node* arg_push = new_node(PUSH_BY_NAME, 1, new_shiro_uint(ARG(i / 2)));
-                                    push_node(binary, arg_push);
+                                if (tk == NULL || strcmp(tk->value, MARK_LIST) == 0) {
+                                    shiro_node* arg_push = new_node(PUSH_BY_NAME, 1, new_shiro_uint(ARG(n)));
+                                    push_node(b_args, arg_push);
                                     free_node(arg_push);
 
                                     shiro_node* set = new_node(SET_VAR, 1, new_shiro_uint(ID(name)));
-                                    push_node(binary, set);
+                                    push_node(b_args, set);
                                     free_node(set);
 
                                     shiro_node* drop = new_node(DROP, 0);
-                                    push_node(binary, drop);
+                                    push_node(b_args, drop);
                                     free_node(drop);
 
                                     continue;
@@ -376,7 +376,22 @@ shiro_binary* __compile_statement(
                         token = get_token(statement, tk_i + 1, line);
 
                         if (token == NULL) {
+
+                            concat_binary(bin, b_args);
+
                             shiro_binary* b_block = __compile_statements(block, line);
+                            concat_and_free_binary(bin, b_block);
+
+                            shiro_function* fn = malloc(sizeof(shiro_function));
+                            fn->type = s_fnShiroBinary;
+                            fn->n_args = b_args->used / 3;
+                            fn->s_binary = bin;
+
+                            free_binary(b_args);
+
+                            shiro_node* set = new_node(SET_FN, 2, new_shiro_uint(ID(name)), new_shiro_function(fn));
+                            push_node(binary, set);
+                            free_node(set);
                         }
 
                         free_statement(block);
@@ -470,7 +485,8 @@ shiro_binary* __compile_statement(
                         __error(*line, ERR_SYNTAX_ERROR,
                                 "Unexpected <END>, expecting <VALUE>");
                         return binary;
-                    }
+                    } else
+                        free_binary(b_arg);
 
                     shiro_node* fcall = new_node(FN_CALL, 2, new_shiro_uint(ID(name)), new_shiro_uint(n_args));
                     push_node(binary, fcall);

@@ -43,21 +43,27 @@ int main(int argc, char** argv) {
     printf("Iterations: %d\n", iterations);
     printf("Total of %d node(s) generated:\n", bin->used);
 
-    for (i = 0; i < bin->used; i++) {
-        printf("    0x%02x", bin->nodes[i]->code);
+    void __print_binary(const shiro_binary* bin) {
+        for (i = 0; i < bin->used; i++) {
+            printf("    0x%02x", bin->nodes[i]->code);
 
-        int j;
-        for (j = 0; j < bin->nodes[i]->n_args; j++) {
-            shiro_value* arg = bin->nodes[i]->args[j];
+            int j;
+            for (j = 0; j < bin->nodes[i]->n_args; j++) {
+                shiro_value* arg = bin->nodes[i]->args[j];
 
-            if (arg->type == s_tString)
-                printf(" \"%s\"", get_string(arg));
-            else if (arg->type == s_tInt)
-                printf(" %d", get_fixnum(arg));
+                if (arg->type == s_tString)
+                    printf(" \"%s\"", get_string(arg));
+                else if (arg->type == s_tInt)
+                    printf(" %d", get_fixnum(arg));
+                else if (arg->type == s_tFunction) {
+                    printf(" <binary>");
+                }
+            }
+            printf("\n");
         }
         printf("\n");
     }
-    printf("\n");
+    __print_binary(bin);
 
     double average = 0.0;
     for (i = 0; i < iterations; i++) {
@@ -80,8 +86,16 @@ int main(int argc, char** argv) {
         //  Print do shiro
         //
         shiro_value* shiro_print(shiro_runtime* runtime, shiro_uint n_args) {
-            printf(get_string(stack_get_value(runtime)));
-            return stack_get_value(runtime);
+            shiro_value* arg0 = stack_get_value(runtime);
+            shiro_field* val  = value_get_field(arg0, ID_VALUE);
+            if (val == NULL)
+                printf("nil");
+            else if (val->type == s_fString)
+                printf(val->value.str);
+            else if (val->type == s_fFixnum)
+                printf("%d", val->value.i);
+
+            return shiro_nil;
         }
 
         shiro_function* p = malloc(sizeof(shiro_function));

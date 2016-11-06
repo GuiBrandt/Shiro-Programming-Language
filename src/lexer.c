@@ -338,7 +338,7 @@ shiro_statement* shiro_tokenize(
                     memcpy(tk->value, str, 3);
 
                     if (strcmp(tk->value, MARK_COMMENT) == 0) {
-                        while (code[i] != *MARK_EOL)
+                        while (i < size && code[i] != *MARK_EOL)
                             i++;
                         i--;
                     } else {

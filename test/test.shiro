@@ -4,7 +4,6 @@ fn say(say_a, msg_a, msg_b)
 {
 	var msg = if (say_a) { msg_a } else { msg_b };
 	print(msg);
-	delete msg;
 };
 
 fn do_it
@@ -12,11 +11,8 @@ fn do_it
 	var a = "HELLO";
 	var b = "BYE";
 	
-	say(1, a, b);
 	say(0, a, b);
-	
-	delete a;
-	delete b;
+	say(1, a, b);
 };
 
 do_it();

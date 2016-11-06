@@ -9,6 +9,10 @@
 //      f   : Ponteiro para o campo a ser clonado
 //-----------------------------------------------------------------------------
 shiro_field* clone_field(shiro_field* f) {
+
+    if (f == NULL)
+        return NULL;
+
     shiro_field* field = malloc(sizeof(shiro_field));
     memcpy(field, f, sizeof(shiro_id) + sizeof(enum __field_type));
 
@@ -21,6 +25,10 @@ shiro_field* clone_field(shiro_field* f) {
             shiro_uint len = strlen(f->value.str);
             field->value.str = calloc(len + 1, sizeof(shiro_character));
             memcpy(field->value.str, f->value.str, len);
+            break;
+        case s_fFunction:
+            if (f->value.func == NULL) break;
+            field->value.func = clone_function(f->value.func);
             break;
         default:
             field->value = f->value;
@@ -39,7 +47,7 @@ void free_field(shiro_field* f) {
 
     switch (f->type) {
         case s_fValue:
-            free(f->value.val);
+            free_value(f->value.val);
             break;
         case s_fString:
             free(f->value.str);
@@ -74,8 +82,7 @@ shiro_value* clone_value(const shiro_value* v) {
 
     int i;
     for (i = 0; i < val->n_fields; i++)
-        if (v->fields[i] != NULL)
-            val->fields[i] = clone_field(v->fields[i]);
+        val->fields[i] = clone_field(v->fields[i]);
 
     return val;
 }
@@ -241,11 +248,30 @@ shiro_value* new_shiro_function(shiro_function* fn) {
 //      v   : shiro_value que será liberado da memória
 //-----------------------------------------------------------------------------
 void free_value(shiro_value* v) {
+    if (v == shiro_nil)
+        return;
+
     int i;
     for (i = 0; i < v->n_fields; i++)
         free_field(v->fields[i]);
     free(v->fields);
     free(v);
+}
+//-----------------------------------------------------------------------------
+// Clona uma função do shiro
+//      f   : shiro_function que será clonada
+//-----------------------------------------------------------------------------
+shiro_function* clone_function(const shiro_function* f) {
+    shiro_function* func = malloc(sizeof(shiro_function));
+    func->type = f->type;
+    func->n_args = f->n_args;
+
+    if (f->type == s_fnShiroBinary)
+        func->s_binary = clone_binary(f->s_binary);
+    else
+        func->native = f->native;
+
+    return func;
 }
 //-----------------------------------------------------------------------------
 // Libera a memória usada por uma shiro_function
@@ -308,7 +334,8 @@ shiro_runtime* stack_push_value(shiro_runtime* runtime, shiro_value* value) {
 //      runtime : Runtime de onde o valor será removido
 //-----------------------------------------------------------------------------
 shiro_runtime* stack_drop_value(shiro_runtime* runtime) {
-    runtime->used_stack--;
+    if (runtime->used_stack > 0)
+        runtime->used_stack--;
     return runtime;
 }
 //-----------------------------------------------------------------------------
@@ -351,13 +378,5 @@ shiro_runtime* set_global(
 //      id      : Identificador do global
 //-----------------------------------------------------------------------------
 shiro_field* get_global(shiro_runtime* runtime, shiro_id id) {
-    shiro_field* g = value_get_field(runtime->self, id);
-
-    if (g == NULL) {
-        shiro_field nil = { id, s_fValue, (union __field_value)shiro_nil };
-        g = malloc(sizeof(shiro_field));
-        memcpy(g, &nil, sizeof(shiro_field));
-    }
-
-    return g;
+    return value_get_field(runtime->self, id);
 }

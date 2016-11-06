@@ -15,16 +15,16 @@ typedef enum bytecodes {
 
     ALLOC           = 0x10,
 
-    SET             = 0x50,
+    SET             = 0x20,
     SET_VAR         = SET | VAR,
     SET_FN          = SET | FN,
     SET_CLASS       = SET | CLASS,
 
-    FREE            = 0x20,
-
     PUSH            = 0x30,
     PUSH_BY_NAME    = 0x31,
     DROP            = 0x32,
+
+    FREE            = 0x50,
 
     COMPARE         = 0x40,
     GT              = 0x01,
@@ -56,6 +56,7 @@ shiro_node*   clone_node                (const shiro_node*);
 void          free_node                 (shiro_node*);
 
 shiro_binary* new_binary                (void);
+shiro_binary* clone_binary              (const shiro_binary*);
 shiro_binary* push_node                 (shiro_binary*, const shiro_node*);
 shiro_binary* concat_binary             (shiro_binary*, const shiro_binary*);
 bool          binary_returns_value      (const shiro_binary*);
