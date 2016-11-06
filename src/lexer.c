@@ -375,10 +375,30 @@ shiro_statement* shiro_tokenize(
             clear_token(lexeme);
 
             const shiro_character s = c;
+            bool escape = false;
 
             do {
-                append_to_token(lexeme, c);
-            } while ((c = code[++i]) != s && i < size);
+                if (c == *MARK_ESCAPE && !escape)
+                    escape = true;
+                else {
+                        if (escape) {
+                            if (c == 'n')
+                                append_to_token(lexeme, '\n');
+                            else if (c == 't')
+                                append_to_token(lexeme, '\t');
+                            else if (c == 'b')
+                                append_to_token(lexeme, '\b');
+                            else if (c == 'r')
+                                append_to_token(lexeme, '\r');
+                            else if (c == '0')
+                                append_to_token(lexeme, '\0');
+                            else
+                                append_to_token(lexeme, c);
+                        } else
+                            append_to_token(lexeme, c);
+                        escape = false;
+                }
+            } while (((c = code[++i]) != s || escape) && i < size);
             append_to_token(lexeme, c);
 
             push_token(tokens, lexeme);

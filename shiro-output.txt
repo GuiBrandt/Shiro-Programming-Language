@@ -1,1 +1,3 @@
-BYEHELLO<value @ 0x96ab98>
+BYE
+HELLO
+<value @ 0x9104b0>

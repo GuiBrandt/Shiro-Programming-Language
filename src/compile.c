@@ -376,7 +376,6 @@ shiro_binary* __compile_statement(
                         token = get_token(statement, tk_i + 1, line);
 
                         if (token == NULL) {
-
                             concat_binary(bin, b_args);
 
                             shiro_binary* b_block = __compile_statements(block, line);
@@ -392,6 +391,9 @@ shiro_binary* __compile_statement(
                             shiro_node* set = new_node(SET_FN, 2, shiro_new_uint(ID(name)), shiro_new_function(fn));
                             push_node(binary, set);
                             free_node(set);
+                        } else {
+                            __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                            return binary;
                         }
 
                         free_statement(block);

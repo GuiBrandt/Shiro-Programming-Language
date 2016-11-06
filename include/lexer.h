@@ -31,6 +31,7 @@
 #define MARK_COND       "?"
 #define MARK_STR1       "\""
 #define MARK_STR2       "'"
+#define MARK_ESCAPE      "\\"
 #define MARK_OBLOCK     "{"
 #define MARK_CBLOCK     "}"
 #define MARK_OEXPR      "("

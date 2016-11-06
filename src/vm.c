@@ -76,6 +76,10 @@ SHIRO_API shiro_value* shiro_new_value() {
 //      v   : shiro_value a ser clonado
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_value* shiro_clone_value(const shiro_value* v) {
+
+    if (v == shiro_nil)
+        return shiro_nil;
+
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, v, sizeof(shiro_value));
     val->fields = calloc(v->n_fields, sizeof(shiro_field*));
@@ -125,8 +129,21 @@ SHIRO_API shiro_value* shiro_set_field(
 
         v->fields[v->n_fields - 1] = field;
     } else {
+
+        shiro_uint pos;
+        for (pos = 0; pos < v->n_fields; pos++)
+            if (v->fields[pos] == field)
+                break;
+
+        shiro_free_field(field);
+
+        field = malloc(sizeof(shiro_field));
+        shiro_field f = {id, t, fv};
+        memcpy(field, &f, sizeof(shiro_field));
         field->type = t;
         field->value = fv;
+
+        v->fields[pos] = field;
     }
 
     return v;
@@ -311,6 +328,14 @@ SHIRO_API void shiro_terminate(shiro_runtime* runtime) {
     free(runtime->stack);
     shiro_free_value(runtime->self);
     free(runtime);
+
+    int i;
+    for (i = 0; i < shiro_nil->n_fields; i++)
+        shiro_free_field(shiro_nil->fields[i]);
+    free(shiro_nil->fields);
+    free(shiro_nil);
+
+    shiro_nil = NULL;
 }
 //-----------------------------------------------------------------------------
 // Adiciona um valor ao topo da pilha

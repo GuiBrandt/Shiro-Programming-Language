@@ -89,7 +89,6 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case PUSH_BY_NAME:
             {
-
                 shiro_id id = get_uint(node->args[0]);
 
                 if (id == ID("self")) {
@@ -119,10 +118,6 @@ SHIRO_API shiro_runtime* shiro_execute(
             case SET_FN:
             {
                 shiro_id id = get_uint(node->args[0]);
-                shiro_field* g = shiro_get_global(runtime, id);
-
-                if (g != NULL)
-                    shiro_free_field(g);
 
                 if (node->code == SET_VAR) {
                     shiro_set_global(
@@ -139,6 +134,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                         s_fFunction,
                         (union __field_value)shiro_clone_function(get_func(node->args[1]))
                     );
+
                 break;
             }
             case FREE:

@@ -1,7 +1,12 @@
+fn puts(m) {
+	print(m);
+	print("\n");
+};
+
 fn say(say_a, msg_a, msg_b) 
 {
 	var msg = if (say_a) { msg_a } else { msg_b };
-	print(msg);
+	puts(msg);
 };
 
 fn do_it
@@ -15,4 +20,4 @@ fn do_it
 
 do_it();
 
-print(self);
+puts(self);

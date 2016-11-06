@@ -43,20 +43,20 @@ int main(int argc, char** argv) {
     printf("Iterations: %d\n", iterations);
     printf("Total of %d node(s) generated:\n", bin->used);
 
-    void __print_binary(const shiro_binary* bin) {
-        for (i = 0; i < bin->used; i++) {
-            printf("    0x%02x", bin->nodes[i]->code);
+    void __print_binary(const shiro_binary* b) {
+        for (i = 0; i < b->used; i++) {
+            printf("    0x%02x", b->nodes[i]->code);
 
             int j;
-            for (j = 0; j < bin->nodes[i]->n_args; j++) {
-                shiro_value* arg = bin->nodes[i]->args[j];
+            for (j = 0; j < b->nodes[i]->n_args; j++) {
+                shiro_value* arg = b->nodes[i]->args[j];
 
                 if (arg->type == s_tString)
                     printf(" \"%s\"", get_string(arg));
                 else if (arg->type == s_tInt)
                     printf(" %d", get_fixnum(arg));
                 else if (arg->type == s_tFunction) {
-                    printf(" <binary>");
+                    printf(" <function>");
                 }
             }
             printf("\n");
