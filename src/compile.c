@@ -381,6 +381,12 @@ shiro_binary* __compile_statement(
                             shiro_binary* b_block = __compile_statements(block, line);
                             concat_and_free_binary(bin, b_block);
 
+                            if (!binary_returns_value(bin)) {
+                                shiro_node* ret = new_node(PUSH_BY_NAME, 1, ID("nil"));
+                                bin = push_node(bin, ret);
+                                free_node(ret);
+                            }
+
                             shiro_function* fn = malloc(sizeof(shiro_function));
                             fn->type = s_fnShiroBinary;
                             fn->n_args = b_args->used / 3;

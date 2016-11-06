@@ -46,7 +46,13 @@ SHIRO_API shiro_runtime* shiro_execute(
 
                 shiro_field* global = shiro_get_global(runtime, id);
 
-                if (global == NULL || global->type != s_fFunction)
+                if (global == NULL)
+                    __error(0, ERR_NOT_A_FUNCTION, "nil is not a function");
+
+                if (global->type == s_fValue)
+                    global = shiro_get_field(global->value.val, ID_VALUE);
+
+                if (global->type != s_fFunction)
                     __error(0, ERR_NOT_A_FUNCTION, "Calling non-function value of ID %d", id);
 
                 const shiro_function* f = global->value.func;
@@ -97,7 +103,33 @@ SHIRO_API shiro_runtime* shiro_execute(
                     shiro_push_value(runtime, shiro_nil);
                 } else {
                     shiro_field* g = shiro_get_global(runtime, id);
-                    shiro_push_value(runtime, g == NULL ? shiro_nil : shiro_clone_value(g->value.val));
+
+                    if (g == NULL)
+                        shiro_push_value(runtime, shiro_nil);
+                    else
+                        switch (g->type) {
+                            case s_fValue:
+                                shiro_push_value(runtime, shiro_clone_value(g->value.val));
+                                break;
+                            case s_fBignum:
+                                shiro_push_value(runtime, shiro_new_bignum(g->value.l));
+                                break;
+                            case s_fFixnum:
+                                shiro_push_value(runtime, shiro_new_fixnum(g->value.i));
+                                break;
+                            case s_fUInt:
+                                shiro_push_value(runtime, shiro_new_uint(g->value.u));
+                                break;
+                            case s_fFloat:
+                                shiro_push_value(runtime, shiro_new_float(g->value.f));
+                                break;
+                            case s_fString:
+                                shiro_push_value(runtime, shiro_new_string(g->value.str));
+                                break;
+                            case s_fFunction:
+                                shiro_push_value(runtime, shiro_new_function(g->value.func));
+                                break;
+                        }
                 }
                 break;
             }

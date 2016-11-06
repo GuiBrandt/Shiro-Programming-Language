@@ -9,15 +9,15 @@ fn say(say_a, msg_a, msg_b)
 	puts(msg);
 };
 
-fn do_it
+fn do_it(say_fn)
 {
 	var a = "HELLO";
 	var b = "BYE";
 	
-	say(0, a, b);
-	say(1, a, b);
+	say_fn(0, a, b);
+	say_fn(1, a, b);
+	
+	"DONE";
 };
 
-do_it();
-
-puts(self);
+print(do_it(say));

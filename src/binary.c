@@ -134,7 +134,8 @@ bool binary_returns_value(const shiro_binary* binary) {
     int n = 0, i;
     for (i = 0; i < binary->used; i++)
         if (binary->nodes[i]->code == PUSH ||
-            binary->nodes[i]->code == PUSH_BY_NAME)
+            binary->nodes[i]->code == PUSH_BY_NAME ||
+            binary->nodes[i]->code == FN_CALL)
             n++;
         else if (binary->nodes[i]->code == DROP)
             n--;
