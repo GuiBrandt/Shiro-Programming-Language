@@ -5,8 +5,7 @@
 #include "parser.h"
 #include "vm.h"
 
-shiro_runtime* shiro_execute(shiro_runtime*, shiro_binary*);
-shiro_runtime* shiro_execute_for_value(shiro_runtime*, shiro_value*, shiro_binary*);
-//shiro_runtime* shiro_eval(shiro_runtime*, shiro_string);
+SHIRO_API shiro_runtime* shiro_execute(shiro_runtime*, shiro_binary*);
+SHIRO_API shiro_runtime* shiro_execute_for_value(shiro_runtime*, shiro_value*, shiro_binary*);
 
 #endif // EVAL_H_INCLUDED

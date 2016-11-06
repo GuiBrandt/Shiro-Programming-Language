@@ -191,17 +191,17 @@ shiro_binary* __compile_statement(
                                     push_node(bin, cond);
                                     free_node(cond);
 
-                                    shiro_node* jmp0 = new_node(JUMP, 1, new_shiro_fixnum(1));
+                                    shiro_node* jmp0 = new_node(JUMP, 1, shiro_new_fixnum(1));
                                     push_node(bin, jmp0);
                                     free_node(jmp0);
 
-                                    shiro_node* jmp1 = new_node(JUMP, 1, new_shiro_fixnum(b_block2->used + 1));
+                                    shiro_node* jmp1 = new_node(JUMP, 1, shiro_new_fixnum(b_block2->used + 1));
                                     push_node(bin, jmp1);
                                     free_node(jmp1);
 
                                     bin = concat_and_free_binary(bin, b_block2);
 
-                                    shiro_node* jmp2 = new_node(JUMP, 1, new_shiro_fixnum(b_block->used));
+                                    shiro_node* jmp2 = new_node(JUMP, 1, shiro_new_fixnum(b_block->used));
                                     push_node(bin, jmp2);
                                     free_node(jmp2);
 
@@ -224,7 +224,7 @@ shiro_binary* __compile_statement(
                             push_node(bin, cond);
                             free_node(cond);
 
-                            shiro_node* jmp = new_node(JUMP, 1, new_shiro_fixnum(b_block->used));
+                            shiro_node* jmp = new_node(JUMP, 1, shiro_new_fixnum(b_block->used));
                             push_node(bin, jmp);
                             free_node(jmp);
 
@@ -257,7 +257,7 @@ shiro_binary* __compile_statement(
                     token = get_token(statement, 2, line);
                     if (token == NULL) {
 
-                        shiro_node* alloc = new_node(ALLOC, 1, new_shiro_uint(ID(name)));
+                        shiro_node* alloc = new_node(ALLOC, 1, shiro_new_uint(ID(name)));
                         push_node(binary, alloc);
                         free_node(alloc);
 
@@ -273,7 +273,7 @@ shiro_binary* __compile_statement(
 
                         binary = concat_and_free_binary(binary, b_val);
 
-                        shiro_node* set = new_node(SET_VAR, 1, new_shiro_uint(ID(name)));
+                        shiro_node* set = new_node(SET_VAR, 1, shiro_new_uint(ID(name)));
                         push_node(binary, set);
                         free_node(set);
                     } else {
@@ -297,7 +297,7 @@ shiro_binary* __compile_statement(
 
                     token = get_token(statement, 2, line);
                     if (token == NULL) {
-                        shiro_node* del = new_node(FREE, 1, new_shiro_uint(ID(name)));
+                        shiro_node* del = new_node(FREE, 1, shiro_new_uint(ID(name)));
                         push_node(binary, del);
                         free_node(del);
 
@@ -343,11 +343,11 @@ shiro_binary* __compile_statement(
 
                                 tk = get_token(args, i + 1, line);
                                 if (tk == NULL || strcmp(tk->value, MARK_LIST) == 0) {
-                                    shiro_node* arg_push = new_node(PUSH_BY_NAME, 1, new_shiro_uint(ARG(n)));
+                                    shiro_node* arg_push = new_node(PUSH_BY_NAME, 1, shiro_new_uint(ARG(n)));
                                     push_node(b_args, arg_push);
                                     free_node(arg_push);
 
-                                    shiro_node* set = new_node(SET_VAR, 1, new_shiro_uint(ID(name)));
+                                    shiro_node* set = new_node(SET_VAR, 1, shiro_new_uint(ID(name)));
                                     push_node(b_args, set);
                                     free_node(set);
 
@@ -389,7 +389,7 @@ shiro_binary* __compile_statement(
 
                             free_binary(b_args);
 
-                            shiro_node* set = new_node(SET_FN, 2, new_shiro_uint(ID(name)), new_shiro_function(fn));
+                            shiro_node* set = new_node(SET_FN, 2, shiro_new_uint(ID(name)), shiro_new_function(fn));
                             push_node(binary, set);
                             free_node(set);
                         }
@@ -405,7 +405,9 @@ shiro_binary* __compile_statement(
                 }
             }
 
-            break;
+
+            if (token == NULL || (strcmp(token->value, KW_NIL) != 0 && strcmp(token->value, KW_SELF) != 0))
+                break;
         }
         case s_tkName:
         {
@@ -415,7 +417,7 @@ shiro_binary* __compile_statement(
             token = get_token(statement, 1, line);
 
             if (token == NULL) {
-                shiro_node* node = new_node(PUSH_BY_NAME, 1, new_shiro_uint(ID(name)));
+                shiro_node* node = new_node(PUSH_BY_NAME, 1, shiro_new_uint(ID(name)));
                 push_node(binary, node);
                 free_node(node);
             } else if (strcmp(token->value, MARK_PROP) == 0) {
@@ -428,7 +430,7 @@ shiro_binary* __compile_statement(
 
                     free(rest);
 
-                    shiro_node* node = new_node(PUSH_BY_NAME, 1, new_shiro_uint(ID(name)));
+                    shiro_node* node = new_node(PUSH_BY_NAME, 1, shiro_new_uint(ID(name)));
                     push_node(binary, node);
                     free_node(node);
 
@@ -488,7 +490,7 @@ shiro_binary* __compile_statement(
                     } else
                         free_binary(b_arg);
 
-                    shiro_node* fcall = new_node(FN_CALL, 2, new_shiro_uint(ID(name)), new_shiro_uint(n_args));
+                    shiro_node* fcall = new_node(FN_CALL, 2, shiro_new_uint(ID(name)), shiro_new_uint(n_args));
                     push_node(binary, fcall);
                     free_node(fcall);
                 }
@@ -505,7 +507,7 @@ shiro_binary* __compile_statement(
 
                         free(rest);
 
-                        shiro_node* node = new_node(PUSH_BY_NAME, 1, new_shiro_string(name));
+                        shiro_node* node = new_node(PUSH_BY_NAME, 1, shiro_new_string(name));
                         push_node(binary, node);
                         free_node(node);
 
@@ -559,13 +561,13 @@ shiro_binary* __compile_statement(
                     shiro_uint len = strlen(value);
                     shiro_string v = calloc(len - 1, sizeof(shiro_character));
                     memcpy(v, value + 1, len - 2);
-                    s_value = new_shiro_string(v);
+                    s_value = shiro_new_string(v);
                     free(v);
                 } else {
                     char* end;
                     shiro_fixnum i = (shiro_fixnum)strtol(value, &end, 10);
 
-                    s_value = new_shiro_fixnum(i);
+                    s_value = shiro_new_fixnum(i);
                 }
 
                 shiro_node* node = new_node(PUSH, 1, s_value);
@@ -681,7 +683,7 @@ shiro_binary* __compile_statements(
 // Compila o código passado
 //      code    : Código
 //-----------------------------------------------------------------------------
-shiro_binary* shiro_compile(const shiro_string code) {
+SHIRO_API shiro_binary* shiro_compile(const shiro_string code) {
     shiro_statement* tokens = shiro_tokenize(code);
 
     shiro_uint line_compiled = 1;

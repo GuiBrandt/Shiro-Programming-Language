@@ -49,7 +49,7 @@ shiro_node* clone_node(const shiro_node* other) {
 
     int i;
     for (i = 0; i < node->n_args; i++)
-        node->args[i] = clone_value(other->args[i]);
+        node->args[i] = shiro_clone_value(other->args[i]);
 
     return node;
 }
@@ -60,7 +60,7 @@ shiro_node* clone_node(const shiro_node* other) {
 void free_node(shiro_node* node) {
     int i;
     for (i = 0; i < node->n_args; i++)
-        free_value(node->args[i]);
+        shiro_free_value(node->args[i]);
     free(node->args);
     free(node);
 }

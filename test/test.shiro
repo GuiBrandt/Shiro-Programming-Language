@@ -14,3 +14,5 @@ fn do_it
 };
 
 do_it();
+
+print(self);

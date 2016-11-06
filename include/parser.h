@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "lexer.h"
+#include "dll.h"
 
 typedef enum bytecodes {
     COND            = 0x04,
@@ -63,6 +64,6 @@ bool          binary_returns_value      (const shiro_binary*);
 void          free_binary               (shiro_binary*);
 shiro_binary* concat_and_free_binary    (shiro_binary*, shiro_binary*);
 
-shiro_binary* shiro_compile             (const shiro_string);
+SHIRO_API shiro_binary* shiro_compile   (const shiro_string);
 
 #endif // PARSER_H_INCLUDED

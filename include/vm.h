@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "parser.h"
+#include "dll.h"
 
 typedef enum types {
     s_tObject       = 0x00,
@@ -37,12 +38,12 @@ typedef struct __field {
     } value;
 } shiro_field;
 
-shiro_id __shiro_parse_id_from_name(const shiro_string);
-#define ID(str) __shiro_parse_id_from_name(str)
+SHIRO_API shiro_id shiro_parse_id_from_name(const shiro_string);
+#define ID(str) shiro_parse_id_from_name(str)
 
 #define ID_VALUE ID("__value")
 
-#define get_value(val)  value_get_field(val, ID_VALUE)->value
+#define get_value(val)  shiro_get_field(val, ID_VALUE)->value
 #define get_func(val)   get_value(val).func
 #define get_uint(val)   get_value(val).u
 #define get_fixnum(val) get_value(val).i
@@ -80,37 +81,36 @@ typedef struct __func {
 
 #define ARG(n) (shiro_id)(0x7C9432C7 + n)
 
-shiro_field*    clone_field         (shiro_field*);
-void            free_field          (shiro_field*);
+shiro_field*              shiro_clone_field         (shiro_field*);
+void                      shiro_free_field          (shiro_field*);
 
-shiro_value*    new_value           ();
-shiro_value*    clone_value         (const shiro_value*);
-shiro_field*    value_get_field     (const shiro_value*, const shiro_id);
-shiro_value*    value_free_field    (shiro_value*, const shiro_id);
-shiro_value*    value_set_field     (shiro_value*, const shiro_field*);
-shiro_value*    set_value_field     (shiro_value*, const shiro_id, enum __field_type, union __field_value);
-shiro_value*    new_shiro_string    (const shiro_string);
-shiro_value*    new_shiro_fixnum    (const shiro_fixnum);
-shiro_value*    new_shiro_bignum    (const shiro_bignum);
-shiro_value*    new_shiro_uint      (const shiro_uint);
-shiro_value*    new_shiro_float     (const shiro_float);
-shiro_value*    new_shiro_function  (shiro_function*);
-void            free_value          (shiro_value*);
+SHIRO_API shiro_value*    shiro_new_value     ();
+SHIRO_API shiro_value*    shiro_clone_value   (const shiro_value*);
+SHIRO_API shiro_field*    shiro_get_field     (const shiro_value*, const shiro_id);
+SHIRO_API shiro_value*    shiro_def_field     (shiro_value*, const shiro_field*);
+SHIRO_API shiro_value*    shiro_set_field     (shiro_value*, const shiro_id, enum __field_type, union __field_value);
+SHIRO_API shiro_value*    shiro_new_string    (const shiro_string);
+SHIRO_API shiro_value*    shiro_new_fixnum    (const shiro_fixnum);
+SHIRO_API shiro_value*    shiro_new_bignum    (const shiro_bignum);
+SHIRO_API shiro_value*    shiro_new_uint      (const shiro_uint);
+SHIRO_API shiro_value*    shiro_new_float     (const shiro_float);
+SHIRO_API shiro_value*    shiro_new_function  (shiro_function*);
+SHIRO_API void            shiro_free_value    (shiro_value*);
 
-shiro_function* clone_function      (const shiro_function*);
-void            free_function       (shiro_function*);
+SHIRO_API shiro_function* shiro_clone_function(const shiro_function*);
+SHIRO_API void            shiro_free_function (shiro_function*);
 
-shiro_runtime*  shiro_init          ();
-void            shiro_terminate     (shiro_runtime*);
+SHIRO_API shiro_runtime*  shiro_init          ();
+SHIRO_API void            shiro_terminate     (shiro_runtime*);
 
-shiro_runtime*  stack_push_value    (shiro_runtime*, shiro_value*);
-shiro_runtime*  stack_drop_value    (shiro_runtime*);
-shiro_value*    stack_get_value     (shiro_runtime*);
+SHIRO_API shiro_runtime*  shiro_push_value    (shiro_runtime*, shiro_value*);
+SHIRO_API shiro_runtime*  shiro_drop_value    (shiro_runtime*);
+SHIRO_API shiro_value*    shiro_get_value     (shiro_runtime*);
 
-shiro_runtime*  def_global          (shiro_runtime*, shiro_field*);
-shiro_runtime*  set_global          (shiro_runtime*, shiro_id, enum __field_type, union __field_value);
-shiro_field*    get_global          (shiro_runtime*, shiro_id);
+SHIRO_API shiro_runtime*  shiro_def_global    (shiro_runtime*, shiro_field*);
+SHIRO_API shiro_runtime*  shiro_set_global    (shiro_runtime*, shiro_id, enum __field_type, union __field_value);
+SHIRO_API shiro_field*    shiro_get_global    (shiro_runtime*, shiro_id);
 
-shiro_value* shiro_nil;
+SHIRO_API shiro_value* shiro_nil;
 
 #endif // VM_H_INCLUDED

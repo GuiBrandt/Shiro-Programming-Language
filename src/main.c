@@ -86,14 +86,42 @@ int main(int argc, char** argv) {
         //  Print do shiro
         //
         shiro_value* shiro_print(shiro_runtime* runtime, shiro_uint n_args) {
-            shiro_value* arg0 = stack_get_value(runtime);
-            shiro_field* val  = value_get_field(arg0, ID_VALUE);
-            if (val == NULL)
-                printf("nil");
-            else if (val->type == s_fString)
-                printf(val->value.str);
-            else if (val->type == s_fFixnum)
-                printf("%d", val->value.i);
+            shiro_value* arg0 = shiro_get_value(runtime);
+            shiro_field* val  = shiro_get_field(arg0, ID_VALUE);
+
+            switch (arg0->type) {
+                case s_tObject:
+                    printf("<value @ 0x%x>", (int)arg0);
+                    break;
+                case s_tFloat:
+                    printf("%f", val->value.f);
+                    break;
+                case s_tInt:
+                    switch (val->type) {
+                        case s_fBignum:
+                            printf("%ld", (long int)val->value.l);
+                            break;
+                        case s_fFixnum:
+                            printf("%d", val->value.i);
+                            break;
+                        case s_fUInt:
+                            printf("%u", val->value.u);
+                            break;
+                        default:
+                            printf("NaN");
+                            break;
+                    }
+                    break;
+                case s_tFunction:
+                    printf("<function @ 0x%x>", (int)arg0);
+                    break;
+                case s_tString:
+                    printf(val->value.str);
+                    break;
+                default:
+                    printf("nil");
+                    break;
+            }
 
             return shiro_nil;
         }
@@ -102,7 +130,7 @@ int main(int argc, char** argv) {
         p->type = s_fnNative;
         p->n_args = 1;
         p->native = (shiro_c_function)&shiro_print;
-        set_global(runtime, ID("print"), s_fFunction, (union __field_value)p);
+        shiro_set_global(runtime, ID("print"), s_fFunction, (union __field_value)p);
     }
     double t_exec = 0.0;
     {

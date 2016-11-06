@@ -24,6 +24,8 @@
 #define KW_CONST        "const"
 #define KW_CLASS        "class"
 #define KW_DIE          "exit"
+#define KW_NIL          "nil"
+#define KW_SELF         "self"
 
 #define MARK_SEPP       ":"
 #define MARK_COND       "?"
