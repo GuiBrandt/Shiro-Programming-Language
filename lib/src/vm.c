@@ -1,6 +1,7 @@
 #include "vm.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 //-----------------------------------------------------------------------------
 // Clona um campo shiro_field
@@ -412,4 +413,45 @@ SHIRO_API shiro_runtime* shiro_set_global(
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_field* shiro_get_global(shiro_runtime* runtime, shiro_id id) {
     return shiro_get_field(runtime->self, id);
+}
+//-----------------------------------------------------------------------------
+// Converte um valor do shiro em string
+//      val     : Valor a ser convertido
+//-----------------------------------------------------------------------------
+SHIRO_API shiro_string shiro_to_string(shiro_value* val) {
+    shiro_string r = calloc(128, sizeof(shiro_character));
+
+    shiro_field* v = shiro_get_field(val, ID_VALUE);
+    switch (val->type) {
+        case s_tObject:
+            sprintf(r, "<value @ 0x%x>", (int)val);
+            break;
+        case s_tFloat:
+            sprintf(r, "%f", v->value.f);
+            break;
+        case s_tInt:
+            switch (v->type) {
+                case s_fBignum:
+                    sprintf(r, "%ld", (long int)v->value.l);
+                    break;
+                case s_fFixnum:
+                    sprintf(r, "%d", v->value.i);
+                    break;
+                case s_fUInt:
+                    sprintf(r, "%u", v->value.u);
+                    break;
+                default:
+                    return "NaN";
+            }
+            break;
+        case s_tFunction:
+            sprintf(r, "<function @ 0x%x>", (int)val);
+            break;
+        case s_tString:
+            return v->value.str;
+            break;
+        default:
+            break;
+    }
+    return "nil";
 }

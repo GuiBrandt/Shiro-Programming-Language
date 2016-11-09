@@ -133,9 +133,9 @@ shiro_binary* concat_binary(shiro_binary* binary, const shiro_binary* other) {
 bool binary_returns_value(const shiro_binary* binary) {
     int n = 0, i;
     for (i = 0; i < binary->used; i++)
-        if (binary->nodes[i]->code == PUSH ||
-            binary->nodes[i]->code == PUSH_BY_NAME ||
-            binary->nodes[i]->code == FN_CALL)
+        if ((binary->nodes[i]->code & PUSH) == PUSH ||
+            binary->nodes[i]->code == FN_CALL ||
+            (binary->nodes[i]->code & OPERATE) == OPERATE)
             n++;
         else if (binary->nodes[i]->code == DROP)
             n--;

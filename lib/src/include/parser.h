@@ -37,7 +37,18 @@ typedef enum bytecodes {
     COMPARE_LT_EQ   = COMPARE | LT | EQ,
     COMPARE_GT_EQ   = COMPARE | GT | EQ,
 
-    DIE             = 0xED,
+    OPERATE         = 0x60,
+    ADD             = OPERATE + 1,
+    SUB             = OPERATE + 2,
+    MUL             = OPERATE + 3,
+    DIV             = OPERATE + 4,
+    MOD             = OPERATE + 5,
+
+    B_AND           = OPERATE + 6,
+    B_OR            = OPERATE + 7,
+    B_XOR           = OPERATE + 8,
+
+    DIE             = 0xED
 } shiro_bytecode;
 
 typedef struct __node {

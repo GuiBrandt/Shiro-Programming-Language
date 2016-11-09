@@ -453,6 +453,55 @@ shiro_binary* __compile_statement(
                 shiro_node* node = new_node(PUSH_BY_NAME, 1, shiro_new_uint(ID(name)));
                 push_node(binary, node);
                 free_node(node);
+            } else if (get_token_type(token) == s_tkBinaryOperator) {
+
+                shiro_statement* rest = offset_statement(statement, 2);
+
+                shiro_protect(
+                    shiro_binary* b_val = __compile_statement(rest, line);
+                );
+                if (!binary_returns_value(b_val)) {
+                    __error(*line, ERR_SYNTAX_ERROR, "Invalid right hand operand: operand doesn't have any value");
+                    return NULL;
+                }
+
+                shiro_string op = token->value;
+
+                shiro_bytecode code = DIE;
+
+                if (strcmp(op, OP_ADD) == 0) {
+                    code = ADD;
+                } else if (strcmp(op, OP_SUB) == 0) {
+                    code = SUB;
+                } else if (strcmp(op, OP_MUL) == 0) {
+                    code = MUL;
+                } else if (strcmp(op, OP_DIV) == 0) {
+                    code = DIV;
+                } else if (strcmp(op, OP_MOD) == 0) {
+                    code = MOD;
+                } else if (strcmp(op, OP_AND) == 0) {
+                    code = B_AND;
+                } else if (strcmp(op, OP_OR) == 0) {
+                    code = B_OR;
+                } else if (strcmp(op, OP_XOR) == 0) {
+                    code = B_XOR;
+                } else {
+                    __error(*line, ERR_SYNTAX_ERROR, "Unexpected operator '%s'", op);
+                    return NULL;
+                }
+
+                shiro_node* node = new_node(PUSH_BY_NAME, 1, shiro_new_uint(ID(name)));
+                push_node(binary, node);
+                free_node(node);
+
+                concat_and_free_binary(binary, b_val);
+
+                shiro_node* operate = new_node(code, 0);
+                push_node(binary, operate);
+                free_node(operate);
+
+                return binary;
+
             } else if (strcmp(token->value, MARK_PROP) == 0) {
                 /*token = get_token(statement, 2, line);
 
@@ -557,6 +606,53 @@ shiro_binary* __compile_statement(
                         __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting NAME", token->value);
                         return NULL;
                     }
+                } else if (get_token_type(token) == s_tkBinaryOperator) {
+                    shiro_statement* rest = offset_statement(statement, 3);
+
+                    shiro_protect(
+                        shiro_binary* b_val = __compile_statement(rest, line);
+                    );
+                    if (!binary_returns_value(b_val)) {
+                        __error(*line, ERR_SYNTAX_ERROR, "Invalid right hand operand: operand doesn't have any value");
+                        return NULL;
+                    }
+
+                    shiro_string op = token->value;
+
+                    shiro_bytecode code = DIE;
+
+                    if (strcmp(op, OP_ADD) == 0) {
+                        code = ADD;
+                    } else if (strcmp(op, OP_SUB) == 0) {
+                        code = SUB;
+                    } else if (strcmp(op, OP_MUL) == 0) {
+                        code = MUL;
+                    } else if (strcmp(op, OP_DIV) == 0) {
+                        code = DIV;
+                    } else if (strcmp(op, OP_MOD) == 0) {
+                        code = MOD;
+                    } else if (strcmp(op, OP_AND) == 0) {
+                        code = B_AND;
+                    } else if (strcmp(op, OP_OR) == 0) {
+                        code = B_OR;
+                    } else if (strcmp(op, OP_XOR) == 0) {
+                        code = B_XOR;
+                    } else {
+                        __error(*line, ERR_SYNTAX_ERROR, "Unexpected operator '%s'", op);
+                        return NULL;
+                    }
+
+                    shiro_node* node = new_node(PUSH_BY_NAME, 1, shiro_new_uint(ID(name)));
+                    push_node(binary, node);
+                    free_node(node);
+
+                    concat_and_free_binary(binary, b_val);
+
+                    shiro_node* operate = new_node(code, 0);
+                    push_node(binary, operate);
+                    free_node(operate);
+
+                    return binary;
                 } else if (token != NULL && strcmp(token->value, MARK_EOS) != 0) {
                     __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
                     return NULL;
@@ -602,10 +698,7 @@ shiro_binary* __compile_statement(
             const shiro_string value = token->value;
 
             token = get_token(statement, 1, line);
-            if (token != NULL) {
-                __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
-                return NULL;
-            } else {
+            if (token == NULL) {
                 shiro_value* s_value;
 
                 if (value[0] == *MARK_STR1 || value[0] == *MARK_STR2) {
@@ -624,6 +717,71 @@ shiro_binary* __compile_statement(
                 shiro_node* node = new_node(PUSH, 1, s_value);
                 push_node(binary, node);
                 free_node(node);
+            } else if (get_token_type(token) == s_tkBinaryOperator) {
+                shiro_statement* rest = offset_statement(statement, 2);
+
+                shiro_protect(
+                    shiro_binary* b_val = __compile_statement(rest, line);
+                );
+                if (!binary_returns_value(b_val)) {
+                    __error(*line, ERR_SYNTAX_ERROR, "Invalid right hand operand: operand doesn't have any value");
+                    return NULL;
+                }
+
+                shiro_string op = token->value;
+
+                shiro_bytecode code = DIE;
+
+                if (strcmp(op, OP_ADD) == 0) {
+                    code = ADD;
+                } else if (strcmp(op, OP_SUB) == 0) {
+                    code = SUB;
+                } else if (strcmp(op, OP_MUL) == 0) {
+                    code = MUL;
+                } else if (strcmp(op, OP_DIV) == 0) {
+                    code = DIV;
+                } else if (strcmp(op, OP_MOD) == 0) {
+                    code = MOD;
+                } else if (strcmp(op, OP_AND) == 0) {
+                    code = B_AND;
+                } else if (strcmp(op, OP_OR) == 0) {
+                    code = B_OR;
+                } else if (strcmp(op, OP_XOR) == 0) {
+                    code = B_XOR;
+                } else {
+                    __error(*line, ERR_SYNTAX_ERROR, "Unexpected operator '%s'", op);
+                    return NULL;
+                }
+
+                shiro_value* s_value;
+
+                if (value[0] == *MARK_STR1 || value[0] == *MARK_STR2) {
+                    shiro_uint len = strlen(value);
+                    shiro_string v = calloc(len - 1, sizeof(shiro_character));
+                    memcpy(v, value + 1, len - 2);
+                    s_value = shiro_new_string(v);
+                    free(v);
+                } else {
+                    char* end;
+                    shiro_fixnum i = (shiro_fixnum)strtol(value, &end, 10);
+
+                    s_value = shiro_new_fixnum(i);
+                }
+
+                shiro_node* node = new_node(PUSH, 1, s_value);
+                push_node(binary, node);
+                free_node(node);
+
+                concat_and_free_binary(binary, b_val);
+
+                shiro_node* operate = new_node(code, 0);
+                push_node(binary, operate);
+                free_node(operate);
+
+                return binary;
+            } else {
+                __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                return NULL;
             }
             break;
         }
