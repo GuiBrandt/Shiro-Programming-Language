@@ -8,6 +8,7 @@
 #define ERR_RUNTIME_ERROR   "RuntimeError"
 #define ERR_ARGUMENT_ERROR  "ArgumentError"
 #define ERR_NOT_A_FUNCTION  "NotAFunction"
+#define ERR_TYPE_ERROR      "TypeError"
 
 shiro_string last_error;
 

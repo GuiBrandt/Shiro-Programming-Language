@@ -112,6 +112,11 @@ SHIRO_API shiro_runtime*  shiro_set_global    (shiro_runtime*, shiro_id, enum __
 SHIRO_API shiro_field*    shiro_get_global    (shiro_runtime*, shiro_id);
 
 SHIRO_API shiro_string    shiro_to_string     (shiro_value*);
+SHIRO_API shiro_fixnum    shiro_to_fixnum     (shiro_value*);
+SHIRO_API shiro_bignum    shiro_to_bignum     (shiro_value*);
+SHIRO_API shiro_uint      shiro_to_uint       (shiro_value*);
+SHIRO_API shiro_float     shiro_to_float      (shiro_value*);
+
 
 SHIRO_API shiro_value* shiro_nil;
 

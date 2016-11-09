@@ -7,6 +7,7 @@
 #include "errors.h"
 
 #include <stdlib.h>
+#include <string.h>
 //-----------------------------------------------------------------------------
 // * Executa código shiro em um runtime usando um binário pré-compilado
 //      runtime : Runtime usado para executar o programa
@@ -172,6 +173,83 @@ SHIRO_API shiro_runtime* shiro_execute(
                         s_fFunction,
                         (union __field_value)shiro_clone_function(get_func(node->args[1]))
                     );
+
+                break;
+            }
+            case ADD:
+            case SUB:
+            case MUL:
+            case DIV:
+            case MOD:
+            case B_AND:
+            case B_OR:
+            case B_XOR:
+            {
+                shiro_value* r = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_value* l = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_field* r_v = shiro_get_field(r, ID_VALUE);
+                shiro_field* l_v = shiro_get_field(l, ID_VALUE);
+
+                if (l_v == NULL) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    return NULL;
+                }
+
+                if (r_v == NULL) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    return NULL;
+                }
+
+                shiro_value* result;
+                switch (l_v->type) {
+                    case s_fString: {
+                        shiro_string stringified = shiro_to_string(r);
+                        shiro_uint len = shiro_get_field(l, ID("length"))->value.u,
+                                    l = strlen(stringified);
+
+                        shiro_string str = calloc(l + len + 1, sizeof(shiro_character));
+                        memcpy(str, l_v->value.str, len);
+                        memcpy(str + len, stringified, l);
+
+                        result = shiro_new_string(str);
+                        shiro_set_field(result, ID_VALUE, s_fString, (union __field_value)str);
+                        shiro_set_field(result, ID("length"), s_fFixnum, (union __field_value)(len + l));
+                        break;
+                    }
+                    case s_fFixnum: {
+                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
+                        result = shiro_new_fixnum(l_v->value.i + fixnumified);
+                        break;
+                    }
+                    case s_fBignum: {
+                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        result = shiro_new_bignum(l_v->value.l + bignumified);
+                        break;
+                    }
+                    case s_fUInt: {
+                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u + bignumified);
+                        break;
+                    }
+                    case s_fFloat: {
+                        shiro_fixnum floatified = shiro_to_float(r);
+                        result = shiro_new_float(l_v->value.f + floatified);
+                        break;
+                    }
+                    case s_fFunction: {
+                        if (r_v->type != s_fFunction) {
+                            __error(0, ERR_TYPE_ERROR, "Incompatible types");
+                            return NULL;
+                        }
+                        break;
+                    }
+                }
+
+                shiro_push_value(runtime, result);
 
                 break;
             }

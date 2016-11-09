@@ -455,3 +455,31 @@ SHIRO_API shiro_string shiro_to_string(shiro_value* val) {
     }
     return "nil";
 }
+//-----------------------------------------------------------------------------
+// Converte um valor do shiro em inteiro
+//      val     : Valor a ser convertido
+//-----------------------------------------------------------------------------
+SHIRO_API shiro_fixnum shiro_to_fixnum(shiro_value* val) {
+
+}
+//-----------------------------------------------------------------------------
+// Converte um valor do shiro em inteiro 64-bit
+//      val     : Valor a ser convertido
+//-----------------------------------------------------------------------------
+SHIRO_API shiro_bignum shiro_to_bignum(shiro_value* val) {
+
+}
+//-----------------------------------------------------------------------------
+// Converte um valor do shiro em inteiro unsigned
+//      val     : Valor a ser convertido
+//-----------------------------------------------------------------------------
+SHIRO_API shiro_uint shiro_to_uint(shiro_value* val) {
+
+}
+//-----------------------------------------------------------------------------
+// Converte um valor do shiro em float
+//      val     : Valor a ser convertido
+//-----------------------------------------------------------------------------
+SHIRO_API shiro_float shiro_to_float(shiro_value* val) {
+
+}
