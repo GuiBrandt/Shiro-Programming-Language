@@ -1,7 +1,7 @@
 //=============================================================================
 // src\compile.c
 //-----------------------------------------------------------------------------
-// Define as funções usadas para compilar código Shiro
+// Define as funÃ§Ãµes usadas para compilar cÃ³digo Shiro
 //=============================================================================
 #include <stdlib.h>
 #include <stdarg.h>
@@ -20,11 +20,11 @@ shiro_binary*       __compile_statements(const shiro_statement*, shiro_uint*);
 shiro_binary*       __compile_statement (const shiro_statement*, shiro_uint*);
 
 //-----------------------------------------------------------------------------
-// Lança uma mensagem de erro e aborta a execução do programa
+// LanÃ§a uma mensagem de erro e aborta a execuÃ§Ã£o do programa
 //      line        : Linha do erro
 //      errcode     : Nome do tipo de erro
 //      message     : Mensagem de erro
-//      ...         : Parâmetros usados para formatação
+//      ...         : ParÃ¢metros usados para formataÃ§Ã£o
 //-----------------------------------------------------------------------------
 void __error(
     const shiro_uint line,
@@ -45,7 +45,7 @@ void __error(
     last_error = error;
 }
 //-----------------------------------------------------------------------------
-// Obtém a última mensagem de erro lançada pelo shiro
+// ObtÃ©m a Ãºltima mensagem de erro lanÃ§ada pelo shiro
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_string shiro_get_last_error() {
     shiro_string err = last_error;
@@ -53,9 +53,9 @@ SHIRO_API shiro_string shiro_get_last_error() {
     return err;
 }
 //-----------------------------------------------------------------------------
-// Obtém uma expressão a partir de um token '('
-//      stmt    : Ponteiro para o shiro_statement onde está o token '('
-//      offset  : Índice do token no shiro_statement
+// ObtÃ©m uma expressÃ£o a partir de um token '('
+//      stmt    : Ponteiro para o shiro_statement onde estÃ¡ o token '('
+//      offset  : Ãndice do token no shiro_statement
 //-----------------------------------------------------------------------------
 shiro_statement* __expression(
     const shiro_statement* stmt,
@@ -94,9 +94,9 @@ shiro_statement* __expression(
     return expression;
 }
 //-----------------------------------------------------------------------------
-// Obtém um bloco de código a partir de um token '{'
-//      stmt    : Ponteiro para o shiro_statement onde está o token '{'
-//      offset  : Índice do token no shiro_statement
+// ObtÃ©m um bloco de cÃ³digo a partir de um token '{'
+//      stmt    : Ponteiro para o shiro_statement onde estÃ¡ o token '{'
+//      offset  : Ãndice do token no shiro_statement
 //-----------------------------------------------------------------------------
 shiro_statement* __block(
     const shiro_statement* stmt,
@@ -128,8 +128,8 @@ shiro_statement* __block(
     return expression;
 }
 //-----------------------------------------------------------------------------
-// Compila uma expressão
-//      statement   : Expressão
+// Compila uma expressÃ£o
+//      statement   : ExpressÃ£o
 //-----------------------------------------------------------------------------
 shiro_binary* __compile_statement(
     const shiro_statement* statement,
@@ -521,7 +521,7 @@ shiro_binary* __compile_statement(
                     __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting NAME", token->value);
                     return NULL;
                 }*/
-                __error(*line, "NotSupportedYer", "Properties are not supported yet");
+                __error(*line, "NotSupportedYet", "Properties are not supported yet");
                 return NULL;
             } else if (strcmp(token->value, MARK_OEXPR) == 0) {
                 shiro_protect(
@@ -793,16 +793,16 @@ shiro_binary* __compile_statement(
     return binary;
 }
 //-----------------------------------------------------------------------------
-// Processa uma token no processo de compilação
+// Processa uma token no processo de compilaÃ§Ã£o
 //      token   : Ponteiro para a shiro_token sendo processada
-//      line    : Ponteiro para o shiro_uint representando o número da linha
+//      line    : Ponteiro para o shiro_uint representando o nÃºmero da linha
 //                atual
-//      cline   : Ponteiro para o shiro_uint representando o número da linha
-//                até a qual o código foi compilado
-//      stack   : Número de chaves abertas e não fechadas
-//      p_stack : Número de parêntesis abertos e não fechados
+//      cline   : Ponteiro para o shiro_uint representando o nÃºmero da linha
+//                atÃ© a qual o cÃ³digo foi compilado
+//      stack   : NÃºmero de chaves abertas e nÃ£o fechadas
+//      p_stack : NÃºmero de parÃªntesis abertos e nÃ£o fechados
 //      stmt    : Ponteiro para o shiro_statement sendo processado
-//      binary  : Ponteiro para o shiro_binary que será alterado pelo
+//      binary  : Ponteiro para o shiro_binary que serÃ¡ alterado pelo
 //                processamento da token
 //-----------------------------------------------------------------------------
 shiro_statement* __process_token(
@@ -854,9 +854,9 @@ shiro_statement* __process_token(
     return stmt;
 }
 //-----------------------------------------------------------------------------
-// Compila mais de uma expressão
-//      statements  : Expressões
-//      cline       : Ponteiro para o número da linha
+// Compila mais de uma expressÃ£o
+//      statements  : ExpressÃµes
+//      cline       : Ponteiro para o nÃºmero da linha
 //-----------------------------------------------------------------------------
 shiro_binary* __compile_statements(
     const shiro_statement* statements,
@@ -903,8 +903,8 @@ shiro_binary* __compile_statements(
     return binary;
 }
 //-----------------------------------------------------------------------------
-// Compila o código passado
-//      code    : Código
+// Compila o cÃ³digo passado
+//      code    : CÃ³digo
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_binary* shiro_compile(const shiro_string code) {
     shiro_statement* tokens = shiro_tokenize(code);
