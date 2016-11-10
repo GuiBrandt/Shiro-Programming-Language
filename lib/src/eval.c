@@ -177,13 +177,6 @@ SHIRO_API shiro_runtime* shiro_execute(
                 break;
             }
             case ADD:
-            case SUB:
-            case MUL:
-            case DIV:
-            case MOD:
-            case B_AND:
-            case B_OR:
-            case B_XOR:
             {
                 shiro_value* r = shiro_get_value(runtime);
                 shiro_drop_value(runtime);
@@ -246,6 +239,389 @@ SHIRO_API shiro_runtime* shiro_execute(
                             __error(0, ERR_TYPE_ERROR, "Incompatible types");
                             return NULL;
                         }
+                        break;
+                    }
+                    default:
+                        result = shiro_new_value();
+                        break;
+                }
+                shiro_push_value(runtime, result);
+
+                break;
+            }
+            case SUB:
+            {
+                shiro_value* r = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_value* l = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_field* r_v = shiro_get_field(r, ID_VALUE);
+                shiro_field* l_v = shiro_get_field(l, ID_VALUE);
+
+                if (l_v == NULL ||
+                    l_v->type == s_fString ||
+                    l_v->type == s_fFunction) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    return NULL;
+                }
+
+                if (r_v == NULL ||
+                    r_v->type == s_fString ||
+                    r_v->type == s_fFunction) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    return NULL;
+                }
+
+                shiro_value* result;
+
+                switch (l_v->type) {
+                    case s_fFixnum: {
+                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
+                        result = shiro_new_fixnum(l_v->value.i - fixnumified);
+                        break;
+                    }
+                    case s_fBignum: {
+                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        result = shiro_new_bignum(l_v->value.l - bignumified);
+                        break;
+                    }
+                    case s_fUInt: {
+                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u - bignumified);
+                        break;
+                    }
+                    case s_fFloat: {
+                        shiro_fixnum floatified = shiro_to_float(r);
+                        result = shiro_new_float(l_v->value.f - floatified);
+                        break;
+                    }
+                    default:
+                        result = shiro_new_value();
+                        break;
+                }
+                shiro_push_value(runtime, result);
+
+                break;
+            }
+            case MUL:
+            {
+                shiro_value* r = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_value* l = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_field* r_v = shiro_get_field(r, ID_VALUE);
+                shiro_field* l_v = shiro_get_field(l, ID_VALUE);
+
+                if (l_v == NULL ||
+                    l_v->type == s_fString ||
+                    l_v->type == s_fFunction) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    return NULL;
+                }
+
+                if (r_v == NULL ||
+                    r_v->type == s_fString ||
+                    r_v->type == s_fFunction) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    return NULL;
+                }
+
+                shiro_value* result;
+
+                switch (l_v->type) {
+                    case s_fFixnum: {
+                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
+                        result = shiro_new_fixnum(l_v->value.i * fixnumified);
+                        break;
+                    }
+                    case s_fBignum: {
+                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        result = shiro_new_bignum(l_v->value.l * bignumified);
+                        break;
+                    }
+                    case s_fUInt: {
+                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u * bignumified);
+                        break;
+                    }
+                    case s_fFloat: {
+                        shiro_fixnum floatified = shiro_to_float(r);
+                        result = shiro_new_float(l_v->value.f * floatified);
+                        break;
+                    }
+                    default:
+                        result = shiro_new_value();
+                        break;
+                }
+                shiro_push_value(runtime, result);
+
+                break;
+            }
+            case DIV:
+            {
+                shiro_value* r = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_value* l = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_field* r_v = shiro_get_field(r, ID_VALUE);
+                shiro_field* l_v = shiro_get_field(l, ID_VALUE);
+
+                if (l_v == NULL ||
+                    l_v->type == s_fString ||
+                    l_v->type == s_fFunction) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    return NULL;
+                }
+
+                if (r_v == NULL ||
+                    r_v->type == s_fString ||
+                    r_v->type == s_fFunction) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    return NULL;
+                }
+
+                shiro_value* result;
+
+                switch (l_v->type) {
+                    case s_fFixnum: {
+                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
+                        result = shiro_new_fixnum(l_v->value.i / fixnumified);
+                        break;
+                    }
+                    case s_fBignum: {
+                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        result = shiro_new_bignum(l_v->value.l / bignumified);
+                        break;
+                    }
+                    case s_fUInt: {
+                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u / bignumified);
+                        break;
+                    }
+                    case s_fFloat: {
+                        shiro_fixnum floatified = shiro_to_float(r);
+                        result = shiro_new_float(l_v->value.f / floatified);
+                        break;
+                    }
+                    default:
+                        result = shiro_new_value();
+                        break;
+                }
+                shiro_push_value(runtime, result);
+
+                break;
+            }
+            case MOD:
+            {
+                shiro_value* r = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_value* l = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_field* r_v = shiro_get_field(r, ID_VALUE);
+                shiro_field* l_v = shiro_get_field(l, ID_VALUE);
+
+                if (l_v == NULL ||
+                    l_v->type == s_fString ||
+                    l_v->type == s_fFunction) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    return NULL;
+                }
+
+                if (r_v == NULL ||
+                    r_v->type == s_fString ||
+                    r_v->type == s_fFunction) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    return NULL;
+                }
+
+                shiro_value* result;
+
+                switch (l_v->type) {
+                    case s_fFixnum: {
+                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
+                        result = shiro_new_fixnum(l_v->value.i * fixnumified);
+                        break;
+                    }
+                    case s_fBignum: {
+                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        result = shiro_new_bignum(l_v->value.l * bignumified);
+                        break;
+                    }
+                    case s_fUInt: {
+                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u * bignumified);
+                        break;
+                    }
+                    case s_fFloat: {
+                        shiro_fixnum floatified = shiro_to_float(r);
+                        result = shiro_new_float(l_v->value.f * floatified);
+                        break;
+                    }
+                    default:
+                        result = shiro_new_value();
+                        break;
+                }
+                shiro_push_value(runtime, result);
+
+                break;
+            }
+            case B_AND:
+            {
+                shiro_value* r = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_value* l = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_field* r_v = shiro_get_field(r, ID_VALUE);
+                shiro_field* l_v = shiro_get_field(l, ID_VALUE);
+
+                if (l_v == NULL ||
+                    l_v->type == s_fString ||
+                    l_v->type == s_fFunction ||
+                    r_v->type == s_fFloat) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    return NULL;
+                }
+
+                if (r_v == NULL ||
+                    r_v->type == s_fString ||
+                    r_v->type == s_fFunction ||
+                    r_v->type == s_fFloat) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    return NULL;
+                }
+
+                shiro_value* result;
+
+                switch (l_v->type) {
+                    case s_fFixnum: {
+                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
+                        result = shiro_new_fixnum(l_v->value.i & fixnumified);
+                        break;
+                    }
+                    case s_fBignum: {
+                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        result = shiro_new_bignum(l_v->value.l & bignumified);
+                        break;
+                    }
+                    case s_fUInt: {
+                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u & bignumified);
+                        break;
+                    }
+                    default:
+                        result = shiro_new_value();
+                        break;
+                }
+                shiro_push_value(runtime, result);
+
+                break;
+            }
+            case B_OR:
+            {
+                shiro_value* r = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_value* l = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_field* r_v = shiro_get_field(r, ID_VALUE);
+                shiro_field* l_v = shiro_get_field(l, ID_VALUE);
+
+                if (l_v == NULL ||
+                    l_v->type == s_fString ||
+                    l_v->type == s_fFunction ||
+                    r_v->type == s_fFloat) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    return NULL;
+                }
+
+                if (r_v == NULL ||
+                    r_v->type == s_fString ||
+                    r_v->type == s_fFunction ||
+                    r_v->type == s_fFloat) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    return NULL;
+                }
+
+                shiro_value* result;
+
+                switch (l_v->type) {
+                    case s_fFixnum: {
+                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
+                        result = shiro_new_fixnum(l_v->value.i | fixnumified);
+                        break;
+                    }
+                    case s_fBignum: {
+                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        result = shiro_new_bignum(l_v->value.l | bignumified);
+                        break;
+                    }
+                    case s_fUInt: {
+                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u | bignumified);
+                        break;
+                    }
+                    default:
+                        result = shiro_new_value();
+                        break;
+                }
+                shiro_push_value(runtime, result);
+
+                break;
+            }
+            case B_XOR:
+            {
+                shiro_value* r = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_value* l = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_field* r_v = shiro_get_field(r, ID_VALUE);
+                shiro_field* l_v = shiro_get_field(l, ID_VALUE);
+
+                if (l_v == NULL ||
+                    l_v->type == s_fString ||
+                    l_v->type == s_fFunction ||
+                    r_v->type == s_fFloat) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    return NULL;
+                }
+
+                if (r_v == NULL ||
+                    r_v->type == s_fString ||
+                    r_v->type == s_fFunction ||
+                    r_v->type == s_fFloat) {
+                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    return NULL;
+                }
+
+                shiro_value* result;
+
+                switch (l_v->type) {
+                    case s_fFixnum: {
+                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
+                        result = shiro_new_fixnum(l_v->value.i ^ fixnumified);
+                        break;
+                    }
+                    case s_fBignum: {
+                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        result = shiro_new_bignum(l_v->value.l ^ bignumified);
+                        break;
+                    }
+                    case s_fUInt: {
+                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u ^ bignumified);
                         break;
                     }
                     default:
