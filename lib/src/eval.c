@@ -26,10 +26,7 @@ SHIRO_API shiro_runtime* shiro_execute(
             {
                 shiro_value* value = shiro_get_value(runtime);
 
-                if (value->n_fields == 0 ||
-                    (value->type == s_tInt && get_fixnum(value) != 0) ||
-                    (value->type == s_tString &&
-                     shiro_get_field(value, ID("length"))->value.i != 0))
+                if (!shiro_to_bool(value))
                     i++;
 
                 shiro_free_value(value);
@@ -631,6 +628,22 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_push_value(runtime, result);
 
                 break;
+            }
+            case COMPARE_EQ:
+            {
+
+            }
+            case COMPARE_EQ:
+            {
+
+            }
+            case COMPARE_EQ:
+            {
+
+            }
+            case COMPARE_EQ:
+            {
+
             }
             case FREE:
             {

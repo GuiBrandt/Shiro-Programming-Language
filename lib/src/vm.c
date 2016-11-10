@@ -414,6 +414,16 @@ SHIRO_API shiro_runtime* shiro_set_global(
 SHIRO_API shiro_field* shiro_get_global(shiro_runtime* runtime, shiro_id id) {
     return shiro_get_field(runtime->self, id);
 }
+
+SHIRO_API bool shiro_to_bool(shiro_value* value) {
+    if (value->n_fields == 0 ||
+        (value->type == s_tInt && get_fixnum(value) != 0) ||
+        (value->type == s_tString &&
+         shiro_get_field(value, ID("length"))->value.i != 0))
+         return false;
+    return true;
+}
+
 //-----------------------------------------------------------------------------
 // Converte um valor do shiro em string
 //      val     : Valor a ser convertido

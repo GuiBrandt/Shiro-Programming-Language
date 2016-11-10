@@ -277,18 +277,10 @@ shiro_token_type get_token_type(const shiro_token* token) {
     if (c == *OP_SET || c == *OP_ADD || c == *OP_SUB || c == *OP_MUL ||
         c == *OP_DIV || c == *OP_MOD || c == *OP_AND || c == *OP_OR  ||
         c == *OP_XOR || strcmp(OP_ASSOC, string) == 0 ||
-        (string[1] == *OP_SET && (
-            string[0] == *OP_ADD || string[0] == *OP_SUB ||
-            string[0] == *OP_MUL || string[0] == *OP_DIV ||
-            string[0] == *OP_MOD || string[0] == *OP_AND ||
-            string[0] == *OP_OR  || string[0] == *OP_XOR)
-        ))
-        return s_tkBinaryOperator;
-
-    if (strcmp(string, CMP_EQU)    == 0 || strcmp(string, CMP_DIF)   == 0 ||
+        strcmp(string, CMP_EQU)    == 0 || strcmp(string, CMP_DIF)   == 0 ||
         strcmp(string, CMP_GRT)    == 0 || strcmp(string, CMP_LT)    == 0 ||
         strcmp(string, CMP_GRTEQU) == 0 || strcmp(string, CMP_LTEQU) == 0)
-        return s_tkComparator;
+        return s_tkBinaryOperator;
 
     if (strcmp(U_INC, string) == 0 || strcmp(U_DEC, string) == 0 ||
         c == *U_NOT || c == *U_B_NOT)

@@ -73,7 +73,6 @@ typedef enum __token_type {
     s_tkKeyword,
     s_tkMark,
     s_tkBinaryOperator,
-    s_tkComparator,
     s_tkUnaryOperator,
     s_tkWhitespace,
     s_tkConst,

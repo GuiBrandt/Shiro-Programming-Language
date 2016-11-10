@@ -163,6 +163,16 @@ shiro_binary* __compile_operator(
         code = B_OR;
     } else if (strcmp(op, OP_XOR) == 0) {
         code = B_XOR;
+    } else if (strcmp(op, CMP_EQU) == 0 || strcmp(op, CMP_DIF) == 0) {
+        code = COMPARE_EQ;
+    } else if (strcmp(op, CMP_GRT) == 0) {
+        code = COMPARE_GT;
+    } else if (strcmp(op, CMP_LT) == 0) {
+        code = COMPARE_LT;
+    } else if (strcmp(op, CMP_GRTEQU) == 0) {
+        code = COMPARE_GT_EQ;
+    } else if (strcmp(op, CMP_LTEQU) == 0) {
+        code = COMPARE_LT_EQ;
     } else {
         __error(*line, ERR_SYNTAX_ERROR, "Unexpected operator '%s'", op);
         return NULL;
@@ -173,6 +183,12 @@ shiro_binary* __compile_operator(
     shiro_node* operate = new_node(code, 0);
     push_node(binary, operate);
     free_node(operate);
+
+    if (strcmp(op, CMP_DIF) == 0) {
+        shiro_node* invert = new_node(NOT, 0);
+        push_node(binary, invert);
+        free_node(invert);
+    }
 
     return binary;
 }

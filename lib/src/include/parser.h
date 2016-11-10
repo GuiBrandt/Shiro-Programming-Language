@@ -25,8 +25,6 @@ typedef enum bytecodes {
     PUSH_BY_NAME    = 0x31,
     DROP            = 0x32,
 
-    FREE            = 0x50,
-
     COMPARE         = 0x40,
     GT              = 0x01,
     LT              = 0x02,
@@ -36,6 +34,8 @@ typedef enum bytecodes {
     COMPARE_EQ      = COMPARE | EQ,
     COMPARE_LT_EQ   = COMPARE | LT | EQ,
     COMPARE_GT_EQ   = COMPARE | GT | EQ,
+
+    FREE            = 0x50,
 
     OPERATE         = 0x60,
     ADD             = OPERATE + 1,
@@ -47,6 +47,9 @@ typedef enum bytecodes {
     B_AND           = OPERATE + 6,
     B_OR            = OPERATE + 7,
     B_XOR           = OPERATE + 8,
+
+    OPERATE_U       = 0x70,
+    NOT             = OPERATE_U + 1,
 
     DIE             = 0xED
 } shiro_bytecode;
