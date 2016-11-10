@@ -205,6 +205,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                 }
 
                 shiro_value* result;
+
                 switch (l_v->type) {
                     case s_fString: {
                         shiro_string stringified = shiro_to_string(r);
@@ -247,8 +248,10 @@ SHIRO_API shiro_runtime* shiro_execute(
                         }
                         break;
                     }
+                    default:
+                        result = shiro_new_value();
+                        break;
                 }
-
                 shiro_push_value(runtime, result);
 
                 break;

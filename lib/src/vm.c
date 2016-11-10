@@ -425,31 +425,30 @@ SHIRO_API shiro_string shiro_to_string(shiro_value* val) {
     switch (val->type) {
         case s_tObject:
             sprintf(r, "<value @ 0x%x>", (int)val);
-            break;
+            return r;
         case s_tFloat:
             sprintf(r, "%f", v->value.f);
-            break;
+            return r;
         case s_tInt:
             switch (v->type) {
                 case s_fBignum:
                     sprintf(r, "%ld", (long int)v->value.l);
-                    break;
+                    return r;
                 case s_fFixnum:
                     sprintf(r, "%d", v->value.i);
-                    break;
+                    return r;
                 case s_fUInt:
                     sprintf(r, "%u", v->value.u);
-                    break;
+                    return r;
                 default:
                     return "NaN";
             }
             break;
         case s_tFunction:
             sprintf(r, "<function @ 0x%x>", (int)val);
-            break;
+            return r;
         case s_tString:
             return v->value.str;
-            break;
         default:
             break;
     }
@@ -460,26 +459,53 @@ SHIRO_API shiro_string shiro_to_string(shiro_value* val) {
 //      val     : Valor a ser convertido
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_fixnum shiro_to_fixnum(shiro_value* val) {
-
+    shiro_field* v = shiro_get_field(val, ID_VALUE);
+    switch (val->type) {
+        case s_tFloat:
+            return (shiro_fixnum)v->value.f;
+            break;
+        case s_tInt:
+            switch (v->type) {
+                case s_fBignum:
+                    return (shiro_fixnum)v->value.l;
+                    break;
+                case s_fFixnum:
+                    return (shiro_fixnum)v->value.i;
+                    break;
+                case s_fUInt:
+                    return (shiro_fixnum)v->value.u;
+                    break;
+                default:
+                    return 0;
+            }
+            break;
+        case s_tFunction:
+        case s_tObject:
+        case s_tString:
+            return (shiro_fixnum)val;
+        default:
+            break;
+    }
+    return 0;
 }
 //-----------------------------------------------------------------------------
 // Converte um valor do shiro em inteiro 64-bit
 //      val     : Valor a ser convertido
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_bignum shiro_to_bignum(shiro_value* val) {
-
+    return 0;
 }
 //-----------------------------------------------------------------------------
 // Converte um valor do shiro em inteiro unsigned
 //      val     : Valor a ser convertido
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_uint shiro_to_uint(shiro_value* val) {
-
+    return 0;
 }
 //-----------------------------------------------------------------------------
 // Converte um valor do shiro em float
 //      val     : Valor a ser convertido
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_float shiro_to_float(shiro_value* val) {
-
+    return 0.0;
 }
