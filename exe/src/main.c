@@ -47,27 +47,32 @@ int main(int argc, char** argv) {
     printf("Iterations: %d\n", iterations);
     printf("Total of %d node(s) generated:\n", bin->used);
 
+    FILE* f = fopen("compile.log", "w");
+
     void __print_binary(const shiro_binary* b) {
+        shiro_uint i;
         for (i = 0; i < b->used; i++) {
-            printf("    0x%02x", b->nodes[i]->code);
+            fprintf(f, "0x%02x", b->nodes[i]->code);
 
             int j;
             for (j = 0; j < b->nodes[i]->n_args; j++) {
                 shiro_value* arg = b->nodes[i]->args[j];
 
                 if (arg->type == s_tString)
-                    printf(" \"%s\"", get_string(arg));
+                    fprintf(f, " \"%s\"", get_string(arg));
                 else if (arg->type == s_tInt)
-                    printf(" %d", get_fixnum(arg));
+                    fprintf(f, " %d", get_fixnum(arg));
                 else if (arg->type == s_tFunction) {
-                    printf(" <function>");
+                    fprintf(f, "\n<function>\n\n");
+                    __print_binary(get_func(arg)->s_binary);
+                    fprintf(f, "\n</function>");
                 }
             }
-            printf("\n");
+            fprintf(f, "\n");
         }
-        printf("\n");
     }
     __print_binary(bin);
+    fclose(f);
 
     double average = 0.0;
     for (i = 0; i < iterations; i++) {

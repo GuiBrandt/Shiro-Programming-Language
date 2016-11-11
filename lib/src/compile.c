@@ -88,7 +88,10 @@ shiro_statement* __expression(
         if (p_stack > 0)
             push_token(expression, token);
 
-        token = stmt->tokens[++i];
+        if (++i >= stmt->used)
+            break;
+
+        token = stmt->tokens[i];
     }
 
     return expression;
@@ -122,7 +125,10 @@ shiro_statement* __block(
         if (stack > 0)
             push_token(expression, token);
 
-        token = stmt->tokens[++i];
+        if (++i >= stmt->used)
+            break;
+
+        token = stmt->tokens[i];
     }
 
     return expression;
@@ -441,10 +447,6 @@ shiro_binary* __compile_statement(
                                     push_node(b_args, set);
                                     free_node(set);
 
-                                    shiro_node* drop = new_node(DROP, 0);
-                                    push_node(b_args, drop);
-                                    free_node(drop);
-
                                     continue;
                                 }
 
@@ -480,7 +482,7 @@ shiro_binary* __compile_statement(
 
                             shiro_function* fn = malloc(sizeof(shiro_function));
                             fn->type = s_fnShiroBinary;
-                            fn->n_args = b_args->used / 3;
+                            fn->n_args = b_args->used / 2;
                             fn->s_binary = bin;
 
                             shiro_free_binary(b_args);
@@ -750,7 +752,7 @@ shiro_binary* __compile_statement(
             }
 
             token = get_token(statement, 1, line);
-            if (token == NULL) {
+            if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
                 __push_val();
             } else if (get_token_type(token) == s_tkBinaryOperator) {
                 shiro_statement* rest = offset_statement(statement, 2);

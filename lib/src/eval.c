@@ -631,19 +631,88 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case COMPARE_EQ:
             {
+                shiro_value* r = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
 
+                shiro_value* l = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_field* r_v = shiro_get_field(r, ID_VALUE);
+                shiro_field* l_v = shiro_get_field(l, ID_VALUE);
+
+                shiro_push_value(runtime, shiro_new_fixnum(l_v->value.i == r_v->value.i));
+
+                shiro_free_value(r);
+                shiro_free_value(l);
+                break;
             }
-            case COMPARE_EQ:
+            case COMPARE_GT:
             {
+                shiro_value* r = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
 
+                shiro_value* l = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_field* r_v = shiro_get_field(r, ID_VALUE);
+                shiro_field* l_v = shiro_get_field(l, ID_VALUE);
+
+                shiro_push_value(runtime, shiro_new_fixnum(l_v->value.i > r_v->value.i));
+
+                shiro_free_value(r);
+                shiro_free_value(l);
+                break;
             }
-            case COMPARE_EQ:
+            case COMPARE_LT:
             {
+                shiro_value* r = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
 
+                shiro_value* l = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_field* r_v = shiro_get_field(r, ID_VALUE);
+                shiro_field* l_v = shiro_get_field(l, ID_VALUE);
+
+                shiro_push_value(runtime, shiro_new_fixnum(l_v->value.i < r_v->value.i));
+
+                shiro_free_value(r);
+                shiro_free_value(l);
+                break;
             }
-            case COMPARE_EQ:
+            case COMPARE_GT_EQ:
             {
+                shiro_value* r = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
 
+                shiro_value* l = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_field* r_v = shiro_get_field(r, ID_VALUE);
+                shiro_field* l_v = shiro_get_field(l, ID_VALUE);
+
+                shiro_push_value(runtime, shiro_new_fixnum(l_v->value.i >= r_v->value.i));
+
+                shiro_free_value(r);
+                shiro_free_value(l);
+                break;
+            }
+            case COMPARE_LT_EQ:
+            {
+                shiro_value* r = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_value* l = shiro_get_value(runtime);
+                shiro_drop_value(runtime);
+
+                shiro_field* r_v = shiro_get_field(r, ID_VALUE);
+                shiro_field* l_v = shiro_get_field(l, ID_VALUE);
+
+                shiro_push_value(runtime, shiro_new_fixnum(l_v->value.i <= r_v->value.i));
+
+                shiro_free_value(r);
+                shiro_free_value(l);
+                break;
             }
             case FREE:
             {

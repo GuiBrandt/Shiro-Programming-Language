@@ -429,7 +429,7 @@ SHIRO_API bool shiro_to_bool(shiro_value* value) {
 //      val     : Valor a ser convertido
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_string shiro_to_string(shiro_value* val) {
-    shiro_string r = calloc(128, sizeof(shiro_character));
+    shiro_string r = calloc(32, sizeof(shiro_character));
 
     shiro_field* v = shiro_get_field(val, ID_VALUE);
     switch (val->type) {
@@ -458,6 +458,7 @@ SHIRO_API shiro_string shiro_to_string(shiro_value* val) {
             sprintf(r, "<function @ 0x%x>", (int)val);
             return r;
         case s_tString:
+            free(r);
             return v->value.str;
         default:
             break;
