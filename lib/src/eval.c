@@ -65,7 +65,6 @@ SHIRO_API shiro_runtime* shiro_execute(
                     return NULL;
                 }
 
-                shiro_value* returned;
                 if (f->type == s_fnShiroBinary) {
                     shiro_value* func_scope = shiro_clone_value(runtime->self);
 
@@ -77,19 +76,16 @@ SHIRO_API shiro_runtime* shiro_execute(
                     }
 
                     shiro_execute_for_value(runtime, func_scope, f->s_binary);
-                    returned = shiro_get_value(runtime);
-
                     shiro_free_value(func_scope);
                 } else {
-                    returned = (*f->native)(runtime, n_args);
+                    shiro_value* returned = (*f->native)(runtime, n_args);
                     int i;
                     for (i = 0; i < n_args; i++) {
                         shiro_free_value(shiro_get_value(runtime));
                         shiro_drop_value(runtime);
                     }
+                    shiro_push_value(runtime, returned);
                 }
-
-                shiro_push_value(runtime, returned);
                 break;
             }
             case PUSH:

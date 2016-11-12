@@ -521,7 +521,6 @@ shiro_binary* __compile_statement(
                 push_node(binary, node);
                 free_node(node);
             } else if (get_token_type(token) == s_tkBinaryOperator) {
-
                 shiro_statement* rest = offset_statement(statement, 2);
 
                 shiro_protect(
@@ -625,7 +624,7 @@ shiro_binary* __compile_statement(
                 token = get_token(statement, 2, line);
 
                 if (token != NULL && strcmp(token->value, MARK_PROP) == 0) {
-                    token = get_token(statement, 2, line);
+                    /*token = get_token(statement, 2, line);
 
                     if (get_token_type(token) == s_tkName) {
                         shiro_statement* rest = offset_statement(statement, 2);
@@ -643,7 +642,8 @@ shiro_binary* __compile_statement(
                     } else {
                         __error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting NAME", token->value);
                         return NULL;
-                    }
+                    }*/
+                    __error(*line, "NotSupportedYet", "Properties are not supported yet");
                 } else if (get_token_type(token) == s_tkBinaryOperator) {
                     shiro_statement* rest = offset_statement(statement, 3);
 
@@ -652,9 +652,9 @@ shiro_binary* __compile_statement(
                     );
                     shiro_string op = token->value;
 
-                    shiro_node* node = new_node(PUSH_BY_NAME, 1, shiro_new_uint(ID(name)));
-                    push_node(binary, node);
-                    free_node(node);
+                    /*shiro_node* fcall = new_node(FN_CALL, 2, shiro_new_uint(ID(name)), shiro_new_uint(n_args));
+                    push_node(binary, fcall);
+                    free_node(fcall);*/
 
                     shiro_protect(
                         binary = __compile_operator(binary, op, b_val, line);

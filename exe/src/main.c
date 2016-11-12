@@ -162,6 +162,13 @@ int main(int argc, char** argv) {
             double t0 = get_time();
             shiro_execute(runtime, bin);
             double d = get_time() - t0;
+
+            shiro_string err;
+            if ((err = shiro_get_last_error()) != NULL) {
+                printf(err);
+                return 1;
+            }
+
             t_exec += d;
         }
     }
