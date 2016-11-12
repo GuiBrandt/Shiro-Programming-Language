@@ -26,7 +26,7 @@ shiro_binary*       __compile_statement (const shiro_statement*, shiro_uint*);
 //      message     : Mensagem de erro
 //      ...         : Parâmetros usados para formatação
 //-----------------------------------------------------------------------------
-void shiro_error(
+SHIRO_API void shiro_error(
     const shiro_uint line,
     const shiro_string errcode,
     const shiro_string message,

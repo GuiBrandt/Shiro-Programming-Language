@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#if defined(_WIN32) && !defined(SHIRO_STATIC)
+#if defined(__WIN32__) && !defined(SHIRO_STATIC)
 #   define SHIRO_API __declspec(dllimport)
 #else
 #   define SHIRO_API
