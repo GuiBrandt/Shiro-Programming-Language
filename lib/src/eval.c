@@ -24,7 +24,7 @@ SHIRO_API shiro_runtime* shiro_execute(
         switch (node->code) {
             case COND:
             {
-                shiro_value* value = shiro_get_value(runtime);
+                shiro_value* value = shiro_get_last_value(runtime);
 
                 if (!shiro_to_bool(value))
                     i++;
@@ -45,7 +45,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_field* global = shiro_get_global(runtime, id);
 
                 if (global == NULL) {
-                    __error(0, ERR_NOT_A_FUNCTION, "nil is not a function");
+                    shiro_error(0, ERR_NOT_A_FUNCTION, "nil is not a function");
                     return NULL;
                 }
 
@@ -53,7 +53,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                     global = shiro_get_field(global->value.val, ID_VALUE);
 
                 if (global->type != s_fFunction) {
-                    __error(0, ERR_NOT_A_FUNCTION, "Calling non-function value of ID %d", id);
+                    shiro_error(0, ERR_NOT_A_FUNCTION, "Calling non-function value of ID %d", id);
                     return NULL;
                 }
 
@@ -61,7 +61,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_uint n_args = get_uint(node->args[1]);
 
                 if (n_args != f->n_args) {
-                    __error(0, ERR_ARGUMENT_ERROR, "Wrong number of arguments: expected %d, got %d", f->n_args, n_args);
+                    shiro_error(0, ERR_ARGUMENT_ERROR, "Wrong number of arguments: expected %d, got %d", f->n_args, n_args);
                     return NULL;
                 }
 
@@ -70,8 +70,8 @@ SHIRO_API shiro_runtime* shiro_execute(
 
                     shiro_uint i;
                     for (i = 0; i < n_args; i++) {
-                        shiro_value* arg = shiro_get_value(runtime);
-                        shiro_set_field(func_scope, ARG(n_args - i - 1), s_fValue, (union __field_value)arg);
+                        shiro_value* arg = shiro_get_last_value(runtime);
+                        shiro_set_field(func_scope, ARG(i), s_fValue, (union __field_value)arg);
                         shiro_drop_value(runtime);
                     }
 
@@ -79,9 +79,13 @@ SHIRO_API shiro_runtime* shiro_execute(
                     shiro_free_value(func_scope);
                 } else {
                     shiro_value* returned = (*f->native)(runtime, n_args);
+
+                    if (returned == NULL)
+                        return NULL;
+
                     int i;
                     for (i = 0; i < n_args; i++) {
-                        shiro_free_value(shiro_get_value(runtime));
+                        shiro_free_value(shiro_get_last_value(runtime));
                         shiro_drop_value(runtime);
                     }
                     shiro_push_value(runtime, returned);
@@ -156,7 +160,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                         runtime,
                         id,
                         s_fValue,
-                        (union __field_value)shiro_get_value(runtime)
+                        (union __field_value)shiro_get_last_value(runtime)
                     );
                     shiro_drop_value(runtime);
                 } else
@@ -171,22 +175,22 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case ADD:
             {
-                shiro_value* r = shiro_get_value(runtime);
+                shiro_value* r = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_value(runtime);
+                shiro_value* l = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
                 shiro_field* l_v = shiro_get_field(l, ID_VALUE);
 
                 if (l_v == NULL) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
                     return NULL;
                 }
 
                 if (r_v == NULL) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
                     return NULL;
                 }
 
@@ -229,7 +233,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                     }
                     case s_fFunction: {
                         if (r_v->type != s_fFunction) {
-                            __error(0, ERR_TYPE_ERROR, "Incompatible types");
+                            shiro_error(0, ERR_TYPE_ERROR, "Incompatible types");
                             return NULL;
                         }
                         break;
@@ -244,10 +248,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case SUB:
             {
-                shiro_value* r = shiro_get_value(runtime);
+                shiro_value* r = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_value(runtime);
+                shiro_value* l = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -256,14 +260,14 @@ SHIRO_API shiro_runtime* shiro_execute(
                 if (l_v == NULL ||
                     l_v->type == s_fString ||
                     l_v->type == s_fFunction) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
                     return NULL;
                 }
 
                 if (r_v == NULL ||
                     r_v->type == s_fString ||
                     r_v->type == s_fFunction) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
                     return NULL;
                 }
 
@@ -300,10 +304,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case MUL:
             {
-                shiro_value* r = shiro_get_value(runtime);
+                shiro_value* r = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_value(runtime);
+                shiro_value* l = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -312,14 +316,14 @@ SHIRO_API shiro_runtime* shiro_execute(
                 if (l_v == NULL ||
                     l_v->type == s_fString ||
                     l_v->type == s_fFunction) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
                     return NULL;
                 }
 
                 if (r_v == NULL ||
                     r_v->type == s_fString ||
                     r_v->type == s_fFunction) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
                     return NULL;
                 }
 
@@ -356,10 +360,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case DIV:
             {
-                shiro_value* r = shiro_get_value(runtime);
+                shiro_value* r = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_value(runtime);
+                shiro_value* l = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -368,14 +372,14 @@ SHIRO_API shiro_runtime* shiro_execute(
                 if (l_v == NULL ||
                     l_v->type == s_fString ||
                     l_v->type == s_fFunction) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
                     return NULL;
                 }
 
                 if (r_v == NULL ||
                     r_v->type == s_fString ||
                     r_v->type == s_fFunction) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
                     return NULL;
                 }
 
@@ -412,10 +416,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case MOD:
             {
-                shiro_value* r = shiro_get_value(runtime);
+                shiro_value* r = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_value(runtime);
+                shiro_value* l = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -424,14 +428,14 @@ SHIRO_API shiro_runtime* shiro_execute(
                 if (l_v == NULL ||
                     l_v->type == s_fString ||
                     l_v->type == s_fFunction) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
                     return NULL;
                 }
 
                 if (r_v == NULL ||
                     r_v->type == s_fString ||
                     r_v->type == s_fFunction) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
                     return NULL;
                 }
 
@@ -468,10 +472,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case B_AND:
             {
-                shiro_value* r = shiro_get_value(runtime);
+                shiro_value* r = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_value(runtime);
+                shiro_value* l = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -481,7 +485,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                     l_v->type == s_fString ||
                     l_v->type == s_fFunction ||
                     r_v->type == s_fFloat) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
                     return NULL;
                 }
 
@@ -489,7 +493,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                     r_v->type == s_fString ||
                     r_v->type == s_fFunction ||
                     r_v->type == s_fFloat) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
                     return NULL;
                 }
 
@@ -521,10 +525,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case B_OR:
             {
-                shiro_value* r = shiro_get_value(runtime);
+                shiro_value* r = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_value(runtime);
+                shiro_value* l = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -534,7 +538,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                     l_v->type == s_fString ||
                     l_v->type == s_fFunction ||
                     r_v->type == s_fFloat) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
                     return NULL;
                 }
 
@@ -542,7 +546,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                     r_v->type == s_fString ||
                     r_v->type == s_fFunction ||
                     r_v->type == s_fFloat) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
                     return NULL;
                 }
 
@@ -574,10 +578,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case B_XOR:
             {
-                shiro_value* r = shiro_get_value(runtime);
+                shiro_value* r = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_value(runtime);
+                shiro_value* l = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -587,7 +591,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                     l_v->type == s_fString ||
                     l_v->type == s_fFunction ||
                     r_v->type == s_fFloat) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
                     return NULL;
                 }
 
@@ -595,7 +599,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                     r_v->type == s_fString ||
                     r_v->type == s_fFunction ||
                     r_v->type == s_fFloat) {
-                    __error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
                     return NULL;
                 }
 
@@ -627,10 +631,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case COMPARE_EQ:
             {
-                shiro_value* r = shiro_get_value(runtime);
+                shiro_value* r = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_value(runtime);
+                shiro_value* l = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -644,10 +648,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case COMPARE_GT:
             {
-                shiro_value* r = shiro_get_value(runtime);
+                shiro_value* r = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_value(runtime);
+                shiro_value* l = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -661,10 +665,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case COMPARE_LT:
             {
-                shiro_value* r = shiro_get_value(runtime);
+                shiro_value* r = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_value(runtime);
+                shiro_value* l = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -678,10 +682,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case COMPARE_GT_EQ:
             {
-                shiro_value* r = shiro_get_value(runtime);
+                shiro_value* r = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_value(runtime);
+                shiro_value* l = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -695,10 +699,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case COMPARE_LT_EQ:
             {
-                shiro_value* r = shiro_get_value(runtime);
+                shiro_value* r = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_value(runtime);
+                shiro_value* l = shiro_get_last_value(runtime);
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);

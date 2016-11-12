@@ -84,39 +84,40 @@ typedef struct __func {
 shiro_field*              shiro_clone_field         (shiro_field*);
 void                      shiro_free_field          (shiro_field*);
 
-SHIRO_API shiro_value*    shiro_new_value     ();
-SHIRO_API shiro_value*    shiro_clone_value   (const shiro_value*);
-SHIRO_API shiro_field*    shiro_get_field     (const shiro_value*, const shiro_id);
-SHIRO_API shiro_value*    shiro_def_field     (shiro_value*, const shiro_field*);
-SHIRO_API shiro_value*    shiro_set_field     (shiro_value*, const shiro_id, enum __field_type, union __field_value);
-SHIRO_API shiro_value*    shiro_new_string    (const shiro_string);
-SHIRO_API shiro_value*    shiro_new_fixnum    (const shiro_fixnum);
-SHIRO_API shiro_value*    shiro_new_bignum    (const shiro_bignum);
-SHIRO_API shiro_value*    shiro_new_uint      (const shiro_uint);
-SHIRO_API shiro_value*    shiro_new_float     (const shiro_float);
-SHIRO_API shiro_value*    shiro_new_function  (shiro_function*);
-SHIRO_API void            shiro_free_value    (shiro_value*);
+SHIRO_API shiro_value*    shiro_new_value       ();
+SHIRO_API shiro_value*    shiro_clone_value     (const shiro_value*);
+SHIRO_API shiro_field*    shiro_get_field       (const shiro_value*, const shiro_id);
+SHIRO_API shiro_value*    shiro_def_field       (shiro_value*, const shiro_field*);
+SHIRO_API shiro_value*    shiro_set_field       (shiro_value*, const shiro_id, enum __field_type, union __field_value);
+SHIRO_API shiro_value*    shiro_new_string      (const shiro_string);
+SHIRO_API shiro_value*    shiro_new_fixnum      (const shiro_fixnum);
+SHIRO_API shiro_value*    shiro_new_bignum      (const shiro_bignum);
+SHIRO_API shiro_value*    shiro_new_uint        (const shiro_uint);
+SHIRO_API shiro_value*    shiro_new_float       (const shiro_float);
+SHIRO_API shiro_value*    shiro_new_function    (shiro_function*);
+SHIRO_API void            shiro_free_value      (shiro_value*);
 
-SHIRO_API shiro_function* shiro_clone_function(const shiro_function*);
-SHIRO_API void            shiro_free_function (shiro_function*);
+SHIRO_API shiro_function* shiro_clone_function  (const shiro_function*);
+SHIRO_API void            shiro_free_function   (shiro_function*);
 
-SHIRO_API shiro_runtime*  shiro_init          ();
-SHIRO_API void            shiro_terminate     (shiro_runtime*);
+SHIRO_API shiro_runtime*  shiro_init            ();
+SHIRO_API void            shiro_terminate       (shiro_runtime*);
 
-SHIRO_API shiro_runtime*  shiro_push_value    (shiro_runtime*, shiro_value*);
-SHIRO_API shiro_runtime*  shiro_drop_value    (shiro_runtime*);
-SHIRO_API shiro_value*    shiro_get_value     (shiro_runtime*);
+SHIRO_API shiro_runtime*  shiro_push_value      (shiro_runtime*, shiro_value*);
+SHIRO_API shiro_runtime*  shiro_drop_value      (shiro_runtime*);
+SHIRO_API shiro_value*    shiro_get_last_value  (shiro_runtime*);
+SHIRO_API shiro_value*    shiro_get_value       (shiro_runtime* runtime, shiro_uint n);
 
-SHIRO_API shiro_runtime*  shiro_def_global    (shiro_runtime*, shiro_field*);
-SHIRO_API shiro_runtime*  shiro_set_global    (shiro_runtime*, shiro_id, enum __field_type, union __field_value);
-SHIRO_API shiro_field*    shiro_get_global    (shiro_runtime*, shiro_id);
+SHIRO_API shiro_runtime*  shiro_def_global      (shiro_runtime*, shiro_field*);
+SHIRO_API shiro_runtime*  shiro_set_global      (shiro_runtime*, shiro_id, enum __field_type, union __field_value);
+SHIRO_API shiro_field*    shiro_get_global      (shiro_runtime*, shiro_id);
 
-SHIRO_API bool            shiro_to_bool       (shiro_value*);
-SHIRO_API shiro_string    shiro_to_string     (shiro_value*);
-SHIRO_API shiro_fixnum    shiro_to_fixnum     (shiro_value*);
-SHIRO_API shiro_bignum    shiro_to_bignum     (shiro_value*);
-SHIRO_API shiro_uint      shiro_to_uint       (shiro_value*);
-SHIRO_API shiro_float     shiro_to_float      (shiro_value*);
+SHIRO_API bool            shiro_to_bool         (shiro_value*);
+SHIRO_API shiro_string    shiro_to_string       (shiro_value*);
+SHIRO_API shiro_fixnum    shiro_to_fixnum       (shiro_value*);
+SHIRO_API shiro_bignum    shiro_to_bignum       (shiro_value*);
+SHIRO_API shiro_uint      shiro_to_uint         (shiro_value*);
+SHIRO_API shiro_float     shiro_to_float        (shiro_value*);
 
 
 SHIRO_API shiro_value* shiro_nil;

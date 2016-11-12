@@ -373,11 +373,21 @@ SHIRO_API shiro_runtime* shiro_drop_value(shiro_runtime* runtime) {
 // Obtém o primeiro valor na pilha
 //      runtime : Runtime onde o valor está
 //-----------------------------------------------------------------------------
-SHIRO_API shiro_value* shiro_get_value(shiro_runtime* runtime) {
+SHIRO_API shiro_value* shiro_get_last_value(shiro_runtime* runtime) {
     if (runtime->used_stack == 0)
         return NULL;
     else
         return runtime->stack[runtime->used_stack - 1];
+}
+//-----------------------------------------------------------------------------
+// Obtém o primeiro valor na pilha
+//      runtime : Runtime onde o valor está
+//-----------------------------------------------------------------------------
+SHIRO_API shiro_value* shiro_get_value(shiro_runtime* runtime, shiro_uint n) {
+    if (runtime->used_stack <= n)
+        return NULL;
+    else
+        return runtime->stack[runtime->used_stack - n - 1];
 }
 //-----------------------------------------------------------------------------
 // Define um valor global em um runtime

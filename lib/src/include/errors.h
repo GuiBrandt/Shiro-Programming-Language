@@ -12,7 +12,7 @@
 
 shiro_string last_error;
 
-void __error(const shiro_uint, const shiro_string, const shiro_string, ...);
+SHIRO_API void shiro_error(const shiro_uint, const shiro_string, const shiro_string, ...);
 
 SHIRO_API shiro_string shiro_get_last_error(void);
 

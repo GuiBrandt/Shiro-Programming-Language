@@ -171,7 +171,8 @@ SHIRO_API void            shiro_terminate     (shiro_runtime*);
 
 SHIRO_API shiro_runtime*  shiro_push_value    (shiro_runtime*, shiro_value*);
 SHIRO_API shiro_runtime*  shiro_drop_value    (shiro_runtime*);
-SHIRO_API shiro_value*    shiro_get_value     (shiro_runtime*);
+SHIRO_API shiro_value*    shiro_get_last_value(shiro_runtime*);
+SHIRO_API shiro_value*    shiro_get_value     (shiro_runtime* runtime, shiro_uint n);
 
 SHIRO_API shiro_runtime*  shiro_def_global    (shiro_runtime*, shiro_field*);
 SHIRO_API shiro_runtime*  shiro_set_global    (shiro_runtime*, shiro_id, enum __field_type, union __field_value);
@@ -184,6 +185,7 @@ SHIRO_API shiro_value* shiro_nil;
 SHIRO_API shiro_runtime* shiro_execute(shiro_runtime*, shiro_binary*);
 SHIRO_API shiro_runtime* shiro_execute_for_value(shiro_runtime*, shiro_value*, shiro_binary*);
 
+SHIRO_API void shiro_error(const shiro_uint, const shiro_string, const shiro_string, ...);
 SHIRO_API shiro_string shiro_get_last_error(void);
 
 #endif // SHIRO_H_INCLUDED
