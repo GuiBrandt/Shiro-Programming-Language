@@ -14,25 +14,20 @@ O nome é aleatório mesmo. Deal with it.
 Progresso
 ---
 
-No momento o shiro compila sentenças if/else e chama funções nativas (escritas em C e passadas para o ambiente de execução da linguagem por ponteiro).
+Já é possível usar a linguagem para calcular a sequência de fibonacci de forma recursiva:
 
-Os tempos de execução e compilação estão em aproximadamente 0.6ms e 0.8ms respectivamente para o seguinte código:
+	import('lib/stdio');
 
-	fn say(say_a, msg_a, msg_b) 
+	fn fibo(n)
 	{
-		var msg = if (say_a) { msg_a } else { msg_b };
-		print(msg);
+	    if ((n == 0) | (n == 1))
+	    {
+	        1;
+	    }
+	    else
+	    {
+	        fibo(n - 1) + fibo(n - 2);
+	    };
 	};
 	
-	fn do_it
-	{
-		var a = "HELLO";
-		var b = "BYE";
-		
-		say(0, a, b);
-		say(1, a, b);
-	};
-	
-	do_it();
-
-Nota: O tempo de compilação e execução foi medido em um CPU Celeron(R) Dual-Core CPU T3500 2.10GHz, então basicamente qualquer computador decente vai registrar tempos menores.
+	print(fibo(20));
