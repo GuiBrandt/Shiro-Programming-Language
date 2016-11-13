@@ -121,7 +121,6 @@ SHIRO_API shiro_bignum    shiro_to_bignum       (shiro_value*);
 SHIRO_API shiro_uint      shiro_to_uint         (shiro_value*);
 SHIRO_API shiro_float     shiro_to_float        (shiro_value*);
 
-
-SHIRO_API shiro_value* shiro_nil;
+SHIRO_API shiro_value*    shiro_nil;
 
 #endif // VM_H_INCLUDED

@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+SHIRO_API shiro_value* shiro_nil = (shiro_value*)-1;
+
 //-----------------------------------------------------------------------------
 // Clona um campo shiro_field
 //      f   : Ponteiro para o campo a ser clonado
@@ -317,13 +320,6 @@ SHIRO_API void shiro_free_function(shiro_function* f) {
 // Inicializa um runtime do shiro
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_runtime* shiro_init() {
-    if (shiro_nil == NULL) {
-        shiro_nil = malloc(sizeof(shiro_value));
-        shiro_value nil = { s_tVoid, 0, NULL };
-        memcpy(shiro_nil, &nil, sizeof(shiro_value));
-        shiro_nil->fields = calloc(0, sizeof(shiro_field*));
-    }
-
     shiro_runtime* runtime = malloc(sizeof(shiro_runtime));
     runtime->used_stack = 0;
 
@@ -342,12 +338,6 @@ SHIRO_API void shiro_terminate(shiro_runtime* runtime) {
     free(runtime->stack);
     shiro_free_value(runtime->self);
     free(runtime);
-
-    int i;
-    for (i = 0; i < shiro_nil->n_fields; i++)
-        shiro_free_field(shiro_nil->fields[i]);
-    free(shiro_nil->fields);
-    free(shiro_nil);
 
     shiro_nil = NULL;
 }

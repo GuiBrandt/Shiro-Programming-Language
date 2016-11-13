@@ -181,7 +181,7 @@ SHIRO_API shiro_field*    shiro_get_global    (shiro_runtime*, shiro_id);
 
 SHIRO_API shiro_string    shiro_to_string     (shiro_value*);
 
-SHIRO_API shiro_value* shiro_nil;
+SHIRO_API shiro_value*    shiro_nil;
 
 SHIRO_API shiro_runtime* shiro_execute(shiro_runtime*, shiro_binary*);
 SHIRO_API shiro_runtime* shiro_execute_for_value(shiro_runtime*, shiro_value*, shiro_binary*);
