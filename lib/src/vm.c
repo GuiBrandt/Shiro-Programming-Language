@@ -17,7 +17,7 @@ shiro_field* shiro_clone_field(shiro_field* f) {
 
     switch (f->type) {
         case s_fValue:
-            field->value.val = shiro_clone_value(f->value.val);
+            field->value.val = shiro_use_value(f->value.val);
             break;
         case s_fString:
             if (f->value.str == NULL) break;
@@ -65,10 +65,22 @@ void shiro_free_field(shiro_field* f) {
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_value* shiro_new_value() {
     shiro_value* val = malloc(sizeof(shiro_value));
-    shiro_value v = {s_tObject, 0, NULL};
+    shiro_value v = {s_tObject, 0, NULL, 1};
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(1, sizeof(shiro_field*));
     return val;
+}
+//-----------------------------------------------------------------------------
+// Marca um shiro_value como sendo usado
+//      v   : shiro_value a ser marcado
+//-----------------------------------------------------------------------------
+SHIRO_API shiro_value* shiro_use_value(shiro_value* v) {
+    if (v == shiro_nil)
+        return shiro_nil;
+
+    v->being_used++;
+
+    return v;
 }
 //-----------------------------------------------------------------------------
 // Clona um shiro_value
@@ -169,7 +181,7 @@ SHIRO_API shiro_field* shiro_get_field(
 //      str : String C usada para inicializar a string do shiro
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_value* shiro_new_string(const shiro_string str) {
-    shiro_value v = {s_tString, 2, NULL};
+    shiro_value v = {s_tString, 2, NULL, 1};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(2, sizeof(shiro_field*));
@@ -190,7 +202,7 @@ SHIRO_API shiro_value* shiro_new_string(const shiro_string str) {
 //      fix : Inteiro 32-bit C usado para inicializar o fixnum do shiro
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_value* shiro_new_fixnum(const shiro_fixnum fix) {
-    shiro_value  v   = {s_tInt, 1, NULL};
+    shiro_value  v   = {s_tInt, 1, NULL, 1};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(1, sizeof(shiro_field*));
@@ -205,7 +217,7 @@ SHIRO_API shiro_value* shiro_new_fixnum(const shiro_fixnum fix) {
 //      big : Inteiro 64-bit C usado para inicializar o bignum do shiro
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_value* shiro_new_bignum(const shiro_bignum big) {
-    shiro_value  v   = {s_tInt, 1, NULL};
+    shiro_value  v   = {s_tInt, 1, NULL, 1};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(1, sizeof(shiro_field*));
@@ -220,7 +232,7 @@ SHIRO_API shiro_value* shiro_new_bignum(const shiro_bignum big) {
 //      u   : Inteiro 32-bit positivo C usado para inicializar o uint do shiro
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_value* shiro_new_uint(const shiro_uint u) {
-    shiro_value  v   = {s_tInt, 1, NULL};
+    shiro_value  v   = {s_tInt, 1, NULL, 1};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(1, sizeof(shiro_field*));
@@ -234,7 +246,7 @@ SHIRO_API shiro_value* shiro_new_uint(const shiro_uint u) {
 //      f   : Ponto flutuante C usado para inicializar o float do shiro
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_value* shiro_new_float(const shiro_float f) {
-    shiro_value  v   = {s_tFloat, 1, NULL};
+    shiro_value  v   = {s_tFloat, 1, NULL, 1};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(1, sizeof(shiro_field*));
@@ -250,7 +262,7 @@ SHIRO_API shiro_value* shiro_new_float(const shiro_float f) {
 //            Function
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_value* shiro_new_function(shiro_function* fn) {
-    shiro_value  v   = {s_tFunction, 1, NULL};
+    shiro_value  v   = {s_tFunction, 1, NULL, 1};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(1, sizeof(shiro_field*));
@@ -267,6 +279,11 @@ SHIRO_API void shiro_free_value(shiro_value* v) {
     if (v == shiro_nil)
         return;
 
+    v->being_used--;
+
+    if (v->being_used)
+        return;
+
     int i;
     for (i = 0; i < v->n_fields; i++)
         shiro_free_field(v->fields[i]);
@@ -277,7 +294,7 @@ SHIRO_API void shiro_free_value(shiro_value* v) {
 // Clona uma função do shiro
 //      f   : shiro_function que será clonada
 //-----------------------------------------------------------------------------
-SHIRO_API shiro_function* shiro_clone_function(const shiro_function* f) {
+SHIRO_API shiro_function* shiro_clone_function(shiro_function* f) {
     shiro_function* func = malloc(sizeof(shiro_function));
     func->type = f->type;
     func->n_args = f->n_args;

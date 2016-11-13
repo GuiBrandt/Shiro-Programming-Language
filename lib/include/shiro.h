@@ -151,6 +151,7 @@ shiro_field*              shiro_clone_field         (shiro_field*);
 void                      shiro_free_field          (shiro_field*);
 
 SHIRO_API shiro_value*    shiro_new_value     ();
+SHIRO_API shiro_value*    shiro_use_value     (shiro_value*);
 SHIRO_API shiro_value*    shiro_clone_value   (const shiro_value*);
 SHIRO_API shiro_field*    shiro_get_field     (const shiro_value*, const shiro_id);
 SHIRO_API shiro_value*    shiro_def_field     (shiro_value*, const shiro_field*);

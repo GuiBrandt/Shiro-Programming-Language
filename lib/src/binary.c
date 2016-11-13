@@ -22,6 +22,7 @@ shiro_node* new_node(const shiro_bytecode code, const shiro_uint n_args, ...) {
     node->code   = code;
     node->n_args = n_args;
     node->args   = calloc(n_args, sizeof(void*));
+    node->being_used = 1;
 
     va_list args;
     va_start(args, n_args);
@@ -40,24 +41,20 @@ shiro_node* new_node(const shiro_bytecode code, const shiro_uint n_args, ...) {
 // Clona um nó do shiro
 //      other   : Nó que será clonado
 //-----------------------------------------------------------------------------
-shiro_node* clone_node(const shiro_node* other) {
-    shiro_node* node = malloc(sizeof(shiro_node));
-
-    node->code = other->code;
-    node->n_args = other->n_args;
-    node->args = malloc(node->n_args * sizeof(shiro_value*));
-
-    int i;
-    for (i = 0; i < node->n_args; i++)
-        node->args[i] = shiro_clone_value(other->args[i]);
-
-    return node;
+shiro_node* clone_node(shiro_node* other) {
+    other->being_used++;
+    return other;
 }
 //-----------------------------------------------------------------------------
 // Limpa um nó do shiro da memória
 //      node    : Nó a ser limpo da memória
 //-----------------------------------------------------------------------------
 void free_node(shiro_node* node) {
+    node->being_used--;
+
+    if (node->being_used)
+        return;
+
     int i;
     for (i = 0; i < node->n_args; i++)
         shiro_free_value(node->args[i]);
@@ -78,7 +75,7 @@ shiro_binary* new_binary(void) {
 // Clona um binário do shiro
 //      bin : Binário a ser clonado
 //-----------------------------------------------------------------------------
-shiro_binary* clone_binary(const shiro_binary* bin) {
+shiro_binary* clone_binary(shiro_binary* bin) {
     shiro_binary* binary = new_binary();
 
     shiro_uint i;
@@ -95,7 +92,7 @@ shiro_binary* clone_binary(const shiro_binary* bin) {
 // Nota.: O nó adicionado ao binário na verdade é um clone do original, que
 // pode ser liberado da memória assim que necessário
 //-----------------------------------------------------------------------------
-shiro_binary* push_node(shiro_binary* binary, const shiro_node* node) {
+shiro_binary* push_node(shiro_binary* binary, shiro_node* node) {
     if (binary == NULL || node == NULL)
         return binary;
 

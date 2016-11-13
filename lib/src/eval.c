@@ -94,7 +94,7 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case PUSH:
             {
-                shiro_push_value(runtime, shiro_clone_value(node->args[0]));
+                shiro_push_value(runtime, shiro_use_value(node->args[0]));
                 break;
             }
             case PUSH_BY_NAME:
@@ -102,7 +102,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_id id = get_uint(node->args[0]);
 
                 if (id == ID("self")) {
-                    shiro_push_value(runtime, shiro_clone_value(runtime->self));
+                    shiro_push_value(runtime, shiro_use_value(runtime->self));
                 } else if (id == ID("nil")) {
                     shiro_push_value(runtime, shiro_nil);
                 } else {
@@ -113,7 +113,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                     else
                         switch (g->type) {
                             case s_fValue:
-                                shiro_push_value(runtime, shiro_clone_value(g->value.val));
+                                shiro_push_value(runtime, shiro_use_value(g->value.val));
                                 break;
                             case s_fBignum:
                                 shiro_push_value(runtime, shiro_new_bignum(g->value.l));
