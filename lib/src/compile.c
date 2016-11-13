@@ -511,8 +511,7 @@ shiro_binary* __compile_statement(
         }
         case s_tkName:
         {
-            shiro_string name = calloc(token->used + 1, sizeof(shiro_character));
-            memcpy(name, token->value, token->used * sizeof(shiro_character));
+            shiro_string name = token->value;
 
             token = get_token(statement, 1, line);
 
@@ -526,6 +525,7 @@ shiro_binary* __compile_statement(
                 shiro_protect(
                     shiro_binary* b_val = __compile_statement(rest, line);
                 );
+                free_statement(rest);
 
                 shiro_string op = token->value;
 
@@ -547,7 +547,7 @@ shiro_binary* __compile_statement(
 
                     shiro_binary* b_rest = __compile_statement(rest, line);
 
-                    free(rest);
+                    free_statement(rest);
 
                     shiro_node* node = new_node(PUSH_BY_NAME, 1, shiro_new_uint(ID(name)));
                     push_node(binary, node);
@@ -654,6 +654,7 @@ shiro_binary* __compile_statement(
                     shiro_protect(
                         shiro_binary* b_val = __compile_statement(rest, line);
                     );
+                    free_statement(rest);
                     shiro_string op = token->value;
 
                     /*shiro_node* fcall = new_node(FN_CALL, 2, shiro_new_uint(ID(name)), shiro_new_uint(n_args));
@@ -672,8 +673,6 @@ shiro_binary* __compile_statement(
                 shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
                 return NULL;
             }
-
-            free(name);
             break;
         }
         case s_tkMark:
@@ -697,6 +696,7 @@ shiro_binary* __compile_statement(
                     shiro_protect(
                         shiro_binary* b_val = __compile_statement(rest, line);
                     );
+                    free_statement(rest);
                     shiro_string op = token->value;
 
                     shiro_protect(
@@ -764,6 +764,7 @@ shiro_binary* __compile_statement(
                 shiro_protect(
                     shiro_binary* b_val = __compile_statement(rest, line);
                 );
+                free_statement(rest);
                 shiro_string op = token->value;
                 __push_val();
 

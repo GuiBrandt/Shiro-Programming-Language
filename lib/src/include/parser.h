@@ -68,7 +68,7 @@ typedef struct __binary {
 } shiro_binary;
 
 shiro_node*   new_node                  (const shiro_bytecode, const shiro_uint, ...);
-shiro_node*   clone_node                (shiro_node*);
+shiro_node*   use_node                (shiro_node*);
 void          free_node                 (shiro_node*);
 
 shiro_binary* new_binary                (void);

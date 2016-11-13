@@ -93,7 +93,8 @@ SHIRO_API shiro_value* shiro_clone_value(const shiro_value* v) {
 
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, v, sizeof(shiro_value));
-    val->fields = calloc(v->n_fields, sizeof(shiro_field*));
+    val->being_used = 1;
+    val->fields = malloc(v->n_fields * sizeof(shiro_field*));
 
     int i;
     for (i = 0; i < val->n_fields; i++)
@@ -279,10 +280,7 @@ SHIRO_API void shiro_free_value(shiro_value* v) {
     if (v == shiro_nil)
         return;
 
-    v->being_used--;
-
-    if (v->being_used)
-        return;
+    if (--v->being_used > 0) return;
 
     int i;
     for (i = 0; i < v->n_fields; i++)
@@ -329,9 +327,9 @@ SHIRO_API shiro_runtime* shiro_init() {
     shiro_runtime* runtime = malloc(sizeof(shiro_runtime));
     runtime->used_stack = 0;
 
-    runtime->allocated_stack = 1;
+    runtime->allocated_stack = 32;
 
-    runtime->stack = malloc(sizeof(shiro_value*));
+    runtime->stack = malloc(sizeof(shiro_value*) * runtime->allocated_stack);
     runtime->self = shiro_new_value();
 
     return runtime;
@@ -382,8 +380,10 @@ SHIRO_API shiro_runtime* shiro_push_value(
 //      runtime : Runtime de onde o valor será removido
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_runtime* shiro_drop_value(shiro_runtime* runtime) {
-    if (runtime->used_stack > 0)
+    if (runtime->used_stack > 0) {
+        shiro_free_value(runtime->stack[runtime->used_stack - 1]);
         runtime->used_stack--;
+    }
     return runtime;
 }
 //-----------------------------------------------------------------------------

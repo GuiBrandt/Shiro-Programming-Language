@@ -29,7 +29,6 @@ SHIRO_API shiro_runtime* shiro_execute(
                 if (!shiro_to_bool(value))
                     i++;
 
-                shiro_free_value(value);
                 shiro_drop_value(runtime);
                 break;
             }
@@ -70,8 +69,8 @@ SHIRO_API shiro_runtime* shiro_execute(
 
                     shiro_uint i;
                     for (i = 0; i < n_args; i++) {
-                        shiro_value* arg = shiro_get_last_value(runtime);
-                        shiro_set_field(func_scope, ARG(i), s_fValue, (union __field_value)arg);
+                        shiro_value* arg = shiro_use_value(shiro_get_last_value(runtime));
+                        shiro_set_field(func_scope, ARG(i), s_fValue, (union __field_value)shiro_use_value(arg));
                         shiro_drop_value(runtime);
                     }
 
@@ -84,10 +83,8 @@ SHIRO_API shiro_runtime* shiro_execute(
                         return NULL;
 
                     int i;
-                    for (i = 0; i < n_args; i++) {
-                        shiro_free_value(shiro_get_last_value(runtime));
+                    for (i = 0; i < n_args; i++)
                         shiro_drop_value(runtime);
-                    }
                     shiro_push_value(runtime, returned);
                 }
                 break;
@@ -160,7 +157,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                         runtime,
                         id,
                         s_fValue,
-                        (union __field_value)shiro_get_last_value(runtime)
+                        (union __field_value)shiro_use_value(shiro_get_last_value(runtime))
                     );
                     shiro_drop_value(runtime);
                 } else
@@ -175,10 +172,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case ADD:
             {
-                shiro_value* r = shiro_get_last_value(runtime);
+                shiro_value* r = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_last_value(runtime);
+                shiro_value* l = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -242,16 +239,18 @@ SHIRO_API shiro_runtime* shiro_execute(
                         result = shiro_new_value();
                         break;
                 }
+                shiro_free_value(l);
+                shiro_free_value(r);
                 shiro_push_value(runtime, result);
 
                 break;
             }
             case SUB:
             {
-                shiro_value* r = shiro_get_last_value(runtime);
+                shiro_value* r = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_last_value(runtime);
+                shiro_value* l = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -298,16 +297,18 @@ SHIRO_API shiro_runtime* shiro_execute(
                         result = shiro_new_value();
                         break;
                 }
+                shiro_free_value(l);
+                shiro_free_value(r);
                 shiro_push_value(runtime, result);
 
                 break;
             }
             case MUL:
             {
-                shiro_value* r = shiro_get_last_value(runtime);
+                shiro_value* r = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_last_value(runtime);
+                shiro_value* l = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -354,16 +355,18 @@ SHIRO_API shiro_runtime* shiro_execute(
                         result = shiro_new_value();
                         break;
                 }
+                shiro_free_value(l);
+                shiro_free_value(r);
                 shiro_push_value(runtime, result);
 
                 break;
             }
             case DIV:
             {
-                shiro_value* r = shiro_get_last_value(runtime);
+                shiro_value* r = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_last_value(runtime);
+                shiro_value* l = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -410,16 +413,18 @@ SHIRO_API shiro_runtime* shiro_execute(
                         result = shiro_new_value();
                         break;
                 }
+                shiro_free_value(l);
+                shiro_free_value(r);
                 shiro_push_value(runtime, result);
 
                 break;
             }
             case MOD:
             {
-                shiro_value* r = shiro_get_last_value(runtime);
+                shiro_value* r = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_last_value(runtime);
+                shiro_value* l = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -466,16 +471,18 @@ SHIRO_API shiro_runtime* shiro_execute(
                         result = shiro_new_value();
                         break;
                 }
+                shiro_free_value(l);
+                shiro_free_value(r);
                 shiro_push_value(runtime, result);
 
                 break;
             }
             case B_AND:
             {
-                shiro_value* r = shiro_get_last_value(runtime);
+                shiro_value* r = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_last_value(runtime);
+                shiro_value* l = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -519,16 +526,18 @@ SHIRO_API shiro_runtime* shiro_execute(
                         result = shiro_new_value();
                         break;
                 }
+                shiro_free_value(l);
+                shiro_free_value(r);
                 shiro_push_value(runtime, result);
 
                 break;
             }
             case B_OR:
             {
-                shiro_value* r = shiro_get_last_value(runtime);
+                shiro_value* r = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_last_value(runtime);
+                shiro_value* l = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -572,16 +581,20 @@ SHIRO_API shiro_runtime* shiro_execute(
                         result = shiro_new_value();
                         break;
                 }
+
+                shiro_free_value(l);
+                shiro_free_value(r);
+
                 shiro_push_value(runtime, result);
 
                 break;
             }
             case B_XOR:
             {
-                shiro_value* r = shiro_get_last_value(runtime);
+                shiro_value* r = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_last_value(runtime);
+                shiro_value* l = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -625,16 +638,20 @@ SHIRO_API shiro_runtime* shiro_execute(
                         result = shiro_new_value();
                         break;
                 }
+
+                shiro_free_value(l);
+                shiro_free_value(r);
+
                 shiro_push_value(runtime, result);
 
                 break;
             }
             case COMPARE_EQ:
             {
-                shiro_value* r = shiro_get_last_value(runtime);
+                shiro_value* r = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_last_value(runtime);
+                shiro_value* l = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -648,10 +665,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case COMPARE_GT:
             {
-                shiro_value* r = shiro_get_last_value(runtime);
+                shiro_value* r = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_last_value(runtime);
+                shiro_value* l = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -665,10 +682,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case COMPARE_LT:
             {
-                shiro_value* r = shiro_get_last_value(runtime);
+                shiro_value* r = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_last_value(runtime);
+                shiro_value* l = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -682,10 +699,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case COMPARE_GT_EQ:
             {
-                shiro_value* r = shiro_get_last_value(runtime);
+                shiro_value* r = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_last_value(runtime);
+                shiro_value* l = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
@@ -699,10 +716,10 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case COMPARE_LT_EQ:
             {
-                shiro_value* r = shiro_get_last_value(runtime);
+                shiro_value* r = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
-                shiro_value* l = shiro_get_last_value(runtime);
+                shiro_value* l = shiro_use_value(shiro_get_last_value(runtime));
                 shiro_drop_value(runtime);
 
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);

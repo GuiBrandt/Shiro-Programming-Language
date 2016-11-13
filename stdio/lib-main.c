@@ -33,7 +33,9 @@ shiro_value* shiro_gets(shiro_runtime* runtime, shiro_uint n_args) {
 //
 shiro_value* shiro_print(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
-    printf(shiro_to_string(arg0));
+    shiro_string str = shiro_to_string(arg0);
+    printf(str);
+    free(str);
     return shiro_nil;
 }
 

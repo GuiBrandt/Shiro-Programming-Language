@@ -41,7 +41,7 @@ shiro_node* new_node(const shiro_bytecode code, const shiro_uint n_args, ...) {
 // Clona um nó do shiro
 //      other   : Nó que será clonado
 //-----------------------------------------------------------------------------
-shiro_node* clone_node(shiro_node* other) {
+shiro_node* use_node(shiro_node* other) {
     other->being_used++;
     return other;
 }
@@ -50,9 +50,7 @@ shiro_node* clone_node(shiro_node* other) {
 //      node    : Nó a ser limpo da memória
 //-----------------------------------------------------------------------------
 void free_node(shiro_node* node) {
-    node->being_used--;
-
-    if (node->being_used)
+    if (--node->being_used > 0)
         return;
 
     int i;
@@ -104,7 +102,7 @@ shiro_binary* push_node(shiro_binary* binary, shiro_node* node) {
         );
     }
 
-    binary->nodes[binary->used++] = clone_node(node);
+    binary->nodes[binary->used++] = use_node(node);
 
     return binary;
 }
