@@ -193,4 +193,6 @@ SHIRO_API shiro_runtime* shiro_execute_for_value(shiro_runtime*, shiro_value*, s
 SHIRO_API void shiro_error(const shiro_uint, const shiro_string, const shiro_string, ...);
 SHIRO_API shiro_string shiro_get_last_error(void);
 
+SHIRO_API void shiro_load_stdlib              (shiro_runtime*);
+
 #endif // SHIRO_H_INCLUDED

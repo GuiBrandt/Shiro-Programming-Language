@@ -502,7 +502,105 @@ shiro_binary* __compile_statement(
                 }
             }
 
-            if (token == NULL || (strcmp(token->value, KW_NIL) != 0 && strcmp(token->value, KW_SELF) != 0))
+            //
+            //  include "<filename>"
+            //
+            else if (strcmp(token->value, KW_INCLUDE) == 0) {
+
+                token = get_token(statement, 1, line);
+
+                if (token == NULL) {
+                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected <END>, expecting STRING");
+                    return NULL;
+                }
+
+                if (get_token_type(token) != s_tkConst || (*token->value != *MARK_STR1 && *token->value != *MARK_STR2)) {
+                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting STRING", token->value);
+                    return NULL;
+                }
+
+                shiro_uint len = strlen(token->value) - 2;
+                shiro_string filename = calloc(len + 1, sizeof(shiro_character));
+                memcpy(filename, token->value + 1, len);
+
+                token = get_token(statement, 2, line);
+
+                if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
+
+                    if (strchr(filename, '.') <= strchr(filename, '/') ||
+                        strchr(filename, '.') <= strchr(filename, '\\'))
+                        strcat(filename, ".shiro");
+
+                    FILE* file = fopen(filename, "r");
+
+                    if (file == NULL) {
+                        shiro_error(0, "IOError", "No such file or directory '%s'", filename);
+                        return NULL;
+                    }
+
+                    fseek(file, 0, SEEK_END);
+                    shiro_uint size = ftell(file);
+                    fseek(file, 0, SEEK_SET);
+
+                    shiro_string fcontents = calloc(size, sizeof(shiro_character));
+                    fread(fcontents, sizeof(shiro_character), size, file);
+
+                    shiro_protect(
+                        shiro_binary* bin = shiro_compile(fcontents);
+                    );
+
+                    binary = concat_and_free_binary(binary, bin);
+
+                    return binary;
+                } else {
+                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                    return NULL;
+                }
+            }
+
+            //
+            //  import "<filename>"
+            //
+            else if (strcmp(token->value, KW_IMPORT) == 0) {
+                token = get_token(statement, 1, line);
+
+                if (token == NULL) {
+                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected <END>, expecting STRING");
+                    return NULL;
+                }
+
+                if (get_token_type(token) == s_tkConst && (*token->value == *MARK_STR1 || *token->value == *MARK_STR2)) {
+                    shiro_uint len = strlen(token->value) - 2;
+                    shiro_string filename = calloc(len + 1, sizeof(shiro_character));
+                    memcpy(filename, token->value + 1, len);
+
+                    token = get_token(statement, 2, line);
+
+                    if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
+                        shiro_node* push = new_node(PUSH, 1, shiro_new_string(filename));
+                        push_node(binary, push);
+                        free_node(push);
+
+                        shiro_node* call = new_node(FN_CALL, 2, shiro_new_uint(ID("import")), shiro_new_uint(1));
+                        push_node(binary, call);
+                        free_node(call);
+
+                        return binary;
+                    } else {
+                        shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                        return NULL;
+                    }
+
+                    free(filename);
+                }
+
+                token = get_token(statement, 0, line);
+            }
+
+            if (token == NULL || (
+                strcmp(token->value, KW_NIL) != 0 &&
+                strcmp(token->value, KW_SELF) != 0 &&
+                strcmp(token->value, KW_IMPORT) != 0))
                 break;
         }
         case s_tkName:

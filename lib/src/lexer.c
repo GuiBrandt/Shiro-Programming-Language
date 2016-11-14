@@ -254,17 +254,54 @@ shiro_token_type get_token_type(const shiro_token* token) {
     if (string == NULL || *string == 0)
         return s_tkUnknown;
 
-    if (strcmp(string, KW_BREAK)     == 0 || strcmp(string, KW_CASE)    == 0 ||
-        strcmp(string, KW_CLASS)     == 0 || strcmp(string, KW_COND)    == 0 ||
-        strcmp(string, KW_CONST)     == 0 || strcmp(string, KW_DELETE)  == 0 ||
-        strcmp(string, KW_ELSE)      == 0 || strcmp(string, KW_FOR)     == 0 ||
-        strcmp(string, KW_WHILE)     == 0 || strcmp(string, KW_LOOP)    == 0 ||
-        strcmp(string, KW_FUNC)      == 0 || strcmp(string, KW_SWITCH)  == 0 ||
-        strcmp(string, KW_DO)        == 0 || strcmp(string, KW_PRIVATE) == 0 ||
-        strcmp(string, KW_PROTECTED) == 0 || strcmp(string, KW_PUBLIC)  == 0 ||
-        strcmp(string, KW_NEXT)      == 0 || strcmp(string, KW_DIE)     == 0 ||
-        strcmp(string, KW_VAR)       == 0 || strcmp(string, KW_SELF)    == 0 ||
-        strcmp(string, KW_NIL)       == 0)
+    shiro_uint len = strlen(string);
+
+    /*
+
+    #define KW_COND         "if"
+    #define KW_DO           "do"
+    #define KW_FUNC         "fn"
+    #define KW_VAR          "var"
+    #define KW_NIL          "nil"
+    #define KW_FOR          "for"
+    #define KW_DIE          "exit"
+    #define KW_SELF         "self"
+    #define KW_LOOP         "loop"
+    #define KW_ELSE         "else"
+    #define KW_CASE         "case"
+    #define KW_BREAK        "break"
+    #define KW_WHILE        "while"
+    #define KW_IMPORT       "import"
+    #define KW_SWITCH       "switch"
+    #define KW_DELETE       "delete"
+    #define KW_INCLUDE      "include"
+    #define KW_REQUIRE      "require"
+    #define KW_NEXT         "continue"
+
+    */
+
+    if (
+        (len == 2 &&
+            (strcmp(string, KW_COND) == 0 || strcmp(string, KW_DO) == 0 || strcmp(string, KW_FUNC) == 0)
+        ) ||
+        (len == 3 &&
+            (strcmp(string, KW_VAR) == 0 || strcmp(string, KW_NIL) == 0 || strcmp(string, KW_FOR) == 0)
+        ) ||
+        (len == 4 &&
+            (strcmp(string, KW_DIE) == 0  || strcmp(string, KW_SELF) == 0 || strcmp(string, KW_LOOP) == 0 ||
+             strcmp(string, KW_ELSE) == 0 || strcmp(string, KW_CASE) == 0)
+        ) ||
+        (len == 5 &&
+            (strcmp(string, KW_BREAK) == 0 || strcmp(string, KW_WHILE) == 0)
+        ) ||
+        (len == 6 &&
+            (strcmp(string, KW_IMPORT) == 0 || strcmp(string, KW_SWITCH) == 0 || strcmp(string, KW_DELETE) == 0)
+        ) ||
+        (len == 7 &&
+            (strcmp(string, KW_INCLUDE) == 0 || strcmp(string, KW_REQUIRE) == 0)
+        ) ||
+        strcmp(string, KW_NEXT) == 0
+    )
         return s_tkKeyword;
 
     const shiro_character c = *string;

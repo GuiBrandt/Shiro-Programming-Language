@@ -126,4 +126,6 @@ SHIRO_API shiro_float     shiro_to_float        (shiro_value*);
 
 SHIRO_API shiro_value*    shiro_nil;
 
+SHIRO_API void            shiro_load_stdlib     (shiro_runtime*);
+
 #endif // VM_H_INCLUDED

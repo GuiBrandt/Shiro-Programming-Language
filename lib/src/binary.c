@@ -137,6 +137,18 @@ bool binary_returns_value(const shiro_binary* binary) {
     return n > 0;
 }
 //-----------------------------------------------------------------------------
+// Escreve um binário compilado do shiro para um arquivo
+//-----------------------------------------------------------------------------
+SHIRO_API void shiro_write_binary(FILE* file, shiro_binary* binary) {
+
+}
+//-----------------------------------------------------------------------------
+// Lê um binário compilado do shiro de um arquivo
+//-----------------------------------------------------------------------------
+SHIRO_API shiro_binary* shiro_read_binary(FILE* file) {
+
+}
+//-----------------------------------------------------------------------------
 // Libera a memória usada por um binário do shiro
 //      binary  : Binário que será liberado da memória
 //-----------------------------------------------------------------------------

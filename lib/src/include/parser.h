@@ -1,6 +1,8 @@
 #ifndef PARSER_H_INCLUDED
 #define PARSER_H_INCLUDED
 
+#include <stdio.h>
+
 #include "types.h"
 #include "lexer.h"
 #include "dll.h"
@@ -77,6 +79,9 @@ shiro_binary* push_node                 (shiro_binary*, shiro_node*);
 shiro_binary* concat_binary             (shiro_binary*, const shiro_binary*);
 bool          binary_returns_value      (const shiro_binary*);
 shiro_binary* concat_and_free_binary    (shiro_binary*, shiro_binary*);
+
+SHIRO_API void shiro_write_binary           (FILE*, shiro_binary*);
+SHIRO_API shiro_binary* shiro_read_binary   (FILE*);
 
 SHIRO_API void          shiro_free_binary   (shiro_binary*);
 SHIRO_API shiro_binary* shiro_compile       (const shiro_string);
