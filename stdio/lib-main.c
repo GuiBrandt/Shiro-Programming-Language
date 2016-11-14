@@ -104,39 +104,23 @@ shiro_value* shiro_fclose(shiro_runtime* runtime, shiro_uint n_args) {
 // Inicializa a biblioteca
 //
 void shiro_load_library(shiro_runtime* runtime) {
-    shiro_function* p = malloc(sizeof(shiro_function));
-    p->type = s_fnNative;
-    p->n_args = 1;
-    p->native = (shiro_c_function)&shiro_print;
+    shiro_function* p;
+
+    p = shiro_new_native(1, (shiro_c_function)&shiro_print);
     shiro_set_global(runtime, ID("print"), s_fFunction, (union __field_value)p);
 
-    p = malloc(sizeof(shiro_function));
-    p->type = s_fnNative;
-    p->n_args = 0;
-    p->native = (shiro_c_function)&shiro_gets;
+    p = shiro_new_native(0, (shiro_c_function)&shiro_gets);
     shiro_set_global(runtime, ID("gets"), s_fFunction, (union __field_value)p);
 
-    p = malloc(sizeof(shiro_function));
-    p->type = s_fnNative;
-    p->n_args = 2;
-    p->native = (shiro_c_function)&shiro_fopen;
+    p = shiro_new_native(2, (shiro_c_function)&shiro_fopen);
     shiro_set_global(runtime, ID("fopen"), s_fFunction, (union __field_value)p);
 
-    p = malloc(sizeof(shiro_function));
-    p->type = s_fnNative;
-    p->n_args = 2;
-    p->native = (shiro_c_function)&shiro_fwrite;
+    p = shiro_new_native(2, (shiro_c_function)&shiro_fwrite);
     shiro_set_global(runtime, ID("fwrite"), s_fFunction, (union __field_value)p);
 
-    p = malloc(sizeof(shiro_function));
-    p->type = s_fnNative;
-    p->n_args = 1;
-    p->native = (shiro_c_function)&shiro_fread;
+    p = shiro_new_native(1, (shiro_c_function)&shiro_fread);
     shiro_set_global(runtime, ID("fread"), s_fFunction, (union __field_value)p);
 
-    p = malloc(sizeof(shiro_function));
-    p->type = s_fnNative;
-    p->n_args = 1;
-    p->native = (shiro_c_function)&shiro_fclose;
+    p = shiro_new_native(1, (shiro_c_function)&shiro_fclose);
     shiro_set_global(runtime, ID("fclose"), s_fFunction, (union __field_value)p);
 }

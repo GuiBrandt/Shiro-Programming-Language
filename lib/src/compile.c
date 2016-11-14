@@ -480,11 +480,7 @@ shiro_binary* __compile_statement(
                                 free_node(ret);
                             }
 
-                            shiro_function* fn = malloc(sizeof(shiro_function));
-                            fn->type = s_fnShiroBinary;
-                            fn->n_args = b_args->used / 2;
-                            fn->s_binary = bin;
-
+                            shiro_function* fn = shiro_new_fn(b_args->used / 2, bin);
                             shiro_free_binary(b_args);
 
                             shiro_node* set = new_node(SET_FN, 2, shiro_new_uint(ID(name)), shiro_new_function(fn));

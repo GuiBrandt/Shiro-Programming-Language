@@ -121,6 +121,7 @@ typedef struct __value {
     const shiro_type    type;
     shiro_uint          n_fields;
     shiro_field**       fields;
+    shiro_uint          being_used;
 } shiro_value;
 
 typedef struct __runtime {
@@ -143,6 +144,7 @@ typedef struct __func {
         shiro_binary*    s_binary;
     };
     int n_args;
+    shiro_uint being_used;
 } shiro_function;
 
 #define ARG(n) (shiro_id)(0x7C9432C7 + n)
@@ -164,7 +166,9 @@ SHIRO_API shiro_value*    shiro_new_float     (const shiro_float);
 SHIRO_API shiro_value*    shiro_new_function  (shiro_function*);
 SHIRO_API void            shiro_free_value    (shiro_value*);
 
-SHIRO_API shiro_function* shiro_clone_function(const shiro_function*);
+SHIRO_API shiro_function* shiro_new_native    (shiro_uint, shiro_c_function);
+SHIRO_API shiro_function* shiro_new_fn        (shiro_uint, shiro_binary*);
+SHIRO_API shiro_function* shiro_use_function  (const shiro_function*);
 SHIRO_API void            shiro_free_function (shiro_function*);
 
 SHIRO_API shiro_runtime*  shiro_init          ();

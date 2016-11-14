@@ -30,7 +30,7 @@ shiro_field* shiro_clone_field(shiro_field* f) {
             break;
         case s_fFunction:
             if (f->value.func == NULL) break;
-            field->value.func = shiro_clone_function(f->value.func);
+            field->value.func = shiro_use_function(f->value.func);
             break;
         default:
             field->value = f->value;
@@ -292,26 +292,59 @@ SHIRO_API void shiro_free_value(shiro_value* v) {
     free(v);
 }
 //-----------------------------------------------------------------------------
+// Cria uma função do shiro escrita em C
+//      n_args  : Número de argumentos para a função
+//      fp      : Ponteiro para a função
+//-----------------------------------------------------------------------------
+SHIRO_API shiro_function* shiro_new_native(
+    shiro_uint n_args,
+    shiro_c_function fp
+) {
+    shiro_function* f = malloc(sizeof(shiro_function));
+    f->type = s_fnNative;
+    f->native = fp;
+    f->n_args = n_args;
+    f->being_used = 1;
+
+    return f;
+}
+//-----------------------------------------------------------------------------
+// Cria uma função do shiro escrita em shiro
+//      n_args  : Número de argumentos para a função
+//      bin     : Binário compilado do shiro
+//-----------------------------------------------------------------------------
+SHIRO_API shiro_function* shiro_new_fn(shiro_uint n_args, shiro_binary* bin) {
+    shiro_function* f = malloc(sizeof(shiro_function));
+    f->type = s_fnShiroBinary;
+    f->s_binary = bin;
+    f->n_args = n_args;
+    f->being_used = 1;
+
+    return f;
+}
+//-----------------------------------------------------------------------------
 // Clona uma função do shiro
 //      f   : shiro_function que será clonada
 //-----------------------------------------------------------------------------
-SHIRO_API shiro_function* shiro_clone_function(shiro_function* f) {
-    shiro_function* func = malloc(sizeof(shiro_function));
-    func->type = f->type;
-    func->n_args = f->n_args;
+SHIRO_API shiro_function* shiro_use_function(shiro_function* f) {
+    if (f == NULL)
+        return NULL;
 
-    if (f->type == s_fnShiroBinary)
-        func->s_binary = clone_binary(f->s_binary);
-    else
-        func->native = f->native;
-
-    return func;
+    f->being_used++;
+    return f;
 }
 //-----------------------------------------------------------------------------
 // Libera a memória usada por uma shiro_function
 //      f   : shiro_function que será liberada da memória
 //-----------------------------------------------------------------------------
 SHIRO_API void shiro_free_function(shiro_function* f) {
+
+    if (f == NULL)
+        return;
+
+    if (--f->being_used > 0)
+        return;
+
     if (f->type == s_fnShiroBinary)
          shiro_free_binary(f->s_binary);
     free(f);
@@ -431,7 +464,10 @@ SHIRO_API shiro_runtime* shiro_set_global(
 SHIRO_API shiro_field* shiro_get_global(shiro_runtime* runtime, shiro_id id) {
     return shiro_get_field(runtime->self, id);
 }
-
+//-----------------------------------------------------------------------------
+// Determina se um valor é verdadeiro ou falso
+//      val     : Valor a ser convertido
+//-----------------------------------------------------------------------------
 SHIRO_API bool shiro_to_bool(shiro_value* value) {
     if (value->n_fields == 0 ||
         (value->type == s_tInt && get_fixnum(value) != 0) ||
@@ -440,7 +476,6 @@ SHIRO_API bool shiro_to_bool(shiro_value* value) {
          return false;
     return true;
 }
-
 //-----------------------------------------------------------------------------
 // Converte um valor do shiro em string
 //      val     : Valor a ser convertido

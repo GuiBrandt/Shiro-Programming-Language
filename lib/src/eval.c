@@ -165,7 +165,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                         runtime,
                         id,
                         s_fFunction,
-                        (union __field_value)shiro_clone_function(get_func(node->args[1]))
+                        (union __field_value)shiro_use_function(get_func(node->args[1]))
                     );
 
                 break;

@@ -157,22 +157,13 @@ int main(int argc, char** argv) {
 
         shiro_function* p;
 
-        p = malloc(sizeof(shiro_function));
-        p->type = s_fnNative;
-        p->n_args = 1;
-        p->native = (shiro_c_function)&shiro_sys;
+        p = shiro_new_native(1, (shiro_c_function)&shiro_sys);
         shiro_set_global(runtime, ID("sys"), s_fFunction, (union __field_value)p);
 
-        p = malloc(sizeof(shiro_function));
-        p->type = s_fnNative;
-        p->n_args = 1;
-        p->native = (shiro_c_function)&shiro_to_str;
+        p = shiro_new_native(1, (shiro_c_function)&shiro_to_str);
         shiro_set_global(runtime, ID("to_str"), s_fFunction, (union __field_value)p);
 
-        p = malloc(sizeof(shiro_function));
-        p->type = s_fnNative;
-        p->n_args = 1;
-        p->native = (shiro_c_function)&shiro_import;
+        p = shiro_new_native(1, (shiro_c_function)&shiro_import);
         shiro_set_global(runtime, ID("import"), s_fFunction, (union __field_value)p);
     }
     double t_exec = 0.0;
