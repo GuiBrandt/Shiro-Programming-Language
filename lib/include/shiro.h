@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <ctype.h>
 
 #if defined(__WIN32__) && !defined(SHIRO_STATIC)
@@ -189,6 +190,9 @@ SHIRO_API shiro_value*    shiro_nil;
 
 SHIRO_API shiro_runtime* shiro_execute(shiro_runtime*, shiro_binary*);
 SHIRO_API shiro_runtime* shiro_execute_for_value(shiro_runtime*, shiro_value*, shiro_binary*);
+
+SHIRO_API void          shiro_write_binary  (FILE*, shiro_binary*);
+SHIRO_API shiro_binary* shiro_read_binary   (FILE*);
 
 SHIRO_API void shiro_error(const shiro_uint, const shiro_string, const shiro_string, ...);
 SHIRO_API shiro_string shiro_get_last_error(void);

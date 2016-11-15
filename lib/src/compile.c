@@ -527,8 +527,8 @@ shiro_binary* __compile_statement(
 
                 if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
 
-                    if (strchr(filename, '.') <= strchr(filename, '/') ||
-                        strchr(filename, '.') <= strchr(filename, '\\'))
+                    if (strrchr(filename, '.') <= strrchr(filename, '/') ||
+                        strrchr(filename, '.') <= strrchr(filename, '\\'))
                         strcat(filename, ".shiro");
 
                     FILE* file = fopen(filename, "r");

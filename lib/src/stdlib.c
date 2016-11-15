@@ -61,8 +61,8 @@ shiro_value* shiro_require(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_string fname = calloc(512, sizeof(shiro_character));
     sprintf(fname, get_string(arg0));
 
-    if (strchr(fname, '.') <= strchr(fname, '/') ||
-        strchr(fname, '.') <= strchr(fname, '\\'))
+    if (strrchr(fname, '.') <= strrchr(fname, '/') ||
+        strrchr(fname, '.') <= strrchr(fname, '\\'))
         strcat(fname, ".shiro");
 
     FILE* file = fopen(fname, "r");
@@ -88,8 +88,8 @@ shiro_value* shiro_load(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_string fname = calloc(512, sizeof(shiro_character));
     sprintf(fname, get_string(arg0));
 
-    if (strchr(fname, '.') <= strchr(fname, '/') ||
-        strchr(fname, '.') <= strchr(fname, '\\'))
+    if (strrchr(fname, '.') <= strrchr(fname, '/') ||
+        strrchr(fname, '.') <= strrchr(fname, '\\'))
         strcat(fname, ".shiro");
 
     FILE* file = fopen(fname, "r");
