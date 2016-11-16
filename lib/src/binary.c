@@ -140,13 +140,25 @@ bool binary_returns_value(const shiro_binary* binary) {
 // Escreve um binário compilado do shiro para um arquivo
 //-----------------------------------------------------------------------------
 SHIRO_API void shiro_write_binary(FILE* file, shiro_binary* binary) {
+    fwrite(&binary->used, 1, sizeof(shiro_uint), file);
+
+    shiro_uint i;
+    for (i = 0; i < binary->used; i++) {
+        shiro_node* node = binary->nodes[i];
+
+        shiro_uint n_args = node->n_args;
+
+        fwrite(&n_args, 1, sizeof(shiro_uint), file);
+
+
+    }
 
 }
 //-----------------------------------------------------------------------------
 // Lê um binário compilado do shiro de um arquivo
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_binary* shiro_read_binary(FILE* file) {
-
+    return NULL;
 }
 //-----------------------------------------------------------------------------
 // Libera a memória usada por um binário do shiro
