@@ -7,6 +7,7 @@
 #include "parser.h"
 
 #include "vm.h"
+#include "errors.h"
 
 #include <stdlib.h>
 #include <stdarg.h>
@@ -148,9 +149,42 @@ SHIRO_API void shiro_write_binary(FILE* file, shiro_binary* binary) {
 
         shiro_uint n_args = node->n_args;
 
+        fwrite(&node->code, 1, sizeof(shiro_bytecode), file);
         fwrite(&n_args, 1, sizeof(shiro_uint), file);
 
+        shiro_uint j;
+        for (j = 0; j < n_args; j++) {
+            shiro_value* v = node->args[j];
 
+            fwrite(&v->type, 1, sizeof(shiro_type), file);
+            switch (v->type) {
+                case s_tInt:
+                    fwrite(&get_fixnum(v), 1, sizeof(get_fixnum(v)), file);
+                    break;
+                case s_tFloat:
+                    fwrite(&get_float(v), 1, sizeof(get_float(v)), file);
+                    break;
+                case s_tString:
+                {
+                    shiro_uint len = shiro_get_field(v, ID("length"))->value.u;
+                    fwrite(&len, 1, sizeof(len), file);
+                    fwrite(get_string(v), len, sizeof(shiro_character), file);
+                    break;
+                }
+                case s_tFunction:
+                {
+                    shiro_function* fn = get_func(v);
+                    fwrite(&fn->n_args, 1, sizeof(shiro_uint), file);
+                    if (fn->type == s_fnShiroBinary) {
+                        shiro_write_binary(file, fn->s_binary);
+                        break;
+                    }
+                }
+                default:
+                    shiro_error(0, "CompileError", "Requested to write an invalid node");
+                    break;
+            }
+        }
     }
 
 }
@@ -158,6 +192,81 @@ SHIRO_API void shiro_write_binary(FILE* file, shiro_binary* binary) {
 // Lê um binário compilado do shiro de um arquivo
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_binary* shiro_read_binary(FILE* file) {
+    shiro_binary* binary = malloc(sizeof(shiro_binary));
+
+    shiro_uint sz;
+    fread(&sz, 1, sizeof(shiro_uint), file);
+
+    binary->allocated = binary->used = sz;
+    binary->nodes = calloc(sz, sizeof(shiro_node*));
+
+    shiro_uint i;
+    for (i = 0; i < sz; i++) {
+        shiro_node* node = malloc(sizeof(shiro_node));
+        node->being_used = 1;
+
+        fread(&node->code, 1, sizeof(shiro_bytecode), file);
+        fread(&node->n_args, 1, sizeof(shiro_uint), file);
+
+        node->args = calloc(node->n_args, sizeof(shiro_value*));
+
+        shiro_uint j;
+        for (j = 0; j < node->n_args; j++) {
+            shiro_value* v;
+
+            shiro_type t = 0;
+            fread(&t, 1, sizeof(shiro_type), file);
+
+            switch (t) {
+            case s_tInt:
+            {
+                shiro_fixnum fix = 0;
+                fread(&fix, 1, sizeof(shiro_fixnum), file);
+                v = shiro_new_fixnum(fix);
+                break;
+            }
+            case s_tFloat:
+            {
+                shiro_float f = 0.0;
+                fread(&f, 1, sizeof(shiro_float), file);
+                v = shiro_new_float(f);
+                break;
+            }
+            case s_tString:
+            {
+                shiro_uint len = 0;
+                fread(&len, 1, sizeof(shiro_uint), file);
+
+                shiro_string str = malloc(len * sizeof(shiro_character));
+                fread(str, len, sizeof(shiro_character), file);
+
+                v = malloc(sizeof(shiro_value));
+                shiro_value val = {s_tString, 2, NULL, 1};
+                memcpy(v, &val, sizeof(val));
+                v->fields = calloc(2, sizeof(shiro_field*));
+
+                shiro_set_field(v, ID_VALUE, s_fString, (union __field_value)str);
+                shiro_set_field(v, ID("length"), s_fUInt, (union __field_value)len);
+                break;
+            }
+            case s_tFunction:
+            {
+                shiro_uint n_args = 0;
+                fread(&n_args, 1, sizeof(shiro_uint), file);
+                shiro_binary* bin = shiro_read_binary(file);
+                shiro_function* fn = shiro_new_fn(n_args, bin);
+                v = shiro_new_function(fn);
+                break;
+            }
+            default:
+                shiro_error(0, "CompileError", "Invalid compiled file");
+                return NULL;
+            }
+
+            node->args[j] = v;
+        }
+    }
+
     return NULL;
 }
 //-----------------------------------------------------------------------------

@@ -33,7 +33,11 @@ SHIRO_API void shiro_error(
     ...
 ) {
     char* err = malloc(1024);
-    sprintf(err, "%s on line %d: %s", errcode, line, message);
+
+    if (line != 0)
+        sprintf(err, "%s on line %d: %s", errcode, line, message);
+    else
+        sprintf(err, "%s: %s", errcode, message);
 
     va_list args;
     va_start(args, message);
