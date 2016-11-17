@@ -14,20 +14,28 @@ O nome é aleatório mesmo. Deal with it.
 Progresso
 ---
 
-Já é possível usar a linguagem para calcular a sequência de fibonacci de forma recursiva:
+Já é possível usar a linguagem para calcular a sequência de fibonacci usando loops:
 
-	import('lib/stdio');
-
-	fn fibo(n)
-	{
-	    if ((n == 0) | (n == 1))
-	    {
-	        1;
-	    }
-	    else
-	    {
-	        fibo(n - 1) + fibo(n - 2);
-	    };
+	import 'lib/stdio';
+	
+	fn fibo(n) 
+	{    
+		var a = 1;
+		var b = 1;
+		var i = 0;
+		
+		while (i < n) 
+		{
+		    var la = a;
+		    var lb = b;
+		    var b = la + lb;
+		    var a = lb;
+		    var i = i + 1;
+		};
+		
+		b;
 	};
 	
-	print(fibo(20));
+	print(fibo(44));
+
+Por enquanto não tem como calcular do 45º elemento da sequência pra frente por conta do limite de 4 bytes dos números inteiros.
