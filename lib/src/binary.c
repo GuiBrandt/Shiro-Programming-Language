@@ -241,10 +241,11 @@ SHIRO_API shiro_binary* shiro_read_binary(FILE* file) {
             case s_tString:
             {
                 shiro_uint len = 0;
-                fread(&len, 1, sizeof(shiro_uint), file);
+                fread(&len, 1, sizeof(len), file);
 
-                shiro_string str = malloc(len * sizeof(shiro_character));
+                shiro_string str = malloc(len * sizeof(shiro_character) + 1);
                 fread(str, len, sizeof(shiro_character), file);
+                str[len] = 0;
 
                 v = malloc(sizeof(shiro_value));
                 shiro_value val = {s_tString, 2, NULL, 1};
