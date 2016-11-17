@@ -524,7 +524,7 @@ shiro_binary* __compile_statement(
                 }
 
                 shiro_uint len = strlen(token->value) - 2;
-                shiro_string filename = calloc(len + 1, sizeof(shiro_character));
+                shiro_string filename = calloc(len + 7, sizeof(shiro_character));
                 memcpy(filename, token->value + 1, len);
 
                 token = get_token(statement, 2, line);
@@ -651,17 +651,17 @@ shiro_binary* __compile_statement(
 
                             return binary;
                         } else {
-                            shiro_error(*line, "Unexpected '%s', expecting <END>", token->value);
+                            shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
                             return NULL;
                         }
 
                     } else {
-                        shiro_error(*line, "Unexpected '%s', expecting '%s'", token->value, MARK_OBLOCK);
+                        shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OBLOCK);
                         return NULL;
                     }
 
                 } else {
-                    shiro_error(*line, "Unexpected '%s', expecting '%s'", token->value, MARK_OEXPR);
+                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OEXPR);
                     return NULL;
                 }
             }

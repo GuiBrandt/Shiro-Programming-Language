@@ -149,14 +149,16 @@ SHIRO_API void shiro_write_binary(FILE* file, shiro_binary* binary) {
 
         shiro_uint n_args = node->n_args;
 
-        fwrite(&node->code, 1, sizeof(shiro_bytecode), file);
+        char code = (char)node->code;
+        fwrite(&code, 1, sizeof(code), file);
         fwrite(&n_args, 1, sizeof(shiro_uint), file);
 
         shiro_uint j;
         for (j = 0; j < n_args; j++) {
             shiro_value* v = node->args[j];
 
-            fwrite(&v->type, 1, sizeof(shiro_type), file);
+            char type = (char)v->type;
+            fwrite(&type, 1, sizeof(type), file);
             switch (v->type) {
                 case s_tInt:
                     fwrite(&get_fixnum(v), 1, sizeof(get_fixnum(v)), file);
@@ -194,7 +196,7 @@ SHIRO_API void shiro_write_binary(FILE* file, shiro_binary* binary) {
 SHIRO_API shiro_binary* shiro_read_binary(FILE* file) {
     shiro_binary* binary = malloc(sizeof(shiro_binary));
 
-    shiro_uint sz;
+    shiro_uint sz = 0;
     fread(&sz, 1, sizeof(shiro_uint), file);
 
     binary->allocated = binary->used = sz;
@@ -205,7 +207,10 @@ SHIRO_API shiro_binary* shiro_read_binary(FILE* file) {
         shiro_node* node = malloc(sizeof(shiro_node));
         node->being_used = 1;
 
-        fread(&node->code, 1, sizeof(shiro_bytecode), file);
+        char code = 0;
+        fread(&code, 1, 1, file);
+        node->code = (shiro_bytecode)code;
+
         fread(&node->n_args, 1, sizeof(shiro_uint), file);
 
         node->args = calloc(node->n_args, sizeof(shiro_value*));
@@ -214,8 +219,9 @@ SHIRO_API shiro_binary* shiro_read_binary(FILE* file) {
         for (j = 0; j < node->n_args; j++) {
             shiro_value* v;
 
-            shiro_type t = 0;
-            fread(&t, 1, sizeof(shiro_type), file);
+            char type = 0;
+            fread(&type, 1, 1, file);
+            shiro_type t = (shiro_type)type;
 
             switch (t) {
             case s_tInt:
@@ -265,9 +271,11 @@ SHIRO_API shiro_binary* shiro_read_binary(FILE* file) {
 
             node->args[j] = v;
         }
+
+        binary->nodes[i] = node;
     }
 
-    return NULL;
+    return binary;
 }
 //-----------------------------------------------------------------------------
 // Libera a memória usada por um binário do shiro
