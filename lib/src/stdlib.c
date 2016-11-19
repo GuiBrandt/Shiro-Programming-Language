@@ -65,18 +65,16 @@ shiro_value* shiro_require(shiro_runtime* runtime, shiro_uint n_args) {
         strrchr(fname, '.') <= strrchr(fname, '\\'))
         strcat(fname, ".shiro");
 
-    FILE* file = fopen(fname, "r");
+    FILE* file = fopen(fname, "rb");
 
     if (file == NULL) {
         shiro_error(0, "IOError", "No such file or directory '%s'", fname);
         return NULL;
     }
 
-    fseek(file, 0, SEEK_END);
-    shiro_uint size = ftell(file);
-    fseek(file, 0, SEEK_SET);
+    shiro_binary* binary = shiro_read_binary(file);
 
-
+    shiro_execute(runtime, binary);
 
     return shiro_nil;
 }

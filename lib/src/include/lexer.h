@@ -20,7 +20,6 @@
 #define KW_NEXT         "continue"
 #define KW_DELETE       "delete"
 #define KW_FUNC         "fn"
-#define KW_VAR          "var"
 #define KW_CONST        "const"
 #define KW_CLASS        "class"
 #define KW_DIE          "exit"
@@ -109,7 +108,7 @@ void                free_token        (shiro_token*);
 
 shiro_statement*    new_statement     (shiro_uint);
 shiro_statement*    push_token        (shiro_statement*, const shiro_token*);
-shiro_token*        get_token         (const shiro_statement*, const shiro_uint, shiro_uint*);
+shiro_token*        get_token         (const shiro_statement*, const shiro_uint, shiro_uint*, shiro_uint);
 shiro_statement*    offset_statement  (const shiro_statement*, const shiro_uint);
 void                free_statement    (shiro_statement*);
 

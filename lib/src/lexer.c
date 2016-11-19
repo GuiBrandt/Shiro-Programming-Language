@@ -168,12 +168,14 @@ shiro_statement* push_token(
 shiro_token* get_token(
     const shiro_statement* statement,
     const shiro_uint index,
-    shiro_uint* line
+    shiro_uint* line,
+    shiro_uint  sline
 ) {
     if (index >= statement->used)
         return NULL;
 
-    *line = 1;
+    *line = sline;
+
     shiro_uint i, j, p_stack = 0, b_stack = 0;
 
     for (i = j = 0; (j < index || p_stack != 0 || b_stack != 0) && i < statement->used; i++) {
@@ -213,8 +215,8 @@ shiro_statement* offset_statement(
 ) {
     shiro_statement* stmt = new_statement(statement->used - off);
 
-    shiro_uint line;
-    shiro_token* tk = get_token(statement, off - 1, &line);
+    shiro_uint line = 0, sline = 1;
+    shiro_token* tk = get_token(statement, off - 1, &line, sline);
 
     if (tk == NULL)
         return stmt;
@@ -256,36 +258,12 @@ shiro_token_type get_token_type(const shiro_token* token) {
 
     shiro_uint len = strlen(string);
 
-    /*
-
-    #define KW_COND         "if"
-    #define KW_DO           "do"
-    #define KW_FUNC         "fn"
-    #define KW_VAR          "var"
-    #define KW_NIL          "nil"
-    #define KW_FOR          "for"
-    #define KW_DIE          "exit"
-    #define KW_SELF         "self"
-    #define KW_LOOP         "loop"
-    #define KW_ELSE         "else"
-    #define KW_CASE         "case"
-    #define KW_BREAK        "break"
-    #define KW_WHILE        "while"
-    #define KW_IMPORT       "import"
-    #define KW_SWITCH       "switch"
-    #define KW_DELETE       "delete"
-    #define KW_INCLUDE      "include"
-    #define KW_REQUIRE      "require"
-    #define KW_NEXT         "continue"
-
-    */
-
     if (
         (len == 2 &&
             (strcmp(string, KW_COND) == 0 || strcmp(string, KW_DO) == 0 || strcmp(string, KW_FUNC) == 0)
         ) ||
         (len == 3 &&
-            (strcmp(string, KW_VAR) == 0 || strcmp(string, KW_NIL) == 0 || strcmp(string, KW_FOR) == 0)
+            (strcmp(string, KW_NIL) == 0 || strcmp(string, KW_FOR) == 0)
         ) ||
         (len == 4 &&
             (strcmp(string, KW_DIE) == 0  || strcmp(string, KW_SELF) == 0 || strcmp(string, KW_LOOP) == 0 ||

@@ -137,16 +137,6 @@ SHIRO_API shiro_runtime* shiro_execute(
             case DROP:
                 shiro_drop_value(runtime);
                 break;
-            case ALLOC:
-            {
-                shiro_set_global(
-                    runtime,
-                    get_uint(node->args[0]),
-                    s_fValue,
-                    (union __field_value)shiro_nil
-                );
-                break;
-            }
             case SET_VAR:
             case SET_FN:
             {

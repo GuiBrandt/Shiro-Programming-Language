@@ -16,8 +16,6 @@ typedef enum bytecodes {
     FN              = 0x02,
     CLASS           = 0x04,
 
-    ALLOC           = 0x10,
-
     SET             = 0x20,
     SET_VAR         = SET | VAR,
     SET_FN          = SET | FN,
