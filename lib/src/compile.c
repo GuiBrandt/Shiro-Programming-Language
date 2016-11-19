@@ -704,11 +704,77 @@ shiro_binary* __compile_statement(
                 token = get_token(statement, 1, line, sline);
 
                 if (token == NULL) {
-                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected <END>, expecting '%s'", MARK_OEXPR);
+                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected <END>, expecting '%s'", MARK_OBLOCK);
                     return NULL;
                 }
 
                 if (strcmp(token->value, MARK_OBLOCK) == 0) {
+                    shiro_protect(
+                        shiro_statement* block = __block(statement, 1, sline);
+                    );
+                    shiro_protect(
+                        shiro_binary* b_block = __compile_statements(block, line);
+                    );
+                    free_statement(block);
+
+                    token = get_token(statement, 2, line, sline);
+
+                    if (token == NULL) {
+                        shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected <END>, expecting '%s'", KW_WHILE);
+                        return NULL;
+                    }
+
+                    if (strcmp(token->value, KW_WHILE) == 0) {
+                        token = get_token(statement, 3, line, sline);
+
+                        if (token == NULL) {
+                            shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected <END>, expecting '%s'", MARK_OEXPR);
+                            return NULL;
+                        }
+
+                        if (strcmp(token->value, MARK_OEXPR) == 0) {
+                            shiro_protect(
+                                shiro_statement* expression = __expression(statement, 3, sline);
+                            );
+                            shiro_protect(
+                                shiro_binary* b_expr = __compile_statement(expression, line);
+                            );
+                            free_statement(expression);
+
+                            token = get_token(statement, 4, line, sline);
+
+                            if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
+                                concat_binary(binary, b_block);
+
+                                concat_binary(binary, b_expr);
+                                shiro_node* cond = new_node(COND, 0);
+                                push_node(binary, cond);
+                                free_node(cond);
+
+                                shiro_node* jmp = new_node(JUMP, 1, shiro_new_fixnum(1));
+                                push_node(binary, jmp);
+                                free_node(jmp);
+
+                                shiro_node* node = new_node(JUMP, 1, shiro_new_fixnum(-(b_expr->used + b_block->used + 3)));
+                                push_node(binary, node);
+                                free_node(node);
+
+                                shiro_free_binary(b_expr);
+                                shiro_free_binary(b_block);
+
+                                return binary;
+                            } else {
+                                shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                                return NULL;
+                            }
+                        } else {
+                            shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OEXPR);
+                            return NULL;
+                        }
+                    } else {
+                        shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, KW_WHILE);
+                        return NULL;
+                    }
 
                 } else {
                     shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OBLOCK);
