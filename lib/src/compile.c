@@ -478,7 +478,6 @@ shiro_binary* __compile_statement(
             //  include "<filename>"
             //
             else if (strcmp(token->value, KW_INCLUDE) == 0) {
-
                 token = get_token(statement, 1, line, sline);
 
                 if (token == NULL) {
@@ -486,48 +485,52 @@ shiro_binary* __compile_statement(
                     return NULL;
                 }
 
-                if (get_token_type(token) != s_tkConst || (*token->value != *MARK_STR1 && *token->value != *MARK_STR2)) {
-                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting STRING", token->value);
-                    return NULL;
-                }
+                if (strcmp(token->value, MARK_OEXPR) != 0) {
 
-                shiro_uint len = strlen(token->value) - 2;
-                shiro_string filename = calloc(len + 7, sizeof(shiro_character));
-                memcpy(filename, token->value + 1, len);
-
-                token = get_token(statement, 2, line, sline);
-
-                if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
-
-                    if (strrchr(filename, '.') <= strrchr(filename, '/') ||
-                        strrchr(filename, '.') <= strrchr(filename, '\\'))
-                        strcat(filename, ".shiro");
-
-                    FILE* file = fopen(filename, "r");
-
-                    if (file == NULL) {
-                        shiro_error(0, "IOError", "No such file or directory '%s'", filename);
+                    if (get_token_type(token) != s_tkConst || (*token->value != *MARK_STR1 && *token->value != *MARK_STR2)) {
+                        shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting STRING", token->value);
                         return NULL;
                     }
 
-                    fseek(file, 0, SEEK_END);
-                    shiro_uint size = ftell(file);
-                    fseek(file, 0, SEEK_SET);
+                    shiro_uint len = strlen(token->value) - 2;
+                    shiro_string filename = calloc(len + 7, sizeof(shiro_character));
+                    memcpy(filename, token->value + 1, len);
 
-                    shiro_string fcontents = calloc(size, sizeof(shiro_character));
-                    fread(fcontents, sizeof(shiro_character), size, file);
+                    token = get_token(statement, 2, line, sline);
 
-                    shiro_protect(
-                        shiro_binary* bin = shiro_compile(fcontents);
-                    );
+                    if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
 
-                    binary = concat_and_free_binary(binary, bin);
+                        if (strrchr(filename, '.') <= strrchr(filename, '/') ||
+                            strrchr(filename, '.') <= strrchr(filename, '\\'))
+                            strcat(filename, ".shiro");
 
-                    return binary;
-                } else {
-                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
-                    return NULL;
-                }
+                        FILE* file = fopen(filename, "r");
+
+                        if (file == NULL) {
+                            shiro_error(0, "IOError", "No such file or directory '%s'", filename);
+                            return NULL;
+                        }
+
+                        fseek(file, 0, SEEK_END);
+                        shiro_uint size = ftell(file);
+                        fseek(file, 0, SEEK_SET);
+
+                        shiro_string fcontents = calloc(size, sizeof(shiro_character));
+                        fread(fcontents, sizeof(shiro_character), size, file);
+
+                        shiro_protect(
+                            shiro_binary* bin = shiro_compile(fcontents);
+                        );
+
+                        binary = concat_and_free_binary(binary, bin);
+
+                        return binary;
+                    } else {
+                        shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                        return NULL;
+                    }
+                } else
+                    token = get_token(statement, 0, line, sline);
             }
 
             //
@@ -567,6 +570,56 @@ shiro_binary* __compile_statement(
                 }
 
                 token = get_token(statement, 0, line, sline);
+            }
+
+            //
+            //  require "<filename>"
+            //
+            else if (strcmp(token->value, KW_REQUIRE) == 0) {
+                token = get_token(statement, 1, line, sline);
+
+                if (token == NULL) {
+                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected <END>, expecting STRING");
+                    return NULL;
+                }
+
+                if (strcmp(token->value, MARK_OEXPR) != 0) {
+                    if (get_token_type(token) != s_tkConst || (*token->value != *MARK_STR1 && *token->value != *MARK_STR2)) {
+                        shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting STRING", token->value);
+                        return NULL;
+                    }
+
+                    shiro_uint len = strlen(token->value) - 2;
+                    shiro_string filename = calloc(len + 7, sizeof(shiro_character));
+                    memcpy(filename, token->value + 1, len);
+
+                    token = get_token(statement, 2, line, sline);
+
+                    if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
+
+                        if (strrchr(filename, '.') <= strrchr(filename, '/') ||
+                            strrchr(filename, '.') <= strrchr(filename, '\\'))
+                            strcat(filename, ".shr");
+
+                        FILE* file = fopen(filename, "rb");
+
+                        if (file == NULL) {
+                            shiro_error(0, "IOError", "No such file or directory '%s'", filename);
+                            return NULL;
+                        }
+                        shiro_protect(
+                            shiro_binary* bin = shiro_read_binary(file);
+                        );
+
+                        binary = concat_and_free_binary(binary, bin);
+
+                        return binary;
+                    } else {
+                        shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                        return NULL;
+                    }
+                } else
+                    token = get_token(statement, 0, line, sline);
             }
 
             //
@@ -666,7 +719,8 @@ shiro_binary* __compile_statement(
             if (token == NULL || (
                 strcmp(token->value, KW_NIL) != 0 &&
                 strcmp(token->value, KW_SELF) != 0 &&
-                strcmp(token->value, KW_IMPORT) != 0))
+                strcmp(token->value, KW_IMPORT) != 0 &&
+                strcmp(token->value, KW_REQUIRE) != 0))
                 break;
         }
         case s_tkName:
@@ -697,7 +751,7 @@ shiro_binary* __compile_statement(
                     shiro_node* set = new_node(SET_VAR, 1, shiro_new_uint(ID(name)));
                     push_node(binary, set);
                     free_node(set);
-                } else if(*(token->value + 1) == *OP_SET) {
+                } else if (*(token->value + 1) == *OP_SET) {
                     shiro_string op = calloc(2, sizeof(shiro_character));
                     *op = *token->value;
 

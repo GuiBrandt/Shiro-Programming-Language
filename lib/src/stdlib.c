@@ -63,7 +63,7 @@ shiro_value* shiro_require(shiro_runtime* runtime, shiro_uint n_args) {
 
     if (strrchr(fname, '.') <= strrchr(fname, '/') ||
         strrchr(fname, '.') <= strrchr(fname, '\\'))
-        strcat(fname, ".shiro");
+        strcat(fname, ".shr");
 
     FILE* file = fopen(fname, "rb");
 
@@ -79,9 +79,9 @@ shiro_value* shiro_require(shiro_runtime* runtime, shiro_uint n_args) {
     return shiro_nil;
 }
 //-----------------------------------------------------------------------------
-// Abre um arquivo .shiro no código atual
+// Função usada para importação de arquivos .shiro
 //-----------------------------------------------------------------------------
-shiro_value* shiro_load(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_value* shiro_include(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_string fname = calloc(512, sizeof(shiro_character));
     sprintf(fname, get_string(arg0));
@@ -147,6 +147,9 @@ SHIRO_API void shiro_load_stdlib(shiro_runtime* runtime) {
     p = shiro_new_native(1, (shiro_c_function)&shiro_import);
     shiro_set_global(runtime, ID("import"), s_fFunction, (union __field_value)p);
 
-    p = shiro_new_native(1, (shiro_c_function)&shiro_load);
-    shiro_set_global(runtime, ID("load"), s_fFunction, (union __field_value)p);
+    p = shiro_new_native(1, (shiro_c_function)&shiro_include);
+    shiro_set_global(runtime, ID("include"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(1, (shiro_c_function)&shiro_require);
+    shiro_set_global(runtime, ID("require"), s_fFunction, (union __field_value)p);
 }

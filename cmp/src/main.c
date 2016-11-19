@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
     setlocale(LC_ALL, "en_US.UTF-8");
 
     if (argc != 2 && argc != 3) {
-        fprintf(stderr, "Syntax: shiro <filename> [<output-file-name>]");
+        fprintf(stderr, "Syntax: shiroc <filename> [<output-file-name>]");
         return -1;
     }
 
