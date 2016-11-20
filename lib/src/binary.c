@@ -141,6 +141,9 @@ bool binary_returns_value(const shiro_binary* binary) {
 // Escreve um binário compilado do shiro para um arquivo
 //-----------------------------------------------------------------------------
 SHIRO_API void shiro_write_binary(FILE* file, shiro_binary* binary) {
+    int magic = 1;
+    fwrite(&magic, 1, sizeof(magic), file);
+
     fwrite(&binary->used, 1, sizeof(shiro_uint), file);
 
     shiro_uint i;
@@ -194,6 +197,14 @@ SHIRO_API void shiro_write_binary(FILE* file, shiro_binary* binary) {
 // Lê um binário compilado do shiro de um arquivo
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_binary* shiro_read_binary(FILE* file) {
+    int magic = 0;
+    fread(&magic, 1, sizeof(magic), file);
+
+    if (magic != 1) {
+        shiro_error(0, "CompileError", "Invalid compiled file");
+        return NULL;
+    }
+
     shiro_binary* binary = malloc(sizeof(shiro_binary));
 
     shiro_uint sz = 0;

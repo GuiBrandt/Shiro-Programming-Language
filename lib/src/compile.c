@@ -507,7 +507,7 @@ shiro_binary* __compile_statement(
                         FILE* file = fopen(filename, "r");
 
                         if (file == NULL) {
-                            shiro_error(0, "IOError", "No such file or directory '%s'", filename);
+                            shiro_error(0, ERR_IO_ERROR, "No such file or directory '%s'", filename);
                             return NULL;
                         }
 
@@ -597,14 +597,16 @@ shiro_binary* __compile_statement(
 
                     if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
 
-                        if (strrchr(filename, '.') <= strrchr(filename, '/') ||
-                            strrchr(filename, '.') <= strrchr(filename, '\\'))
-                            strcat(filename, ".shr");
-
                         FILE* file = fopen(filename, "rb");
 
+                        if (file == NULL && (strrchr(filename, '.') <= strrchr(filename, '/') ||
+                            strrchr(filename, '.') <= strrchr(filename, '\\'))) {
+                            strcat(filename, ".iro");
+                            file = fopen(filename, "rb");
+                        }
+
                         if (file == NULL) {
-                            shiro_error(0, "IOError", "No such file or directory '%s'", filename);
+                            shiro_error(0, ERR_IO_ERROR, "No such file or directory '%s'", filename);
                             return NULL;
                         }
                         shiro_protect(

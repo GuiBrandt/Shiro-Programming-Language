@@ -40,12 +40,16 @@ int main(int argc, char** argv) {
     }
     fclose(file);
 
+    shiro_set_path(argv, fname);
+
     shiro_binary* binary = shiro_compile(code);
 
     if (binary == NULL) {
         fprintf(stderr, shiro_get_last_error());
         return 1;
     }
+
+    shiro_set_path(NULL, NULL);
 
     shiro_string outname;
     if (argc == 3) {
@@ -58,7 +62,7 @@ int main(int argc, char** argv) {
         if (dot > 0 && dot > strrchr(fname, '/') && dot > strrchr(fname, '\\'))
             memcpy(outname, fname, dot - fname);
 
-        strcat(outname, ".shr");
+        strcat(outname, ".iro");
     }
 
     FILE* output = fopen(outname, "wb");

@@ -31,6 +31,8 @@ int main(int argc, char** argv) {
         return -2;
     }
 
+    shiro_set_path(argv, fname);
+
     shiro_binary* binary;
 
     char* dot = strrchr(fname, '.');
@@ -38,7 +40,10 @@ int main(int argc, char** argv) {
         int n;
         for (n = 0; dot[n]; n++) dot[n] = tolower(dot[n]);
 
-        if (strcmp(dot + 1, "shr") != 0) {
+        char c = fgetc(file);
+        rewind(file);
+
+        if (c != 1) {
             shiro_string code = calloc(1, sizeof(shiro_character));
             shiro_character c;
             while ((c = fgetc(file)) != EOF) {

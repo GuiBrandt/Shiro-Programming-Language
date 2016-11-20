@@ -10,10 +10,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#if defined(__WIN32__)
+#ifdef __WIN32__
 #include <windows.h>
 #else
 #include <dlfcn.h>
+#endif // __WIN32__
+
+#include <unistd.h>
+
+#ifdef __WIN32__
+#include <win32.h>
 #endif // __WIN32__
 
 typedef void (*shiro_load_library_proc)(shiro_runtime*);
@@ -61,14 +67,16 @@ shiro_value* shiro_require(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_string fname = calloc(512, sizeof(shiro_character));
     sprintf(fname, get_string(arg0));
 
-    if (strrchr(fname, '.') <= strrchr(fname, '/') ||
-        strrchr(fname, '.') <= strrchr(fname, '\\'))
-        strcat(fname, ".shr");
-
     FILE* file = fopen(fname, "rb");
 
+    if (file == NULL && (strrchr(fname, '.') <= strrchr(fname, '/') ||
+        strrchr(fname, '.') <= strrchr(fname, '\\'))) {
+        strcat(fname, ".iro");
+        file = fopen(fname, "rb");
+    }
+
     if (file == NULL) {
-        shiro_error(0, "IOError", "No such file or directory '%s'", fname);
+        shiro_error(0, ERR_IO_ERROR, "No such file or directory '%s'", fname);
         return NULL;
     }
 
@@ -152,4 +160,40 @@ SHIRO_API void shiro_load_stdlib(shiro_runtime* runtime) {
 
     p = shiro_new_native(1, (shiro_c_function)&shiro_require);
     shiro_set_global(runtime, ID("require"), s_fFunction, (union __field_value)p);
+}
+//-----------------------------------------------------------------------------
+// Configura a variável de ambiente PATH para que o sistema de arquivos
+// funcione corretamente
+//      argv    : Variável argv recebida na main
+//      fname   : Nome do arquivo que será executado
+//-----------------------------------------------------------------------------
+SHIRO_API void shiro_set_path(const shiro_string* argv, const shiro_string fname) {
+    if (argv == NULL || fname == NULL)
+        chdir("..");
+    else {
+        shiro_string full_path = calloc(256, sizeof(shiro_character));
+        realpath(argv[0], full_path);
+
+        char* e = strrchr(full_path, '\\');
+        if (e == NULL)
+            e = strrchr(full_path, '/');
+        if (e != NULL)
+            *(e + 1) = 0;
+
+        char* curr_path = getenv("PATH");
+        char* new_path = calloc(strlen(curr_path) + strlen(full_path) + 6, sizeof(char));
+        sprintf(new_path, "PATH=%s;%s", curr_path, full_path);
+        setenv(new_path);
+
+        full_path = calloc(256, sizeof(shiro_character));
+        realpath(fname, full_path);
+
+        e = strrchr(full_path, '\\');
+        if (e == NULL)
+            e = strrchr(full_path, '/');
+        if (e != NULL)
+            *(e + 1) = 0;
+
+        chdir(full_path);
+    }
 }
