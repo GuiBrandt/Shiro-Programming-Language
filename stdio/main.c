@@ -69,7 +69,7 @@ shiro_value* shiro_fwrite(shiro_runtime* runtime, shiro_uint n_args) {
 }
 
 //
-//  fread do shiro
+//  fred do shiro
 //
 shiro_value* shiro_fread(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_value *arg0 = shiro_get_value(runtime, 0);
