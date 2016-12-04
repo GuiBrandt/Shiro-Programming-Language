@@ -13,8 +13,8 @@
 #   define SHIRO_API
 #endif
 
-typedef int32_t shiro_fixnum;
-typedef int64_t shiro_bignum;
+typedef int32_t shiro_int;
+typedef int64_t shiro_long;
 typedef size_t  shiro_uint;
 
 typedef double shiro_float;
@@ -87,8 +87,8 @@ typedef struct __field {
     const shiro_id id;
     enum __field_type {
         s_fValue       = 0x00,
-        s_fFixnum      = 0x10,
-        s_fBignum      = 0x11,
+        s_fInteger     = 0x10,
+        s_fLong        = 0x11,
         s_fUInt        = 0x12,
         s_fFloat       = 0x20,
         s_fString      = 0x30,
@@ -97,8 +97,8 @@ typedef struct __field {
     union __field_value {
         struct __value*         val;
         struct __func*          func;
-        shiro_fixnum            i;
-        shiro_bignum            l;
+        shiro_int            i;
+        shiro_long            l;
         shiro_uint              u;
         shiro_float             f;
         shiro_string            str;
@@ -113,8 +113,8 @@ SHIRO_API shiro_id shiro_parse_id_from_name(const shiro_string);
 #define get_value(val)  shiro_get_field(val, ID_VALUE)->value
 #define get_func(val)   get_value(val).func
 #define get_uint(val)   get_value(val).u
-#define get_fixnum(val) get_value(val).i
-#define get_bignum(val) get_value(val).l
+#define get_int(val) get_value(val).i
+#define get_long(val) get_value(val).l
 #define get_float(val)  get_value(val).f
 #define get_string(val) get_value(val).str
 
@@ -133,7 +133,7 @@ typedef struct __runtime {
     shiro_value*    self;
 } shiro_runtime;
 
-typedef shiro_value* (*shiro_c_function)(struct __runtime*, shiro_fixnum);
+typedef shiro_value* (*shiro_c_function)(struct __runtime*, shiro_int);
 
 typedef struct __func {
     enum shiro_function_type {
@@ -160,8 +160,8 @@ SHIRO_API shiro_field*    shiro_get_field     (const shiro_value*, const shiro_i
 SHIRO_API shiro_value*    shiro_def_field     (shiro_value*, const shiro_field*);
 SHIRO_API shiro_value*    shiro_set_field     (shiro_value*, const shiro_id, enum __field_type, union __field_value);
 SHIRO_API shiro_value*    shiro_new_string    (const shiro_string);
-SHIRO_API shiro_value*    shiro_new_fixnum    (const shiro_fixnum);
-SHIRO_API shiro_value*    shiro_new_bignum    (const shiro_bignum);
+SHIRO_API shiro_value*    shiro_new_int       (const shiro_int);
+SHIRO_API shiro_value*    shiro_new_long      (const shiro_long);
 SHIRO_API shiro_value*    shiro_new_uint      (const shiro_uint);
 SHIRO_API shiro_value*    shiro_new_float     (const shiro_float);
 SHIRO_API shiro_value*    shiro_new_function  (shiro_function*);

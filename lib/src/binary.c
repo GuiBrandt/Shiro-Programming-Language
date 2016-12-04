@@ -164,7 +164,7 @@ SHIRO_API void shiro_write_binary(FILE* file, shiro_binary* binary) {
             fwrite(&type, 1, sizeof(type), file);
             switch (v->type) {
                 case s_tInt:
-                    fwrite(&get_fixnum(v), 1, sizeof(get_fixnum(v)), file);
+                    fwrite(&get_int(v), 1, sizeof(get_int(v)), file);
                     break;
                 case s_tFloat:
                     fwrite(&get_float(v), 1, sizeof(get_float(v)), file);
@@ -237,9 +237,9 @@ SHIRO_API shiro_binary* shiro_read_binary(FILE* file) {
             switch (t) {
             case s_tInt:
             {
-                shiro_fixnum fix = 0;
-                fread(&fix, 1, sizeof(shiro_fixnum), file);
-                v = shiro_new_fixnum(fix);
+                shiro_int fix = 0;
+                fread(&fix, 1, sizeof(shiro_int), file);
+                v = shiro_new_int(fix);
                 break;
             }
             case s_tFloat:

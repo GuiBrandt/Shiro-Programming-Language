@@ -142,16 +142,16 @@ shiro_value* shiro_cast_string(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Converte um valor em inteiro
 //-----------------------------------------------------------------------------
-shiro_value* shiro_cast_fixnum(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_value* shiro_cast_int(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
-    return shiro_new_fixnum(shiro_to_fixnum(arg0));
+    return shiro_new_int(shiro_to_int(arg0));
 }
 //-----------------------------------------------------------------------------
-// Converte um valor em bignum
+// Converte um valor em long
 //-----------------------------------------------------------------------------
-shiro_value* shiro_cast_bignum(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_value* shiro_cast_long(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
-    return shiro_new_bignum(shiro_to_bignum(arg0));
+    return shiro_new_long(shiro_to_long(arg0));
 }
 //-----------------------------------------------------------------------------
 // Converte um valor em inteiro positivo
@@ -173,11 +173,11 @@ SHIRO_API void shiro_load_stdlib(shiro_runtime* runtime) {
     p = shiro_new_native(1, (shiro_c_function)&shiro_cast_string);
     shiro_set_global(runtime, ID("string"), s_fFunction, (union __field_value)p);
 
-    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_fixnum);
-    shiro_set_global(runtime, ID("fixnum"), s_fFunction, (union __field_value)p);
+    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_int);
+    shiro_set_global(runtime, ID("int"), s_fFunction, (union __field_value)p);
 
-    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_bignum);
-    shiro_set_global(runtime, ID("bignum"), s_fFunction, (union __field_value)p);
+    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_long);
+    shiro_set_global(runtime, ID("long"), s_fFunction, (union __field_value)p);
 
     p = shiro_new_native(1, (shiro_c_function)&shiro_cast_uint);
     shiro_set_global(runtime, ID("uint"), s_fFunction, (union __field_value)p);

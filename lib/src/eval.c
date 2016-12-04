@@ -34,7 +34,7 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case JUMP:
             {
-                i += get_fixnum(node->args[0]);
+                i += get_int(node->args[0]);
                 break;
             }
             case FN_CALL:
@@ -112,11 +112,11 @@ SHIRO_API shiro_runtime* shiro_execute(
                             case s_fValue:
                                 shiro_push_value(runtime, shiro_use_value(g->value.val));
                                 break;
-                            case s_fBignum:
-                                shiro_push_value(runtime, shiro_new_bignum(g->value.l));
+                            case s_fLong:
+                                shiro_push_value(runtime, shiro_new_long(g->value.l));
                                 break;
-                            case s_fFixnum:
-                                shiro_push_value(runtime, shiro_new_fixnum(g->value.i));
+                            case s_fInteger:
+                                shiro_push_value(runtime, shiro_new_int(g->value.i));
                                 break;
                             case s_fUInt:
                                 shiro_push_value(runtime, shiro_new_uint(g->value.u));
@@ -195,26 +195,26 @@ SHIRO_API shiro_runtime* shiro_execute(
 
                         result = shiro_new_string(str);
                         shiro_set_field(result, ID_VALUE, s_fString, (union __field_value)str);
-                        shiro_set_field(result, ID("length"), s_fFixnum, (union __field_value)(len + l));
+                        shiro_set_field(result, ID("length"), s_fInteger, (union __field_value)(len + l));
                         break;
                     }
-                    case s_fFixnum: {
-                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
-                        result = shiro_new_fixnum(l_v->value.i + fixnumified);
+                    case s_fInteger: {
+                        shiro_int intified = shiro_to_int(r);
+                        result = shiro_new_int(l_v->value.i + intified);
                         break;
                     }
-                    case s_fBignum: {
-                        shiro_bignum bignumified = shiro_to_bignum(r);
-                        result = shiro_new_bignum(l_v->value.l + bignumified);
+                    case s_fLong: {
+                        shiro_long longified = shiro_to_long(r);
+                        result = shiro_new_long(l_v->value.l + longified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_uint bignumified = shiro_to_uint(r);
-                        result = shiro_new_uint(l_v->value.u + bignumified);
+                        shiro_uint longified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u + longified);
                         break;
                     }
                     case s_fFloat: {
-                        shiro_fixnum floatified = shiro_to_float(r);
+                        shiro_int floatified = shiro_to_float(r);
                         result = shiro_new_float(l_v->value.f + floatified);
                         break;
                     }
@@ -263,23 +263,23 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_value* result;
 
                 switch (l_v->type) {
-                    case s_fFixnum: {
-                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
-                        result = shiro_new_fixnum(l_v->value.i - fixnumified);
+                    case s_fInteger: {
+                        shiro_int intified = shiro_to_int(r);
+                        result = shiro_new_int(l_v->value.i - intified);
                         break;
                     }
-                    case s_fBignum: {
-                        shiro_bignum bignumified = shiro_to_bignum(r);
-                        result = shiro_new_bignum(l_v->value.l - bignumified);
+                    case s_fLong: {
+                        shiro_long longified = shiro_to_long(r);
+                        result = shiro_new_long(l_v->value.l - longified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_uint bignumified = shiro_to_uint(r);
-                        result = shiro_new_uint(l_v->value.u - bignumified);
+                        shiro_uint longified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u - longified);
                         break;
                     }
                     case s_fFloat: {
-                        shiro_fixnum floatified = shiro_to_float(r);
+                        shiro_int floatified = shiro_to_float(r);
                         result = shiro_new_float(l_v->value.f - floatified);
                         break;
                     }
@@ -321,23 +321,23 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_value* result;
 
                 switch (l_v->type) {
-                    case s_fFixnum: {
-                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
-                        result = shiro_new_fixnum(l_v->value.i * fixnumified);
+                    case s_fInteger: {
+                        shiro_int intified = shiro_to_int(r);
+                        result = shiro_new_int(l_v->value.i * intified);
                         break;
                     }
-                    case s_fBignum: {
-                        shiro_bignum bignumified = shiro_to_bignum(r);
-                        result = shiro_new_bignum(l_v->value.l * bignumified);
+                    case s_fLong: {
+                        shiro_long longified = shiro_to_long(r);
+                        result = shiro_new_long(l_v->value.l * longified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_uint bignumified = shiro_to_uint(r);
-                        result = shiro_new_uint(l_v->value.u * bignumified);
+                        shiro_uint longified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u * longified);
                         break;
                     }
                     case s_fFloat: {
-                        shiro_fixnum floatified = shiro_to_float(r);
+                        shiro_int floatified = shiro_to_float(r);
                         result = shiro_new_float(l_v->value.f * floatified);
                         break;
                     }
@@ -379,23 +379,23 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_value* result;
 
                 switch (l_v->type) {
-                    case s_fFixnum: {
-                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
-                        result = shiro_new_fixnum(l_v->value.i / fixnumified);
+                    case s_fInteger: {
+                        shiro_int intified = shiro_to_int(r);
+                        result = shiro_new_int(l_v->value.i / intified);
                         break;
                     }
-                    case s_fBignum: {
-                        shiro_bignum bignumified = shiro_to_bignum(r);
-                        result = shiro_new_bignum(l_v->value.l / bignumified);
+                    case s_fLong: {
+                        shiro_long longified = shiro_to_long(r);
+                        result = shiro_new_long(l_v->value.l / longified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_uint bignumified = shiro_to_uint(r);
-                        result = shiro_new_uint(l_v->value.u / bignumified);
+                        shiro_uint longified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u / longified);
                         break;
                     }
                     case s_fFloat: {
-                        shiro_fixnum floatified = shiro_to_float(r);
+                        shiro_int floatified = shiro_to_float(r);
                         result = shiro_new_float(l_v->value.f / floatified);
                         break;
                     }
@@ -437,23 +437,23 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_value* result;
 
                 switch (l_v->type) {
-                    case s_fFixnum: {
-                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
-                        result = shiro_new_fixnum(l_v->value.i * fixnumified);
+                    case s_fInteger: {
+                        shiro_int intified = shiro_to_int(r);
+                        result = shiro_new_int(l_v->value.i * intified);
                         break;
                     }
-                    case s_fBignum: {
-                        shiro_bignum bignumified = shiro_to_bignum(r);
-                        result = shiro_new_bignum(l_v->value.l * bignumified);
+                    case s_fLong: {
+                        shiro_long longified = shiro_to_long(r);
+                        result = shiro_new_long(l_v->value.l * longified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_uint bignumified = shiro_to_uint(r);
-                        result = shiro_new_uint(l_v->value.u * bignumified);
+                        shiro_uint longified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u * longified);
                         break;
                     }
                     case s_fFloat: {
-                        shiro_fixnum floatified = shiro_to_float(r);
+                        shiro_int floatified = shiro_to_float(r);
                         result = shiro_new_float(l_v->value.f * floatified);
                         break;
                     }
@@ -497,19 +497,19 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_value* result;
 
                 switch (l_v->type) {
-                    case s_fFixnum: {
-                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
-                        result = shiro_new_fixnum(l_v->value.i & fixnumified);
+                    case s_fInteger: {
+                        shiro_int intified = shiro_to_int(r);
+                        result = shiro_new_int(l_v->value.i & intified);
                         break;
                     }
-                    case s_fBignum: {
-                        shiro_bignum bignumified = shiro_to_bignum(r);
-                        result = shiro_new_bignum(l_v->value.l & bignumified);
+                    case s_fLong: {
+                        shiro_long longified = shiro_to_long(r);
+                        result = shiro_new_long(l_v->value.l & longified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_uint bignumified = shiro_to_uint(r);
-                        result = shiro_new_uint(l_v->value.u & bignumified);
+                        shiro_uint longified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u & longified);
                         break;
                     }
                     default:
@@ -552,19 +552,19 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_value* result;
 
                 switch (l_v->type) {
-                    case s_fFixnum: {
-                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
-                        result = shiro_new_fixnum(l_v->value.i | fixnumified);
+                    case s_fInteger: {
+                        shiro_int intified = shiro_to_int(r);
+                        result = shiro_new_int(l_v->value.i | intified);
                         break;
                     }
-                    case s_fBignum: {
-                        shiro_bignum bignumified = shiro_to_bignum(r);
-                        result = shiro_new_bignum(l_v->value.l | bignumified);
+                    case s_fLong: {
+                        shiro_long longified = shiro_to_long(r);
+                        result = shiro_new_long(l_v->value.l | longified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_uint bignumified = shiro_to_uint(r);
-                        result = shiro_new_uint(l_v->value.u | bignumified);
+                        shiro_uint longified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u | longified);
                         break;
                     }
                     default:
@@ -609,19 +609,19 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_value* result;
 
                 switch (l_v->type) {
-                    case s_fFixnum: {
-                        shiro_fixnum fixnumified = shiro_to_fixnum(r);
-                        result = shiro_new_fixnum(l_v->value.i ^ fixnumified);
+                    case s_fInteger: {
+                        shiro_int intified = shiro_to_int(r);
+                        result = shiro_new_int(l_v->value.i ^ intified);
                         break;
                     }
-                    case s_fBignum: {
-                        shiro_bignum bignumified = shiro_to_bignum(r);
-                        result = shiro_new_bignum(l_v->value.l ^ bignumified);
+                    case s_fLong: {
+                        shiro_long longified = shiro_to_long(r);
+                        result = shiro_new_long(l_v->value.l ^ longified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_uint bignumified = shiro_to_uint(r);
-                        result = shiro_new_uint(l_v->value.u ^ bignumified);
+                        shiro_uint longified = shiro_to_uint(r);
+                        result = shiro_new_uint(l_v->value.u ^ longified);
                         break;
                     }
                     default:
@@ -647,7 +647,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
                 shiro_field* l_v = shiro_get_field(l, ID_VALUE);
 
-                shiro_push_value(runtime, shiro_new_fixnum(l_v->value.i == r_v->value.i));
+                shiro_push_value(runtime, shiro_new_int(l_v->value.i == r_v->value.i));
 
                 shiro_free_value(r);
                 shiro_free_value(l);
@@ -664,7 +664,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
                 shiro_field* l_v = shiro_get_field(l, ID_VALUE);
 
-                shiro_push_value(runtime, shiro_new_fixnum(l_v->value.i > r_v->value.i));
+                shiro_push_value(runtime, shiro_new_int(l_v->value.i > r_v->value.i));
 
                 shiro_free_value(r);
                 shiro_free_value(l);
@@ -681,7 +681,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
                 shiro_field* l_v = shiro_get_field(l, ID_VALUE);
 
-                shiro_push_value(runtime, shiro_new_fixnum(l_v->value.i < r_v->value.i));
+                shiro_push_value(runtime, shiro_new_int(l_v->value.i < r_v->value.i));
 
                 shiro_free_value(r);
                 shiro_free_value(l);
@@ -698,7 +698,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
                 shiro_field* l_v = shiro_get_field(l, ID_VALUE);
 
-                shiro_push_value(runtime, shiro_new_fixnum(l_v->value.i >= r_v->value.i));
+                shiro_push_value(runtime, shiro_new_int(l_v->value.i >= r_v->value.i));
 
                 shiro_free_value(r);
                 shiro_free_value(l);
@@ -715,7 +715,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
                 shiro_field* l_v = shiro_get_field(l, ID_VALUE);
 
-                shiro_push_value(runtime, shiro_new_fixnum(l_v->value.i <= r_v->value.i));
+                shiro_push_value(runtime, shiro_new_int(l_v->value.i <= r_v->value.i));
 
                 shiro_free_value(r);
                 shiro_free_value(l);

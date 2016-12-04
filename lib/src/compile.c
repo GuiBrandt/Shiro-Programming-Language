@@ -292,17 +292,17 @@ shiro_binary* __compile_statement(
                                     push_node(bin, cond);
                                     free_node(cond);
 
-                                    shiro_node* jmp0 = new_node(JUMP, 1, shiro_new_fixnum(1));
+                                    shiro_node* jmp0 = new_node(JUMP, 1, shiro_new_int(1));
                                     push_node(bin, jmp0);
                                     free_node(jmp0);
 
-                                    shiro_node* jmp1 = new_node(JUMP, 1, shiro_new_fixnum(b_block2->used + 1));
+                                    shiro_node* jmp1 = new_node(JUMP, 1, shiro_new_int(b_block2->used + 1));
                                     push_node(bin, jmp1);
                                     free_node(jmp1);
 
                                     bin = concat_and_free_binary(bin, b_block2);
 
-                                    shiro_node* jmp2 = new_node(JUMP, 1, shiro_new_fixnum(b_block->used));
+                                    shiro_node* jmp2 = new_node(JUMP, 1, shiro_new_int(b_block->used));
                                     push_node(bin, jmp2);
                                     free_node(jmp2);
 
@@ -324,7 +324,7 @@ shiro_binary* __compile_statement(
                             push_node(bin, cond);
                             free_node(cond);
 
-                            shiro_node* jmp = new_node(JUMP, 1, shiro_new_fixnum(b_block->used));
+                            shiro_node* jmp = new_node(JUMP, 1, shiro_new_int(b_block->used));
                             push_node(bin, jmp);
                             free_node(jmp);
 
@@ -667,13 +667,13 @@ shiro_binary* __compile_statement(
                             push_node(binary, cond);
                             free_node(cond);
 
-                            shiro_node* jmp = new_node(JUMP, 1, shiro_new_fixnum(b_block->used + 1));
+                            shiro_node* jmp = new_node(JUMP, 1, shiro_new_int(b_block->used + 1));
                             push_node(binary, jmp);
                             free_node(jmp);
 
                             concat_binary(binary, b_block);
 
-                            shiro_node* node = new_node(JUMP, 1, shiro_new_fixnum(-(b_expr->used + b_block->used + 3)));
+                            shiro_node* node = new_node(JUMP, 1, shiro_new_int(-(b_expr->used + b_block->used + 3)));
                             push_node(binary, node);
                             free_node(node);
 
@@ -755,11 +755,11 @@ shiro_binary* __compile_statement(
                                 push_node(binary, cond);
                                 free_node(cond);
 
-                                shiro_node* jmp = new_node(JUMP, 1, shiro_new_fixnum(1));
+                                shiro_node* jmp = new_node(JUMP, 1, shiro_new_int(1));
                                 push_node(binary, jmp);
                                 free_node(jmp);
 
-                                shiro_node* node = new_node(JUMP, 1, shiro_new_fixnum(-(b_expr->used + b_block->used + 3)));
+                                shiro_node* node = new_node(JUMP, 1, shiro_new_int(-(b_expr->used + b_block->used + 3)));
                                 push_node(binary, node);
                                 free_node(node);
 
@@ -1078,12 +1078,12 @@ shiro_binary* __compile_statement(
                     free(v);
                 } else {
                     char* end;
-                    shiro_bignum l = strtoll(value, &end, 10);
+                    shiro_long l = strtoll(value, &end, 10);
 
                     if (l < 0x7FFFFFFF && l > -0x80000000)
-                        s_value = shiro_new_fixnum((shiro_fixnum)l);
+                        s_value = shiro_new_int((shiro_int)l);
                     else
-                        s_value = shiro_new_bignum(l);
+                        s_value = shiro_new_long(l);
                 }
 
                 shiro_node* node = new_node(PUSH, 1, s_value);

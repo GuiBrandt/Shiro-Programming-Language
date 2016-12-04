@@ -208,30 +208,30 @@ SHIRO_API shiro_value* shiro_new_string(const shiro_string str) {
 //-----------------------------------------------------------------------------
 // Inicializa um shiro_value com o tipo Fixnum a partir de um inteiro 32-bit
 // em C
-//      fix : Inteiro 32-bit C usado para inicializar o fixnum do shiro
+//      fix : Inteiro 32-bit C usado para inicializar o int do shiro
 //-----------------------------------------------------------------------------
-SHIRO_API shiro_value* shiro_new_fixnum(const shiro_fixnum fix) {
+SHIRO_API shiro_value* shiro_new_int(const shiro_int fix) {
     shiro_value  v   = {s_tInt, 1, NULL, 1};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(1, sizeof(shiro_field*));
 
-    shiro_set_field(val, ID_VALUE, s_fFixnum, (union __field_value)fix);
+    shiro_set_field(val, ID_VALUE, s_fInteger, (union __field_value)fix);
 
     return val;
 }
 //-----------------------------------------------------------------------------
 // Inicializa um shiro_value com o tipo Integer a partir de um inteiro 64-bit
 // em C
-//      big : Inteiro 64-bit C usado para inicializar o bignum do shiro
+//      big : Inteiro 64-bit C usado para inicializar o long do shiro
 //-----------------------------------------------------------------------------
-SHIRO_API shiro_value* shiro_new_bignum(const shiro_bignum big) {
+SHIRO_API shiro_value* shiro_new_long(const shiro_long big) {
     shiro_value  v   = {s_tInt, 1, NULL, 1};
     shiro_value* val = malloc(sizeof(shiro_value));
     memcpy(val, &v, sizeof(shiro_value));
     val->fields = calloc(1, sizeof(shiro_field*));
 
-    shiro_set_field(val, ID_VALUE, s_fBignum, (union __field_value)big);
+    shiro_set_field(val, ID_VALUE, s_fLong, (union __field_value)big);
 
     return val;
 }
@@ -475,7 +475,7 @@ SHIRO_API shiro_field* shiro_get_global(shiro_runtime* runtime, shiro_id id) {
 //-----------------------------------------------------------------------------
 SHIRO_API bool shiro_to_bool(shiro_value* value) {
     if (value->n_fields == 0 ||
-        (value->type == s_tInt && get_fixnum(value) != 0) ||
+        (value->type == s_tInt && get_int(value) != 0) ||
         (value->type == s_tString &&
          shiro_get_field(value, ID("length"))->value.i != 0))
          return false;
@@ -498,10 +498,10 @@ SHIRO_API shiro_string shiro_to_string(shiro_value* val) {
             return r;
         case s_tInt:
             switch (v->type) {
-                case s_fBignum:
+                case s_fLong:
                     sprintf(r, "%" PRId64, v->value.l);
                     return r;
-                case s_fFixnum:
+                case s_fInteger:
                     sprintf(r, "%" PRId32, v->value.i);
                     return r;
                 case s_fUInt:
@@ -526,22 +526,22 @@ SHIRO_API shiro_string shiro_to_string(shiro_value* val) {
 // Converte um valor do shiro em inteiro
 //      val     : Valor a ser convertido
 //-----------------------------------------------------------------------------
-SHIRO_API shiro_fixnum shiro_to_fixnum(shiro_value* val) {
+SHIRO_API shiro_int shiro_to_int(shiro_value* val) {
     shiro_field* v = shiro_get_field(val, ID_VALUE);
     switch (val->type) {
         case s_tFloat:
-            return (shiro_fixnum)v->value.f;
+            return (shiro_int)v->value.f;
             break;
         case s_tInt:
             switch (v->type) {
-                case s_fBignum:
-                    return (shiro_fixnum)v->value.l;
+                case s_fLong:
+                    return (shiro_int)v->value.l;
                     break;
-                case s_fFixnum:
-                    return (shiro_fixnum)v->value.i;
+                case s_fInteger:
+                    return (shiro_int)v->value.i;
                     break;
                 case s_fUInt:
-                    return (shiro_fixnum)v->value.u;
+                    return (shiro_int)v->value.u;
                     break;
                 default:
                     return 0;
@@ -550,7 +550,7 @@ SHIRO_API shiro_fixnum shiro_to_fixnum(shiro_value* val) {
         case s_tFunction:
         case s_tObject:
         case s_tString:
-            return (shiro_fixnum)val;
+            return (shiro_int)val;
         default:
             break;
     }
@@ -560,22 +560,22 @@ SHIRO_API shiro_fixnum shiro_to_fixnum(shiro_value* val) {
 // Converte um valor do shiro em inteiro 64-bit
 //      val     : Valor a ser convertido
 //-----------------------------------------------------------------------------
-SHIRO_API shiro_bignum shiro_to_bignum(shiro_value* val) {
+SHIRO_API shiro_long shiro_to_long(shiro_value* val) {
     shiro_field* v = shiro_get_field(val, ID_VALUE);
     switch (val->type) {
         case s_tFloat:
-            return (shiro_bignum)v->value.f;
+            return (shiro_long)v->value.f;
             break;
         case s_tInt:
             switch (v->type) {
-                case s_fBignum:
+                case s_fLong:
                     return v->value.l;
                     break;
-                case s_fFixnum:
-                    return (shiro_bignum)v->value.i;
+                case s_fInteger:
+                    return (shiro_long)v->value.i;
                     break;
                 case s_fUInt:
-                    return (shiro_bignum)v->value.u;
+                    return (shiro_long)v->value.u;
                     break;
                 default:
                     return 0;
@@ -584,7 +584,7 @@ SHIRO_API shiro_bignum shiro_to_bignum(shiro_value* val) {
         case s_tFunction:
         case s_tObject:
         case s_tString:
-            return (shiro_fixnum)val;
+            return (shiro_int)val;
         default:
             break;
     }
@@ -602,10 +602,10 @@ SHIRO_API shiro_uint shiro_to_uint(shiro_value* val) {
             break;
         case s_tInt:
             switch (v->type) {
-                case s_fBignum:
+                case s_fLong:
                     return (shiro_uint)v->value.l;
                     break;
-                case s_fFixnum:
+                case s_fInteger:
                     return (shiro_uint)v->value.i;
                     break;
                 case s_fUInt:
@@ -637,10 +637,10 @@ SHIRO_API shiro_float shiro_to_float(shiro_value* val) {
             break;
         case s_tInt:
             switch (v->type) {
-                case s_fBignum:
+                case s_fLong:
                     return (shiro_float)v->value.l;
                     break;
-                case s_fFixnum:
+                case s_fInteger:
                     return (shiro_float)v->value.i;
                     break;
                 case s_fUInt:

@@ -6,8 +6,8 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-typedef int32_t shiro_fixnum;
-typedef int64_t shiro_bignum;
+typedef int32_t shiro_int;
+typedef int64_t shiro_long;
 typedef size_t  shiro_uint;
 
 typedef double shiro_float;
