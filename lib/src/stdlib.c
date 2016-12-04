@@ -133,11 +133,32 @@ shiro_value* shiro_sys(shiro_runtime* runtime, shiro_uint n_args) {
     return shiro_nil;
 }
 //-----------------------------------------------------------------------------
-//  Converte um valor em string
+// Converte um valor em string
 //-----------------------------------------------------------------------------
-shiro_value* shiro_to_str(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_value* shiro_cast_string(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     return shiro_new_string(shiro_to_string(arg0));
+}
+//-----------------------------------------------------------------------------
+// Converte um valor em inteiro
+//-----------------------------------------------------------------------------
+shiro_value* shiro_cast_fixnum(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
+    return shiro_new_fixnum(shiro_to_fixnum(arg0));
+}
+//-----------------------------------------------------------------------------
+// Converte um valor em bignum
+//-----------------------------------------------------------------------------
+shiro_value* shiro_cast_bignum(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
+    return shiro_new_bignum(shiro_to_bignum(arg0));
+}
+//-----------------------------------------------------------------------------
+// Converte um valor em inteiro positivo
+//-----------------------------------------------------------------------------
+shiro_value* shiro_cast_uint(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
+    return shiro_new_uint(shiro_to_uint(arg0));
 }
 //-----------------------------------------------------------------------------
 // Carrega as funções da biblioteca padrão do shiro para o runtime
@@ -149,8 +170,17 @@ SHIRO_API void shiro_load_stdlib(shiro_runtime* runtime) {
     p = shiro_new_native(1, (shiro_c_function)&shiro_sys);
     shiro_set_global(runtime, ID("sys"), s_fFunction, (union __field_value)p);
 
-    p = shiro_new_native(1, (shiro_c_function)&shiro_to_str);
-    shiro_set_global(runtime, ID("to_str"), s_fFunction, (union __field_value)p);
+    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_string);
+    shiro_set_global(runtime, ID("string"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_fixnum);
+    shiro_set_global(runtime, ID("fixnum"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_bignum);
+    shiro_set_global(runtime, ID("bignum"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_uint);
+    shiro_set_global(runtime, ID("uint"), s_fFunction, (union __field_value)p);
 
     p = shiro_new_native(1, (shiro_c_function)&shiro_import);
     shiro_set_global(runtime, ID("import"), s_fFunction, (union __field_value)p);

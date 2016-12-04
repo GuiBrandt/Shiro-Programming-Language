@@ -204,12 +204,12 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fBignum: {
-                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        shiro_bignum bignumified = shiro_to_bignum(r);
                         result = shiro_new_bignum(l_v->value.l + bignumified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        shiro_uint bignumified = shiro_to_uint(r);
                         result = shiro_new_uint(l_v->value.u + bignumified);
                         break;
                     }
@@ -269,12 +269,12 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fBignum: {
-                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        shiro_bignum bignumified = shiro_to_bignum(r);
                         result = shiro_new_bignum(l_v->value.l - bignumified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        shiro_uint bignumified = shiro_to_uint(r);
                         result = shiro_new_uint(l_v->value.u - bignumified);
                         break;
                     }
@@ -327,12 +327,12 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fBignum: {
-                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        shiro_bignum bignumified = shiro_to_bignum(r);
                         result = shiro_new_bignum(l_v->value.l * bignumified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        shiro_uint bignumified = shiro_to_uint(r);
                         result = shiro_new_uint(l_v->value.u * bignumified);
                         break;
                     }
@@ -385,12 +385,12 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fBignum: {
-                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        shiro_bignum bignumified = shiro_to_bignum(r);
                         result = shiro_new_bignum(l_v->value.l / bignumified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        shiro_uint bignumified = shiro_to_uint(r);
                         result = shiro_new_uint(l_v->value.u / bignumified);
                         break;
                     }
@@ -443,12 +443,12 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fBignum: {
-                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        shiro_bignum bignumified = shiro_to_bignum(r);
                         result = shiro_new_bignum(l_v->value.l * bignumified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        shiro_uint bignumified = shiro_to_uint(r);
                         result = shiro_new_uint(l_v->value.u * bignumified);
                         break;
                     }
@@ -503,12 +503,12 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fBignum: {
-                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        shiro_bignum bignumified = shiro_to_bignum(r);
                         result = shiro_new_bignum(l_v->value.l & bignumified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        shiro_uint bignumified = shiro_to_uint(r);
                         result = shiro_new_uint(l_v->value.u & bignumified);
                         break;
                     }
@@ -558,12 +558,12 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fBignum: {
-                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        shiro_bignum bignumified = shiro_to_bignum(r);
                         result = shiro_new_bignum(l_v->value.l | bignumified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        shiro_uint bignumified = shiro_to_uint(r);
                         result = shiro_new_uint(l_v->value.u | bignumified);
                         break;
                     }
@@ -615,12 +615,12 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fBignum: {
-                        shiro_fixnum bignumified = shiro_to_fixnum(r);
+                        shiro_bignum bignumified = shiro_to_bignum(r);
                         result = shiro_new_bignum(l_v->value.l ^ bignumified);
                         break;
                     }
                     case s_fUInt: {
-                        shiro_fixnum bignumified = shiro_to_uint(r);
+                        shiro_uint bignumified = shiro_to_uint(r);
                         result = shiro_new_uint(l_v->value.u ^ bignumified);
                         break;
                     }

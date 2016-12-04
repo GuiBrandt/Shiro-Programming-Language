@@ -10,7 +10,7 @@
 #include <locale.h>
 #include <string.h>
 //-----------------------------------------------------------------------------
-// Ponto de entrada para teste
+// Ponto de entrada
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv) {
     setlocale(LC_ALL, "en_US.UTF-8");
@@ -19,8 +19,6 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Syntax: shiro <filename>");
         return -1;
     }
-
-    shiro_uint i = 0;
 
     shiro_string fname = argv[1];
 
@@ -46,6 +44,8 @@ int main(int argc, char** argv) {
         if (c != 1) {
             shiro_string code = calloc(1, sizeof(shiro_character));
             shiro_character c;
+
+            shiro_uint i = 0;
             while ((c = fgetc(file)) != EOF) {
                 code[i++] = c;
                 code = realloc(code, i + 1);
