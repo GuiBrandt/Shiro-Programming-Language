@@ -7,7 +7,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdio.h>
 
 #include "vm.h"
 #include "lexer.h"
@@ -843,7 +842,11 @@ shiro_binary* __compile_statement(
                     shiro_node* set = new_node(SET_VAR, 1, shiro_new_uint(ID(name)));
                     push_node(binary, set);
                     free_node(set);
-                } else if (*(token->value + 1) == *OP_SET) {
+                } else if (*(token->value + 1) == *OP_SET && (
+                    *token->value == *OP_ADD || *token->value == *OP_SUB ||
+                    *token->value == *OP_MUL || *token->value == *OP_DIV ||
+                    *token->value == *OP_MOD || *token->value == *OP_AND ||
+                    *token->value == *OP_OR  || *token->value == *OP_XOR)) {
                     shiro_string op = calloc(2, sizeof(shiro_character));
                     *op = *token->value;
 

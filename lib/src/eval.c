@@ -647,7 +647,41 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
                 shiro_field* l_v = shiro_get_field(l, ID_VALUE);
 
-                shiro_push_value(runtime, shiro_new_int(l_v->value.i == r_v->value.i));
+                bool result = false;
+
+                switch (l_v->type) {
+                    case s_fString: {
+                        shiro_string stringified = shiro_to_string(r);
+                        result = strcmp(l_v->value.str, stringified) == 0;
+                        free(stringified);
+                        break;
+                    }
+                    case s_fInteger: {
+                        shiro_int intified = shiro_to_int(r);
+                        result = l_v->value.i == intified;
+                        break;
+                    }
+                    case s_fLong: {
+                        shiro_long longified = shiro_to_long(r);
+                        result = l_v->value.l == longified;
+                        break;
+                    }
+                    case s_fUInt: {
+                        shiro_uint longified = shiro_to_uint(r);
+                        result = l_v->value.u == longified;
+                        break;
+                    }
+                    case s_fFloat: {
+                        shiro_int floatified = shiro_to_float(r);
+                        result = l_v->value.f == floatified;
+                        break;
+                    }
+                    default:
+                        result = l_v == r_v;
+                        break;
+                }
+
+                shiro_push_value(runtime, shiro_new_int(result));
 
                 shiro_free_value(r);
                 shiro_free_value(l);
@@ -664,7 +698,50 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
                 shiro_field* l_v = shiro_get_field(l, ID_VALUE);
 
-                shiro_push_value(runtime, shiro_new_int(l_v->value.i > r_v->value.i));
+                if (l_v == NULL || l_v->type == s_fFunction) {
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    return NULL;
+                }
+
+                if (r_v == NULL || r_v->type == s_fFunction) {
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    return NULL;
+                }
+
+                bool result = false;
+
+                switch (l_v->type) {
+                    case s_fString: {
+                        shiro_string stringified = shiro_to_string(r);
+                        result = strcmp(l_v->value.str, stringified) > 0;
+                        free(stringified);
+                        break;
+                    }
+                    case s_fInteger: {
+                        shiro_int intified = shiro_to_int(r);
+                        result = l_v->value.i > intified;
+                        break;
+                    }
+                    case s_fLong: {
+                        shiro_long longified = shiro_to_long(r);
+                        result = l_v->value.l > longified;
+                        break;
+                    }
+                    case s_fUInt: {
+                        shiro_uint longified = shiro_to_uint(r);
+                        result = l_v->value.u > longified;
+                        break;
+                    }
+                    case s_fFloat: {
+                        shiro_int floatified = shiro_to_float(r);
+                        result = l_v->value.f > floatified;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+
+                shiro_push_value(runtime, shiro_new_int(result));
 
                 shiro_free_value(r);
                 shiro_free_value(l);
@@ -681,7 +758,50 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
                 shiro_field* l_v = shiro_get_field(l, ID_VALUE);
 
-                shiro_push_value(runtime, shiro_new_int(l_v->value.i < r_v->value.i));
+                if (l_v == NULL || l_v->type == s_fFunction) {
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    return NULL;
+                }
+
+                if (r_v == NULL || r_v->type == s_fFunction) {
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    return NULL;
+                }
+
+                bool result = false;
+
+                switch (l_v->type) {
+                    case s_fString: {
+                        shiro_string stringified = shiro_to_string(r);
+                        result = strcmp(l_v->value.str, stringified) < 0;
+                        free(stringified);
+                        break;
+                    }
+                    case s_fInteger: {
+                        shiro_int intified = shiro_to_int(r);
+                        result = l_v->value.i < intified;
+                        break;
+                    }
+                    case s_fLong: {
+                        shiro_long longified = shiro_to_long(r);
+                        result = l_v->value.l < longified;
+                        break;
+                    }
+                    case s_fUInt: {
+                        shiro_uint longified = shiro_to_uint(r);
+                        result = l_v->value.u < longified;
+                        break;
+                    }
+                    case s_fFloat: {
+                        shiro_int floatified = shiro_to_float(r);
+                        result = l_v->value.f < floatified;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+
+                shiro_push_value(runtime, shiro_new_int(result));
 
                 shiro_free_value(r);
                 shiro_free_value(l);
@@ -698,7 +818,50 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
                 shiro_field* l_v = shiro_get_field(l, ID_VALUE);
 
-                shiro_push_value(runtime, shiro_new_int(l_v->value.i >= r_v->value.i));
+                if (l_v == NULL || l_v->type == s_fFunction) {
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    return NULL;
+                }
+
+                if (r_v == NULL || r_v->type == s_fFunction) {
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    return NULL;
+                }
+
+                bool result = false;
+
+                switch (l_v->type) {
+                    case s_fString: {
+                        shiro_string stringified = shiro_to_string(r);
+                        result = strcmp(l_v->value.str, stringified) >= 0;
+                        free(stringified);
+                        break;
+                    }
+                    case s_fInteger: {
+                        shiro_int intified = shiro_to_int(r);
+                        result = l_v->value.i >= intified;
+                        break;
+                    }
+                    case s_fLong: {
+                        shiro_long longified = shiro_to_long(r);
+                        result = l_v->value.l >= longified;
+                        break;
+                    }
+                    case s_fUInt: {
+                        shiro_uint longified = shiro_to_uint(r);
+                        result = l_v->value.u >= longified;
+                        break;
+                    }
+                    case s_fFloat: {
+                        shiro_int floatified = shiro_to_float(r);
+                        result = l_v->value.f >= floatified;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+
+                shiro_push_value(runtime, shiro_new_int(result));
 
                 shiro_free_value(r);
                 shiro_free_value(l);
@@ -715,7 +878,50 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_field* r_v = shiro_get_field(r, ID_VALUE);
                 shiro_field* l_v = shiro_get_field(l, ID_VALUE);
 
-                shiro_push_value(runtime, shiro_new_int(l_v->value.i <= r_v->value.i));
+                if (l_v == NULL || l_v->type == s_fFunction) {
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
+                    return NULL;
+                }
+
+                if (r_v == NULL || r_v->type == s_fFunction) {
+                    shiro_error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
+                    return NULL;
+                }
+
+                bool result = false;
+
+                switch (l_v->type) {
+                    case s_fString: {
+                        shiro_string stringified = shiro_to_string(r);
+                        result = strcmp(l_v->value.str, stringified) <= 0;
+                        free(stringified);
+                        break;
+                    }
+                    case s_fInteger: {
+                        shiro_int intified = shiro_to_int(r);
+                        result = l_v->value.i <= intified;
+                        break;
+                    }
+                    case s_fLong: {
+                        shiro_long longified = shiro_to_long(r);
+                        result = l_v->value.l <= longified;
+                        break;
+                    }
+                    case s_fUInt: {
+                        shiro_uint longified = shiro_to_uint(r);
+                        result = l_v->value.u <= longified;
+                        break;
+                    }
+                    case s_fFloat: {
+                        shiro_int floatified = shiro_to_float(r);
+                        result = l_v->value.f <= floatified;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+
+                shiro_push_value(runtime, shiro_new_int(result));
 
                 shiro_free_value(r);
                 shiro_free_value(l);

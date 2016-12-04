@@ -113,8 +113,8 @@ SHIRO_API shiro_id shiro_parse_id_from_name(const shiro_string);
 #define get_value(val)  shiro_get_field(val, ID_VALUE)->value
 #define get_func(val)   get_value(val).func
 #define get_uint(val)   get_value(val).u
-#define get_int(val) get_value(val).i
-#define get_long(val) get_value(val).l
+#define get_int(val)    get_value(val).i
+#define get_long(val)   get_value(val).l
 #define get_float(val)  get_value(val).f
 #define get_string(val) get_value(val).str
 

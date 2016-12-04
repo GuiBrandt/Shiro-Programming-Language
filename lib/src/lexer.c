@@ -5,6 +5,8 @@
 //=============================================================================
 #include "lexer.h"
 
+#include <stdio.h>
+
 #include <stdlib.h>
 #include <string.h>
 //---------------------------------------------------------------------------
@@ -293,7 +295,12 @@ shiro_token_type get_token_type(const shiro_token* token) {
         c == *OP_XOR || strcmp(OP_ASSOC, string) == 0 ||
         strcmp(string, CMP_EQU)    == 0 || strcmp(string, CMP_DIF)   == 0 ||
         strcmp(string, CMP_GRT)    == 0 || strcmp(string, CMP_LT)    == 0 ||
-        strcmp(string, CMP_GRTEQU) == 0 || strcmp(string, CMP_LTEQU) == 0)
+        strcmp(string, CMP_GRTEQU) == 0 || strcmp(string, CMP_LTEQU) == 0 ||
+        (len == 2 && string[1] == *OP_SET && (
+                    string[0] == *OP_ADD || string[0] == *OP_SUB ||
+                    string[0] == *OP_MUL || string[0] == *OP_DIV ||
+                    string[0] == *OP_MOD || string[0] == *OP_AND ||
+                    string[0] == *OP_OR  || string[0] == *OP_XOR)))
         return s_tkBinaryOperator;
 
     if (strcmp(U_INC, string) == 0 || strcmp(U_DEC, string) == 0 ||
@@ -350,6 +357,7 @@ shiro_statement* shiro_tokenize(
                         push_token(tokens, tk);
                         i++;
                     }
+
                     free_token(tk);
                     op2 = true;
                 }
