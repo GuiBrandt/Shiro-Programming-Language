@@ -262,11 +262,10 @@ shiro_token_type get_token_type(const shiro_token* token) {
         (len == 2 &&
             (strcmp(string, KW_COND) == 0 || strcmp(string, KW_DO) == 0 || strcmp(string, KW_FUNC) == 0)
         ) ||
-        (len == 3 &&
-            (strcmp(string, KW_NIL) == 0 || strcmp(string, KW_FOR) == 0)
-        ) ||
+        strcmp(string, KW_NIL) == 0
+        ||
         (len == 4 &&
-            (strcmp(string, KW_DIE) == 0  || strcmp(string, KW_SELF) == 0 || strcmp(string, KW_LOOP) == 0 ||
+            (strcmp(string, KW_DIE) == 0  || strcmp(string, KW_SELF) == 0 ||
              strcmp(string, KW_ELSE) == 0 || strcmp(string, KW_CASE) == 0)
         ) ||
         (len == 5 &&

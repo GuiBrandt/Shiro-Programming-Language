@@ -11,6 +11,8 @@ typedef enum bytecodes {
     COND            = 0x04,
     JUMP            = 0x05,
     FN_CALL         = 0x06,
+    END_LOOP        = 0x07,
+    BREAK           = 0x08,
 
     VAR             = 0x01,
     FN              = 0x02,

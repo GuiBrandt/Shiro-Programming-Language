@@ -679,6 +679,10 @@ shiro_binary* __compile_statement(
                             push_node(binary, node);
                             free_node(node);
 
+                            shiro_node* ed = new_node(END_LOOP, 0);
+                            push_node(binary, ed);
+                            free_node(ed);
+
                             shiro_free_binary(b_expr);
                             shiro_free_binary(b_block);
 
@@ -761,6 +765,10 @@ shiro_binary* __compile_statement(
                                 push_node(binary, node);
                                 free_node(node);
 
+                                shiro_node* ed = new_node(END_LOOP, 0);
+                                push_node(binary, ed);
+                                free_node(ed);
+
                                 shiro_free_binary(b_expr);
                                 shiro_free_binary(b_block);
 
@@ -782,6 +790,24 @@ shiro_binary* __compile_statement(
                     shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OBLOCK);
                     return NULL;
                 }
+            }
+
+            //
+            //  break
+            //
+            else if (strcmp(token->value, KW_BREAK) == 0) {
+                token = get_token(statement, 1, line, sline);
+
+                if (token != NULL && strcmp(token->value, MARK_EOS) != 0) {
+                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected expecting '%s', expecting <END>", token->value);
+                    return NULL;
+                }
+
+                shiro_node* brk = new_node(BREAK, 0);
+                push_node(binary, brk);
+                free_node(brk);
+
+                return binary;
             }
 
             if (token == NULL || (

@@ -737,6 +737,8 @@ SHIRO_API shiro_runtime* shiro_execute(
             }
             case DIE:
                 return runtime;
+            case BREAK:
+                do { i++; } while (binary->nodes[i]->code != END_LOOP);
             default:
                 break;
         }
