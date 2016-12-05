@@ -140,8 +140,118 @@ shiro_value* shiro_bignum_mul(shiro_runtime* runtime, shiro_uint n_args) {
     return shiro_new_uint((shiro_uint)bigintA);
 }
 //-----------------------------------------------------------------------------
-// Função do shiro para converter um bignum em string
+// Função do shiro para dividir um bignum por outro arredondando para cima
 // Ambos os argumentos da função devem ser bignums
+//
+// O valor de retorno da função é um inteiro representando o ponteiro para o
+// bignum
+//-----------------------------------------------------------------------------
+shiro_value* shiro_bignum_cdiv(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
+    shiro_value* arg1 = shiro_get_value(runtime, 1);
+
+    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
+    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+
+    mpz_cdiv_q(*bigintA, *bigintA, *bigintB);
+
+    return shiro_new_uint((shiro_uint)bigintA);
+}
+//-----------------------------------------------------------------------------
+// Função do shiro para dividir um bignum por outro arredondando para baixo
+// Ambos os argumentos da função devem ser bignums
+//
+// O valor de retorno da função é um inteiro representando o ponteiro para o
+// bignum
+//-----------------------------------------------------------------------------
+shiro_value* shiro_bignum_fdiv(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
+    shiro_value* arg1 = shiro_get_value(runtime, 1);
+
+    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
+    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+
+    mpz_fdiv_q(*bigintA, *bigintA, *bigintB);
+
+    return shiro_new_uint((shiro_uint)bigintA);
+}
+//-----------------------------------------------------------------------------
+// Função do shiro para dividir um bignum por outro ignorando os decimais
+// Ambos os argumentos da função devem ser bignums
+//
+// O valor de retorno da função é um inteiro representando o ponteiro para o
+// bignum
+//-----------------------------------------------------------------------------
+shiro_value* shiro_bignum_tdiv(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
+    shiro_value* arg1 = shiro_get_value(runtime, 1);
+
+    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
+    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+
+    mpz_tdiv_q(*bigintA, *bigintA, *bigintB);
+
+    return shiro_new_uint((shiro_uint)bigintA);
+}
+//-----------------------------------------------------------------------------
+// Função do shiro para obter o resto da divisão de um bignum por outro
+// arredondando para cima
+// Ambos os argumentos da função devem ser bignums
+//
+// O valor de retorno da função é um inteiro representando o ponteiro para o
+// bignum
+//-----------------------------------------------------------------------------
+shiro_value* shiro_bignum_cmod(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
+    shiro_value* arg1 = shiro_get_value(runtime, 1);
+
+    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
+    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+
+    mpz_cdiv_r(*bigintA, *bigintA, *bigintB);
+
+    return shiro_new_uint((shiro_uint)bigintA);
+}
+//-----------------------------------------------------------------------------
+// Função do shiro para obter o resto da divisão de um bignum por outro
+// arredondando para baixo
+// Ambos os argumentos da função devem ser bignums
+//
+// O valor de retorno da função é um inteiro representando o ponteiro para o
+// bignum
+//-----------------------------------------------------------------------------
+shiro_value* shiro_bignum_fmod(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
+    shiro_value* arg1 = shiro_get_value(runtime, 1);
+
+    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
+    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+
+    mpz_fdiv_r(*bigintA, *bigintA, *bigintB);
+
+    return shiro_new_uint((shiro_uint)bigintA);
+}
+//-----------------------------------------------------------------------------
+// Função do shiro para obter o resto da divisão de um bignum por outro
+// ignorando os decimais
+// Ambos os argumentos da função devem ser bignums
+//
+// O valor de retorno da função é um inteiro representando o ponteiro para o
+// bignum
+//-----------------------------------------------------------------------------
+shiro_value* shiro_bignum_tmod(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
+    shiro_value* arg1 = shiro_get_value(runtime, 1);
+
+    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
+    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+
+    mpz_tdiv_r(*bigintA, *bigintA, *bigintB);
+
+    return shiro_new_uint((shiro_uint)bigintA);
+}
+//-----------------------------------------------------------------------------
+// Função do shiro para converter um bignum em string
 //
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
@@ -175,6 +285,24 @@ void shiro_load_library(shiro_runtime* runtime) {
 
     p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_mul);
     shiro_set_global(runtime, ID("bignum_mul"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_cdiv);
+    shiro_set_global(runtime, ID("bignum_cdiv"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_fdiv);
+    shiro_set_global(runtime, ID("bignum_fdiv"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_tdiv);
+    shiro_set_global(runtime, ID("bignum_tdiv"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_cmod);
+    shiro_set_global(runtime, ID("bignum_cmod"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_fmod);
+    shiro_set_global(runtime, ID("bignum_fmod"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_tmod);
+    shiro_set_global(runtime, ID("bignum_tmod"), s_fFunction, (union __field_value)p);
 
     p = shiro_new_native(1, (shiro_c_function)&shiro_bignum_to_string);
     shiro_set_global(runtime, ID("bignum_to_string"), s_fFunction, (union __field_value)p);
