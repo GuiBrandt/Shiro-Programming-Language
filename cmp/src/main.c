@@ -10,7 +10,7 @@
 #include <locale.h>
 #include <string.h>
 //-----------------------------------------------------------------------------
-// Ponto de entrada para teste
+// Ponto de entrada
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv) {
     setlocale(LC_ALL, "en_US.UTF-8");
