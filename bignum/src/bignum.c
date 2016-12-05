@@ -161,14 +161,11 @@ shiro_value* shiro_bignum_to_string(shiro_runtime* runtime, shiro_uint n_args) {
 void shiro_load_library(shiro_runtime* runtime) {
     shiro_function* p;
 
-    p = shiro_new_native(0, (shiro_c_function)&shiro_bignum);
-    shiro_set_global(runtime, ID("new_bignum"), s_fFunction, (union __field_value)p);
-
     p = shiro_new_native(1, (shiro_c_function)&shiro_to_bignum);
-    shiro_set_global(runtime, ID("to_bignum"), s_fFunction, (union __field_value)p);
+    shiro_set_global(runtime, ID("bignum"), s_fFunction, (union __field_value)p);
 
     p = shiro_new_native(2, (shiro_c_function)&shiro_set_bignum);
-    shiro_set_global(runtime, ID("set_bignum"), s_fFunction, (union __field_value)p);
+    shiro_set_global(runtime, ID("bignum_set"), s_fFunction, (union __field_value)p);
 
     p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_add);
     shiro_set_global(runtime, ID("bignum_add"), s_fFunction, (union __field_value)p);

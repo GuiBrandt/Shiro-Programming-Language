@@ -25,8 +25,8 @@ indeterminadamente usando loops e números de precisão arbitrária:
 
 	fn fibo(n) 
 	{
-		a = to_bignum(1);
-		b = to_bignum(1);
+		a = bignum(1);
+		b = bignum(1);
 		
 		i = uint(0);
 		
