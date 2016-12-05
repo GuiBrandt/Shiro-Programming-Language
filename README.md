@@ -18,31 +18,32 @@ O nome é aleatório mesmo. Deal with it.
 Progresso
 ---
 
-Já é possível usar a linguagem para calcular a sequência de fibonacci usando 
-loops:
+Já é possível usar a linguagem para calcular a sequência de fibonacci 
+indeterminadamente usando loops e números de precisão arbitrária:
 
-	import 'lib/stdio';
-	
+	import "lib/bignum";
+
 	fn fibo(n) 
-	{    
-		a = long(1);
-		b = long(1);
+	{
+		a = to_bignum(1);
+		b = to_bignum(1);
+		
 		i = uint(0);
 		
 		while (i < n) 
 		{
-		    la = a;
-		    lb = b;
-		    b = la + lb;
-		    a = lb;
-		    i += 1;
+			lb = b;
+			b = bignum_add(a, b);
+			a = lb;
+			
+			i += 1;
 		};
+		
+		free_bignum(a);
 		
 		b;
 	};
-	
-	print(fibo(90));
 
-Já é possível calcular até o 91º elemento da sequência graças ao tipo long, a
-ideia é implementar uma biblioteca para números de precisão abitrária para 
-permitir que se calcule tantos elementos quanto a memória do sistema permitir.
+	import "lib/stdio";
+
+	print(bignum_to_string(fibo(9000)));
