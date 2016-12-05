@@ -18,9 +18,9 @@ BOOL DllMain(
 #endif // defined
 
 
-//
+//-----------------------------------------------------------------------------
 //  gets do shiro
-//
+//-----------------------------------------------------------------------------
 shiro_value* shiro_gets(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_string str = malloc(1024);
     gets(str);
@@ -28,9 +28,9 @@ shiro_value* shiro_gets(shiro_runtime* runtime, shiro_uint n_args) {
     return shiro_new_string(str);
 }
 
-//
+//-----------------------------------------------------------------------------
 //  print do shiro
-//
+//-----------------------------------------------------------------------------
 shiro_value* shiro_print(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_string str = shiro_to_string(arg0);
@@ -40,9 +40,9 @@ shiro_value* shiro_print(shiro_runtime* runtime, shiro_uint n_args) {
     return shiro_nil;
 }
 
-//
+//-----------------------------------------------------------------------------
 //  fopen do shiro
-//
+//-----------------------------------------------------------------------------
 shiro_value* shiro_fopen(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_value* arg1 = shiro_get_value(runtime, 1);
@@ -55,9 +55,9 @@ shiro_value* shiro_fopen(shiro_runtime* runtime, shiro_uint n_args) {
     return shiro_new_uint(file);
 }
 
-//
+//-----------------------------------------------------------------------------
 //  fwrite do shiro
-//
+//-----------------------------------------------------------------------------
 shiro_value* shiro_fwrite(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_value *arg0 = shiro_get_value(runtime, 0),
                 *arg1 = shiro_get_value(runtime, 1);
@@ -68,9 +68,9 @@ shiro_value* shiro_fwrite(shiro_runtime* runtime, shiro_uint n_args) {
     return shiro_nil;
 }
 
-//
-//  fred do shiro
-//
+//-----------------------------------------------------------------------------
+//  fread do shiro
+//-----------------------------------------------------------------------------
 shiro_value* shiro_fread(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_value *arg0 = shiro_get_value(runtime, 0);
 
@@ -88,9 +88,9 @@ shiro_value* shiro_fread(shiro_runtime* runtime, shiro_uint n_args) {
     return str;
 }
 
-//
+//-----------------------------------------------------------------------------
 //  fclose do shiro
-//
+//-----------------------------------------------------------------------------
 shiro_value* shiro_fclose(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_value *arg0 = shiro_get_value(runtime, 0);
 
@@ -100,9 +100,9 @@ shiro_value* shiro_fclose(shiro_runtime* runtime, shiro_uint n_args) {
     return shiro_nil;
 }
 
-//
+//-----------------------------------------------------------------------------
 // Inicializa a biblioteca
-//
+//-----------------------------------------------------------------------------
 void shiro_load_library(shiro_runtime* runtime) {
     shiro_function* p;
 
