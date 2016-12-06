@@ -8,7 +8,6 @@
 #include <gmp.h>
 
 #include <stdlib.h>
-#include <stdio.h>
 
 #if defined(__WIN32__)
 #include <windows.h>

@@ -23,7 +23,7 @@
 #endif // __WIN32__
 
 #if defined(__WIN32__) && !defined(SHIRO_STATIC)
-__declspec(dllexport) BOOL APIENTRY DllMain((
+__declspec(dllexport) BOOL APIENTRY DllMain(
     HINSTANCE hinstDLL,
     DWORD     fdwReason,
     LPVOID    lpvReserved
