@@ -22,7 +22,18 @@
 #include <win32.h>
 #endif // __WIN32__
 
+#if defined(__WIN32__) && !defined(SHIRO_STATIC)
+BOOL DllMain(
+    HINSTANCE hinstDLL,
+    DWORD     fdwReason,
+    LPVOID    lpvReserved
+) {
+    return TRUE;
+}
+#endif // defined
+
 typedef void (*shiro_load_library_proc)(shiro_runtime*);
+
 //-----------------------------------------------------------------------------
 // Função usada para importação de bibliotecas
 //-----------------------------------------------------------------------------
@@ -212,7 +223,7 @@ SHIRO_API void shiro_set_path(const shiro_string* argv, const shiro_string fname
 
         char* curr_path = getenv("PATH");
         char* new_path = calloc(strlen(curr_path) + strlen(full_path) + 6, sizeof(char));
-        sprintf(new_path, "PATH=%s;%s", curr_path, full_path);
+        sprintf(new_path, "PATH=%s;%s;%s/lib/", curr_path, full_path, full_path);
         setenv(new_path);
 
         full_path = calloc(256, sizeof(shiro_character));

@@ -1,3 +1,8 @@
+//=============================================================================
+// src\bignum.c
+//-----------------------------------------------------------------------------
+// Implementação das funções de números de precisão arbitrária do shiro
+//=============================================================================
 #include <shiro.h>
 
 #include <gmp.h>
@@ -251,6 +256,25 @@ shiro_value* shiro_bignum_tmod(shiro_runtime* runtime, shiro_uint n_args) {
     return shiro_new_uint((shiro_uint)bigintA);
 }
 //-----------------------------------------------------------------------------
+// Função do shiro para potênciação de inteiros de precisão arbitrária
+//
+// O primeiro argumento (base) deve ser um bignum e o segundo (expoente) deve
+// ser um UInt
+//
+// Retorna um UInt representando o ponteiro para o bignum passado como base
+//-----------------------------------------------------------------------------
+shiro_value* shiro_bignum_pow(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value *arg0 = shiro_get_value(runtime, 0),
+                *arg1 = shiro_get_value(runtime, 1);
+
+    mpz_t* bigint  = (mpz_t*)get_uint(arg0);
+    shiro_uint exp = shiro_to_uint(arg1);
+
+    mpz_pow_ui(*bigint, *bigint, exp);
+
+    return shiro_new_uint((shiro_uint)bigint);
+}
+//-----------------------------------------------------------------------------
 // Função do shiro para converter um bignum em string
 //
 // O valor de retorno da função é um inteiro representando o ponteiro para o
@@ -303,6 +327,9 @@ void shiro_load_library(shiro_runtime* runtime) {
 
     p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_tmod);
     shiro_set_global(runtime, ID("bignum_tmod"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_pow);
+    shiro_set_global(runtime, ID("bignum_pow"), s_fFunction, (union __field_value)p);
 
     p = shiro_new_native(1, (shiro_c_function)&shiro_bignum_to_string);
     shiro_set_global(runtime, ID("bignum_to_string"), s_fFunction, (union __field_value)p);
