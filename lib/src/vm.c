@@ -9,8 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 
-SHIRO_API shiro_value* shiro_nil = (shiro_value*)-1;
-
 //-----------------------------------------------------------------------------
 // Clona um campo shiro_field
 //      f   : Ponteiro para o campo a ser clonado
@@ -373,11 +371,13 @@ SHIRO_API shiro_runtime* shiro_init() {
 //      runtime : Runtime a ser finalizado
 //-----------------------------------------------------------------------------
 SHIRO_API void shiro_terminate(shiro_runtime* runtime) {
+    int i;
+    for (i = 0; i < runtime->used_stack; i++)
+        shiro_free_value(runtime->stack[i]);
+
     free(runtime->stack);
     shiro_free_value(runtime->self);
     free(runtime);
-
-    shiro_nil = NULL;
 }
 //-----------------------------------------------------------------------------
 // Adiciona um valor ao topo da pilha

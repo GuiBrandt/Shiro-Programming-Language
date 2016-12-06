@@ -69,10 +69,12 @@ int main(int argc, char** argv) {
     shiro_load_stdlib(runtime);
     shiro_execute(runtime, binary);
     shiro_terminate(runtime);
+    shiro_free_binary(binary);
 
     shiro_string err = shiro_get_last_error();
     if (err != NULL) {
         fprintf(stderr, err);
+        free(err);
         return 3;
     }
 

@@ -23,7 +23,7 @@
 #endif // __WIN32__
 
 #if defined(__WIN32__) && !defined(SHIRO_STATIC)
-BOOL DllMain(
+__declspec(dllexport) BOOL APIENTRY DllMain((
     HINSTANCE hinstDLL,
     DWORD     fdwReason,
     LPVOID    lpvReserved
@@ -49,7 +49,7 @@ shiro_value* shiro_import(shiro_runtime* runtime, shiro_uint n_args) {
         }
         proc = (shiro_load_library_proc)GetProcAddress(library, "shiro_load_library");
         if (proc == NULL) {
-            shiro_error(0, "ImportError", "Failed to load 'shiro_load_library' from '%s'", name);
+            shiro_error(0, "ImportError", "'%s' is not a valid shiro library", name);
             return NULL;
         }
     #else
@@ -61,7 +61,7 @@ shiro_value* shiro_import(shiro_runtime* runtime, shiro_uint n_args) {
         proc = (shiro_load_library_proc)dlsym(library, "shiro_load_library");
         int err = dlerror();
         if (err) {
-            shiro_error(0, "ImportError", "Failed to load 'shiro_load_library' from '%s'", name);
+            shiro_error(0, "ImportError", "'%s' is not a valid shiro library", name);
             return NULL;
         }
     #endif
@@ -222,9 +222,12 @@ SHIRO_API void shiro_set_path(const shiro_string* argv, const shiro_string fname
             *(e + 1) = 0;
 
         char* curr_path = getenv("PATH");
-        char* new_path = calloc(strlen(curr_path) + strlen(full_path) + 6, sizeof(char));
+        char* new_path = calloc(strlen(curr_path) + strlen(full_path) * 2 + 13, sizeof(char));
         sprintf(new_path, "PATH=%s;%s;%s/lib/", curr_path, full_path, full_path);
         setenv(new_path);
+
+        free(full_path);
+        free(new_path);
 
         full_path = calloc(256, sizeof(shiro_character));
         realpath(fname, full_path);
@@ -236,5 +239,6 @@ SHIRO_API void shiro_set_path(const shiro_string* argv, const shiro_string fname
             *(e + 1) = 0;
 
         chdir(full_path);
+        free(full_path);
     }
 }

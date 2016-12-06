@@ -13,7 +13,7 @@
 #endif
 
 #if defined(__WIN32__)
-BOOL DllMain(
+__declspec(dllexport) BOOL APIENTRY DllMain(
     HINSTANCE hinstDLL,
     DWORD     fdwReason,
     LPVOID    lpvReserved
@@ -179,7 +179,7 @@ shiro_value* shiro_tmpfile(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Inicializa a biblioteca
 //-----------------------------------------------------------------------------
-void shiro_load_library(shiro_runtime* runtime) {
+SHIRO_LIB_SETUP(shiro_runtime* runtime) {
     shiro_function* p;
 
     p = shiro_new_native(1, (shiro_c_function)&shiro_print);

@@ -124,7 +124,7 @@ SHIRO_API shiro_long      shiro_to_long         (shiro_value*);
 SHIRO_API shiro_uint      shiro_to_uint         (shiro_value*);
 SHIRO_API shiro_float     shiro_to_float        (shiro_value*);
 
-SHIRO_API shiro_value*    shiro_nil;
+#define   shiro_nil       ((shiro_value*)-1)
 
 SHIRO_API void            shiro_load_stdlib     (shiro_runtime*);
 

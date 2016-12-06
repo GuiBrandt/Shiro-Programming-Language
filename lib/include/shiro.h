@@ -189,7 +189,7 @@ SHIRO_API shiro_int       shiro_to_int        (shiro_value*);
 SHIRO_API shiro_long      shiro_to_long       (shiro_value*);
 SHIRO_API shiro_uint      shiro_to_uint       (shiro_value*);
 
-SHIRO_API shiro_value*    shiro_nil;
+#define   shiro_nil       ((shiro_value*)-1)
 
 SHIRO_API shiro_runtime* shiro_execute(shiro_runtime*, shiro_binary*);
 SHIRO_API shiro_runtime* shiro_execute_for_value(shiro_runtime*, shiro_value*, shiro_binary*);
@@ -203,5 +203,7 @@ SHIRO_API shiro_string shiro_get_last_error (void);
 SHIRO_API void shiro_load_stdlib            (shiro_runtime*);
 
 SHIRO_API void shiro_set_path               (const shiro_string*, const shiro_string);
+
+#define SHIRO_LIB_SETUP __declspec(dllexport) void shiro_load_library
 
 #endif // SHIRO_H_INCLUDED

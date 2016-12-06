@@ -46,6 +46,8 @@ SHIRO_API void shiro_error(
     va_end(args);
 
     last_error = error;
+
+    free(err);
 }
 //-----------------------------------------------------------------------------
 // Obtém a última mensagem de erro lançada pelo shiro
@@ -557,13 +559,13 @@ shiro_binary* __compile_statement(
                         push_node(binary, call);
                         free_node(call);
 
+                        free(filename);
+
                         return binary;
                     } else {
                         shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
                         return NULL;
                     }
-
-                    free(filename);
                 }
 
                 token = get_token(statement, 0, line, sline);
@@ -857,6 +859,7 @@ shiro_binary* __compile_statement(
                     shiro_protect(
                         binary = __compile_operator(binary, op, b_val, line);
                     );
+                    free(op);
 
                     shiro_node* set = new_node(SET_VAR, 1, shiro_new_uint(ID(name)));
                     push_node(binary, set);
