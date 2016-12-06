@@ -21,7 +21,7 @@ Progresso
 Já é possível usar a linguagem para calcular a sequência de fibonacci 
 indeterminadamente usando loops e números de precisão arbitrária:
 
-	import "lib/bignum";
+	import "bignum";
 
 	fn fibo(n) 
 	{
@@ -44,6 +44,6 @@ indeterminadamente usando loops e números de precisão arbitrária:
 		b;
 	};
 
-	import "lib/stdio";
+	import "stdio";
 
 	print(bignum_to_string(fibo(9000)));
