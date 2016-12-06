@@ -274,10 +274,42 @@ shiro_value* shiro_bignum_pow(shiro_runtime* runtime, shiro_uint n_args) {
     return shiro_new_uint((shiro_uint)bigint);
 }
 //-----------------------------------------------------------------------------
-// Função do shiro para converter um bignum em string
+// Função do shiro para obter a raíz de base n de um bignum
+//
+// O primeiro argumento (radicando) deve ser um bignum e o segundo (expoente)
+// deve ser um UInt
 //
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
+//-----------------------------------------------------------------------------
+shiro_value* shiro_bignum_root(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value *arg0 = shiro_get_value(runtime, 0),
+                *arg1 = shiro_get_value(runtime, 1);
+
+    mpz_t* bigint = (mpz_t*)get_uint(arg0);
+    shiro_uint n = shiro_to_uint(arg1);
+
+    mpz_root(*bigint, *bigint, n);
+
+    return shiro_new_uint((shiro_uint)bigint);
+}
+//-----------------------------------------------------------------------------
+// Função do shiro para obter a raíz quadrada de um bignum
+//
+// O primeiro argumento (radicando) deve ser um bignum e o segundo (expoente)
+// deve ser um UInt
+//
+// O valor de retorno da função é um inteiro representando o ponteiro para o
+// bignum
+//-----------------------------------------------------------------------------
+shiro_value* shiro_bignum_sqroot(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_push_value(runtime, shiro_new_uint(2));
+    return shiro_bignum_root(runtime, 2);
+}
+//-----------------------------------------------------------------------------
+// Função do shiro para converter um bignum em string
+//
+// O valor de retorno da função é uma string representando o bignum
 //-----------------------------------------------------------------------------
 shiro_value* shiro_bignum_to_string(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
@@ -294,12 +326,23 @@ shiro_value* shiro_bignum_to_string(shiro_runtime* runtime, shiro_uint n_args) {
 shiro_main(shiro_runtime* runtime) {
     shiro_function* p;
 
+    //
+    // Inicialização/finalização de bignums
+    //
     p = shiro_new_native(1, (shiro_c_function)&shiro_to_bignum);
     shiro_set_global(runtime, ID("bignum"), s_fFunction, (union __field_value)p);
 
     p = shiro_new_native(2, (shiro_c_function)&shiro_set_bignum);
     shiro_set_global(runtime, ID("bignum_set"), s_fFunction, (union __field_value)p);
 
+    p = shiro_new_native(1, (shiro_c_function)&shiro_free_bignum);
+    shiro_set_global(runtime, ID("free_bignum"), s_fFunction, (union __field_value)p);
+
+    //
+    // Operações
+    //
+    // Todos os operadores alteram o valor do bignum passado para eles como parâmetro
+    //
     p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_add);
     shiro_set_global(runtime, ID("bignum_add"), s_fFunction, (union __field_value)p);
 
@@ -330,9 +373,15 @@ shiro_main(shiro_runtime* runtime) {
     p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_pow);
     shiro_set_global(runtime, ID("bignum_pow"), s_fFunction, (union __field_value)p);
 
+    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_root);
+    shiro_set_global(runtime, ID("bignum_root"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(1, (shiro_c_function)&shiro_bignum_root);
+    shiro_set_global(runtime, ID("bignum_sqrt"), s_fFunction, (union __field_value)p);
+
+    //
+    // Conversão de bignums
+    //
     p = shiro_new_native(1, (shiro_c_function)&shiro_bignum_to_string);
     shiro_set_global(runtime, ID("bignum_to_string"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_free_bignum);
-    shiro_set_global(runtime, ID("free_bignum"), s_fFunction, (union __field_value)p);
 }

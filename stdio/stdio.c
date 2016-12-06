@@ -182,6 +182,9 @@ shiro_value* shiro_tmpfile(shiro_runtime* runtime, shiro_uint n_args) {
 shiro_main(shiro_runtime* runtime) {
     shiro_function* p;
 
+    //
+    // Funções de entrada/saída padrão
+    //
     p = shiro_new_native(1, (shiro_c_function)&shiro_print);
     shiro_set_global(runtime, ID("print"), s_fFunction, (union __field_value)p);
 
@@ -191,6 +194,9 @@ shiro_main(shiro_runtime* runtime) {
     p = shiro_new_native(0, (shiro_c_function)&shiro_gets);
     shiro_set_global(runtime, ID("gets"), s_fFunction, (union __field_value)p);
 
+    //
+    // Funções de entrada/saída para arquivos
+    //
     p = shiro_new_native(2, (shiro_c_function)&shiro_fopen);
     shiro_set_global(runtime, ID("fopen"), s_fFunction, (union __field_value)p);
 
