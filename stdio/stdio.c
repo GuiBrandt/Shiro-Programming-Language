@@ -179,7 +179,7 @@ shiro_value* shiro_tmpfile(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Inicializa a biblioteca
 //-----------------------------------------------------------------------------
-SHIRO_LIB_SETUP(shiro_runtime* runtime) {
+shiro_main(shiro_runtime* runtime) {
     shiro_function* p;
 
     p = shiro_new_native(1, (shiro_c_function)&shiro_print);

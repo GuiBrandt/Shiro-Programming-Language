@@ -204,6 +204,6 @@ SHIRO_API void shiro_load_stdlib            (shiro_runtime*);
 
 SHIRO_API void shiro_set_path               (const shiro_string*, const shiro_string);
 
-#define SHIRO_LIB_SETUP __declspec(dllexport) void shiro_load_library
+#define shiro_main __declspec(dllexport) void shiro_load_library
 
 #endif // SHIRO_H_INCLUDED
