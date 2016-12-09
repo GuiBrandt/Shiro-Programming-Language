@@ -30,8 +30,8 @@ typedef struct __field {
     union __field_value {
         struct __value*         val;
         struct __func*          func;
-        shiro_int            i;
-        shiro_long            l;
+        shiro_int               i;
+        shiro_long              l;
         shiro_uint              u;
         shiro_float             f;
         shiro_string            str;

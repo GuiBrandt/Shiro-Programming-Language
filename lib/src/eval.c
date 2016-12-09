@@ -59,34 +59,8 @@ SHIRO_API shiro_runtime* shiro_execute(
                 const shiro_function* f = global->value.func;
                 shiro_uint n_args = get_uint(node->args[1]);
 
-                if (n_args != f->n_args) {
-                    shiro_error(0, ERR_ARGUMENT_ERROR, "Wrong number of arguments: expected %d, got %d", f->n_args, n_args);
+                if (shiro_call_function(f, runtime, n_args) == NULL)
                     return NULL;
-                }
-
-                if (f->type == s_fnShiroBinary) {
-                    shiro_value* func_scope = shiro_clone_value(runtime->self);
-
-                    shiro_uint i;
-                    for (i = 0; i < n_args; i++) {
-                        shiro_value* arg = shiro_use_value(shiro_get_last_value(runtime));
-                        shiro_set_field(func_scope, ARG(i), s_fValue, (union __field_value)shiro_use_value(arg));
-                        shiro_drop_value(runtime);
-                    }
-
-                    shiro_execute_for_value(runtime, func_scope, f->s_binary);
-                    shiro_free_value(func_scope);
-                } else {
-                    shiro_value* returned = (*f->native)(runtime, n_args);
-
-                    if (returned == NULL)
-                        return NULL;
-
-                    int i;
-                    for (i = 0; i < n_args; i++)
-                        shiro_drop_value(runtime);
-                    shiro_push_value(runtime, returned);
-                }
                 break;
             }
             case PUSH:
@@ -422,14 +396,16 @@ SHIRO_API shiro_runtime* shiro_execute(
 
                 if (l_v == NULL ||
                     l_v->type == s_fString ||
-                    l_v->type == s_fFunction) {
+                    l_v->type == s_fFunction ||
+                    l_v->type == s_fFloat) {
                     shiro_error(0, ERR_TYPE_ERROR, "Invalid left-hand operand");
                     return NULL;
                 }
 
                 if (r_v == NULL ||
                     r_v->type == s_fString ||
-                    r_v->type == s_fFunction) {
+                    r_v->type == s_fFunction ||
+                    l_v->type == s_fFloat) {
                     shiro_error(0, ERR_TYPE_ERROR, "Invalid right-hand operand");
                     return NULL;
                 }
@@ -439,22 +415,17 @@ SHIRO_API shiro_runtime* shiro_execute(
                 switch (l_v->type) {
                     case s_fInteger: {
                         shiro_int intified = shiro_to_int(r);
-                        result = shiro_new_int(l_v->value.i * intified);
+                        result = shiro_new_int(l_v->value.i % intified);
                         break;
                     }
                     case s_fLong: {
                         shiro_long longified = shiro_to_long(r);
-                        result = shiro_new_long(l_v->value.l * longified);
+                        result = shiro_new_long(l_v->value.l % longified);
                         break;
                     }
                     case s_fUInt: {
                         shiro_uint longified = shiro_to_uint(r);
-                        result = shiro_new_uint(l_v->value.u * longified);
-                        break;
-                    }
-                    case s_fFloat: {
-                        shiro_int floatified = shiro_to_float(r);
-                        result = shiro_new_float(l_v->value.f * floatified);
+                        result = shiro_new_uint(l_v->value.u % longified);
                         break;
                     }
                     default:
@@ -969,6 +940,59 @@ SHIRO_API shiro_runtime* shiro_execute_for_value(
         shiro_execute(runtime, binary);
     );
     runtime->self = self;
+
+    return runtime;
+}
+//-----------------------------------------------------------------------------
+// * Executa uma função do shiro
+//      f       : Função a ser chamada
+//      runtime : Runtime usado para executar a função
+//      n_args  : Número de argumentos para a função
+//-----------------------------------------------------------------------------
+SHIRO_API shiro_runtime* shiro_call_function(
+    const shiro_function* f,
+    shiro_runtime* runtime,
+    shiro_uint n_args
+) {
+    if (n_args != f->n_args) {
+        shiro_error(0, ERR_ARGUMENT_ERROR, "Wrong number of arguments: expected %d, got %d", f->n_args, n_args);
+        return NULL;
+    }
+
+    if (f->type == s_fnShiroBinary) {
+        shiro_value* old = shiro_clone_value(runtime->self);
+
+        shiro_uint i;
+        for (i = 0; i < n_args; i++) {
+            shiro_value* arg = shiro_use_value(shiro_get_last_value(runtime));
+            shiro_set_global(runtime, ARG(i), s_fValue, (union __field_value)shiro_use_value(arg));
+            shiro_drop_value(runtime);
+        }
+
+        shiro_protect(
+            shiro_execute(runtime, f->s_binary);
+        );
+
+        for (i = 0; i < n_args; i++) {
+            shiro_set_global(runtime, ARG(i), s_fValue, (union __field_value)shiro_nil);
+
+            shiro_string name = get_string(f->s_binary->nodes[i * 2 + 1]->args[1]);
+
+            shiro_def_global(runtime, shiro_get_field(old, ID(name)));
+        }
+
+        shiro_free_value(old);
+    } else {
+        shiro_value* returned = (*f->native)(runtime, n_args);
+
+        if (returned == NULL)
+            return NULL;
+
+        int i;
+        for (i = 0; i < n_args; i++)
+            shiro_drop_value(runtime);
+        shiro_push_value(runtime, returned);
+    }
 
     return runtime;
 }
