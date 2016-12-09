@@ -1,0 +1,85 @@
+//=============================================================================
+// fractal-tree.shiro
+//
+// Script para desenhar uma árvore fractal em uma janela com Shiro
+//=============================================================================
+import 'stdgui';	// Biblioteca padrão de interface gráfica
+
+//-----------------------------------------------------------------------------
+// Configurações
+//-----------------------------------------------------------------------------
+WIDTH 		= 350;	// Largura da janela
+HEIGHT 		= 275;	// Altura da janela
+START_LEN 	= 33;	// Largura do tronco
+
+//-----------------------------------------------------------------------------
+// Variáveis globais
+//-----------------------------------------------------------------------------
+angle = float(0);
+
+//-----------------------------------------------------------------------------
+// Inicialização da interface gráfica
+//-----------------------------------------------------------------------------
+fn setup_gui() {
+	translate(WIDTH / 2, HEIGHT);
+	rotate(180);
+	foreground(0, 0, 0);
+};
+
+//-----------------------------------------------------------------------------
+// Desenha um galho na tela, cada galho tem dois galhos (que tem dois galhos e 
+// assim por diante, até que o galho seja pequeno demais)
+//
+//		len		: Largura do galho
+//-----------------------------------------------------------------------------
+fn branch(len) {
+	c = len * 8;
+	
+	if (c >= 200) {
+		c = 200;
+	};
+	
+	foreground(0, 200 - c, 0);
+
+	line_weight((float(len) / START_LEN) * 4);
+	line(0, 0, 0, len);
+	
+	push_matrix();
+	translate(0, len);
+	
+	if (len > 4) {
+		len = (len * 6) / 7;
+		
+		push_matrix();
+		rotate(angle);
+		branch(len);
+		pop_matrix();
+		
+		push_matrix();
+		rotate(float(0) - angle);
+		branch(len);
+		pop_matrix();
+	};
+	
+	pop_matrix();
+};
+
+//-----------------------------------------------------------------------------
+// Função de desenho na tela
+//-----------------------------------------------------------------------------
+fn display() {
+	background(255, 255, 255);	// Pinta o fundo de branco
+
+	branch(START_LEN);			// Desenha a árvore
+	
+	angle += float(2) / 10;		// Aumenta o ângulo em que o galho de abre
+	
+	if (angle > 30) {
+		angle = float(0);
+	};
+};
+
+//-----------------------------------------------------------------------------
+// Cria a janela e começa o processo principal da interface gráfica
+//-----------------------------------------------------------------------------
+create_window(WIDTH, HEIGHT, 'Fractal Tree');

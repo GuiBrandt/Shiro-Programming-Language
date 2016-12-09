@@ -1,0 +1,36 @@
+//=============================================================================
+// fibonacci.shiro
+//
+// Script para calcular elementos da sequência de fibonacci em shiro
+//=============================================================================
+import "bignum";	// Biblioteca padrão para números de precisão arbitrária
+
+//-----------------------------------------------------------------------------
+// Calcula o enésimo elemento da sequência de fibonacci
+//
+//		n	: Índice do número que será retornado na sequência de fibonacci
+//-----------------------------------------------------------------------------
+fn fibonacci(n) 
+{
+	a = bignum(1);
+	b = bignum(1);
+	
+	i = uint(0);
+	
+	while (i < n) 
+	{
+		lb = b;
+		b = bignum_add(a, b);
+		a = lb;
+		
+		i += 1;
+	};
+	
+	free_bignum(a);
+	
+	b;
+};
+
+// import "stdio";
+//
+// print(bignum_to_string(fibo(20000)));

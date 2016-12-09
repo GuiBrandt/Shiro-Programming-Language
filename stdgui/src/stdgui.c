@@ -10,8 +10,10 @@
 #include <GLFW/glfw3.h>
 
 #include <stdlib.h>
-
+#include <math.h>
 #include <stdio.h>
+
+#define PI 3.14159265358
 
 #if defined(__WIN32__)
 #include <windows.h>
@@ -53,7 +55,7 @@ shiro_value* shiro_create_window(shiro_runtime* runtime, shiro_uint n_args) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    //glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
@@ -75,10 +77,11 @@ shiro_value* shiro_create_window(shiro_runtime* runtime, shiro_uint n_args) {
     glfwSetWindowCloseCallback(shiro_window, shiro_glfw_close_callback);
 
     shiro_field* g = shiro_get_global(runtime, ID("display"));
-    if (g == NULL) {
+    if (g == NULL || g->type != s_fFunction) {
         shiro_error(0, "GUIError", "No display function defined");
         return NULL;
     }
+    shiro_function* display_func = g->value.func;
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -86,7 +89,10 @@ shiro_value* shiro_create_window(shiro_runtime* runtime, shiro_uint n_args) {
 
     glMatrixMode(GL_MODELVIEW);
 
-    shiro_function* display_func = g->value.func;
+    g = shiro_get_global(runtime, ID("setup_gui"));
+    if (g != NULL && g->type == s_fFunction)
+        if (shiro_call_function(g->value.func, runtime, 0) == NULL)
+            return NULL;
 
     while (shiro_window != NULL) {
         if (shiro_call_function(display_func, runtime, 0) == NULL)
@@ -219,9 +225,111 @@ shiro_value* shiro_line(shiro_runtime* runtime, shiro_uint n_args) {
                 by = shiro_to_uint(arg3);
 
     glBegin(GL_LINES);
-    glVertex2i(ax, ay);
-    glVertex2i(bx, by);
+        glVertex2i(ax, ay);
+        glVertex2i(bx, by);
     glEnd();
+
+    return shiro_nil;
+}
+//-----------------------------------------------------------------------------
+// Desenha um retângulo na tela
+//-----------------------------------------------------------------------------
+shiro_value* shiro_rect(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value *arg0 = shiro_get_value(runtime, 0),
+                *arg1 = shiro_get_value(runtime, 1),
+                *arg2 = shiro_get_value(runtime, 2),
+                *arg3 = shiro_get_value(runtime, 3);
+
+    shiro_uint  x = shiro_to_uint(arg0),
+                y = shiro_to_uint(arg1),
+                w = shiro_to_uint(arg2),
+                h = shiro_to_uint(arg3);
+
+    glBegin(GL_QUADS);
+        glVertex2i(x, y);
+        glVertex2i(x + w, y);
+        glVertex2i(x + w, y + h);
+        glVertex2i(x, y + h);
+    glEnd();
+
+    return shiro_nil;
+}
+//-----------------------------------------------------------------------------
+// Desenha um ponto na tela
+//-----------------------------------------------------------------------------
+shiro_value* shiro_point(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value *arg0 = shiro_get_value(runtime, 0),
+                *arg1 = shiro_get_value(runtime, 1);
+
+    shiro_uint  x = shiro_to_uint(arg0),
+                y = shiro_to_uint(arg1);
+
+    glBegin(GL_POINTS);
+        glVertex2i(x, y);
+    glEnd();
+
+    return shiro_nil;
+}
+//-----------------------------------------------------------------------------
+// Desenha um elípse na tela
+//-----------------------------------------------------------------------------
+shiro_value* shiro_ellipse(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value *arg0 = shiro_get_value(runtime, 0),
+                *arg1 = shiro_get_value(runtime, 1);
+
+    shiro_uint  rx = shiro_to_uint(arg0),
+                ry = shiro_to_uint(arg1);
+
+    glBegin(GL_POLYGON);
+
+    int i;
+    for(i = 0; i < 360; i++)
+	{
+		float rad = i * PI / 180;
+		glVertex2f(cos(rad) * rx, sin(rad) * ry);
+	}
+
+    glEnd();
+
+    return shiro_nil;
+}
+//-----------------------------------------------------------------------------
+// Salva o estado atual da matriz
+//-----------------------------------------------------------------------------
+shiro_value* shiro_push_matrix(shiro_runtime* runtime, shiro_uint n_args) {
+    glPushMatrix();
+    return shiro_nil;
+}
+//-----------------------------------------------------------------------------
+// Descarta o estado atual da matriz e volta a usar o anterior
+//-----------------------------------------------------------------------------
+shiro_value* shiro_pop_matrix(shiro_runtime* runtime, shiro_uint n_args) {
+    glPopMatrix();
+    return shiro_nil;
+}
+//-----------------------------------------------------------------------------
+// Aplica uma matriz de rotação
+//-----------------------------------------------------------------------------
+shiro_value* shiro_rotate(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value *arg0 = shiro_get_value(runtime, 0);
+
+    shiro_float angle = shiro_to_float(arg0);
+
+    glRotatef(angle, 0, 0, 1.0);
+
+    return shiro_nil;
+}
+//-----------------------------------------------------------------------------
+// Aplica uma matriz de translação
+//-----------------------------------------------------------------------------
+shiro_value* shiro_translate(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value *arg0 = shiro_get_value(runtime, 0),
+                *arg1 = shiro_get_value(runtime, 1);
+
+    shiro_int   x = shiro_to_int(arg0),
+                y = shiro_to_int(arg1);
+
+    glTranslatef(x, y, 0);
 
     return shiro_nil;
 }
@@ -262,6 +370,30 @@ shiro_main(shiro_runtime* runtime) {
     p = shiro_new_native(1, (shiro_c_function)&shiro_line_weight);
     shiro_set_global(runtime, ID("line_weight"), s_fFunction, (union __field_value)p);
 
+    p = shiro_new_native(2, (shiro_c_function)&shiro_point);
+    shiro_set_global(runtime, ID("point"), s_fFunction, (union __field_value)p);
+
     p = shiro_new_native(4, (shiro_c_function)&shiro_line);
     shiro_set_global(runtime, ID("line"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(4, (shiro_c_function)&shiro_rect);
+    shiro_set_global(runtime, ID("rect"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(2, (shiro_c_function)&shiro_ellipse);
+    shiro_set_global(runtime, ID("ellipse"), s_fFunction, (union __field_value)p);
+
+    //
+    // Funções de matriz
+    //
+    p = shiro_new_native(0, (shiro_c_function)&shiro_push_matrix);
+    shiro_set_global(runtime, ID("push_matrix"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(0, (shiro_c_function)&shiro_pop_matrix);
+    shiro_set_global(runtime, ID("pop_matrix"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(1, (shiro_c_function)&shiro_rotate);
+    shiro_set_global(runtime, ID("rotate"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(2, (shiro_c_function)&shiro_translate);
+    shiro_set_global(runtime, ID("translate"), s_fFunction, (union __field_value)p);
 }

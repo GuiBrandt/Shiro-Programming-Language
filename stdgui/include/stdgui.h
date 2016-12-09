@@ -22,6 +22,11 @@ shiro_value* shiro_rect             (shiro_runtime*, shiro_uint);
 shiro_value* shiro_point            (shiro_runtime*, shiro_uint);
 shiro_value* shiro_ellipse          (shiro_runtime*, shiro_uint);
 
+shiro_value* shiro_push_matrix      (shiro_runtime*, shiro_uint);
+shiro_value* shiro_pop_matrix       (shiro_runtime*, shiro_uint);
+shiro_value* shiro_rotate           (shiro_runtime*, shiro_uint);
+shiro_value* shiro_translate        (shiro_runtime*, shiro_uint);
+
 shiro_value* shiro_stdgui_advanced  (shiro_runtime*, shiro_uint);
 
 #endif // STDGUI_H_DEFINED
