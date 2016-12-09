@@ -1,0 +1,3 @@
+# Ignorar a biblioteca de precisão múltipla do GNU para não incluir ela 
+# desnecessariamente no repositório
+gmp-6.1.1/
