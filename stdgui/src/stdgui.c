@@ -52,6 +52,9 @@ shiro_value* shiro_create_window(shiro_runtime* runtime, shiro_uint n_args) {
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
     shiro_window = glfwCreateWindow(width, height, title, NULL, NULL);
 
     if (!shiro_window) {
@@ -78,7 +81,8 @@ shiro_value* shiro_create_window(shiro_runtime* runtime, shiro_uint n_args) {
     shiro_function* display_func = g->value.func;
 
     while (shiro_window != NULL) {
-        shiro_call_function(display_func, runtime, 0);
+        if (shiro_call_function(display_func, runtime, 0) == NULL)
+            return NULL;
         glfwSwapBuffers(shiro_window);
         glfwPollEvents();
     }
