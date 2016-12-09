@@ -188,7 +188,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fFloat: {
-                        shiro_int floatified = shiro_to_float(r);
+                        shiro_float floatified = shiro_to_float(r);
                         result = shiro_new_float(l_v->value.f + floatified);
                         break;
                     }
@@ -253,7 +253,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fFloat: {
-                        shiro_int floatified = shiro_to_float(r);
+                        shiro_float floatified = shiro_to_float(r);
                         result = shiro_new_float(l_v->value.f - floatified);
                         break;
                     }
@@ -369,7 +369,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fFloat: {
-                        shiro_int floatified = shiro_to_float(r);
+                        shiro_float floatified = shiro_to_float(r);
                         result = shiro_new_float(l_v->value.f / floatified);
                         break;
                     }
@@ -643,7 +643,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fFloat: {
-                        shiro_int floatified = shiro_to_float(r);
+                        shiro_float floatified = shiro_to_float(r);
                         result = l_v->value.f == floatified;
                         break;
                     }
@@ -704,7 +704,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fFloat: {
-                        shiro_int floatified = shiro_to_float(r);
+                        shiro_float floatified = shiro_to_float(r);
                         result = l_v->value.f > floatified;
                         break;
                     }
@@ -764,7 +764,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fFloat: {
-                        shiro_int floatified = shiro_to_float(r);
+                        shiro_float floatified = shiro_to_float(r);
                         result = l_v->value.f < floatified;
                         break;
                     }
@@ -824,7 +824,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fFloat: {
-                        shiro_int floatified = shiro_to_float(r);
+                        shiro_float floatified = shiro_to_float(r);
                         result = l_v->value.f >= floatified;
                         break;
                     }
@@ -884,7 +884,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                     }
                     case s_fFloat: {
-                        shiro_int floatified = shiro_to_float(r);
+                        shiro_float floatified = shiro_to_float(r);
                         result = l_v->value.f <= floatified;
                         break;
                     }
@@ -977,8 +977,14 @@ SHIRO_API shiro_runtime* shiro_call_function(
             shiro_set_global(runtime, ARG(i), s_fValue, (union __field_value)shiro_nil);
 
             shiro_string name = get_string(f->s_binary->nodes[i * 2 + 1]->args[1]);
+            shiro_id id = ID(name);
 
-            shiro_def_global(runtime, shiro_get_field(old, ID(name)));
+            shiro_field* old_global = shiro_get_field(old, id);
+
+            if (old_global != NULL)
+                shiro_set_global(runtime, id, old_global->type, old_global->value);
+            else
+                shiro_set_global(runtime, id, s_fValue, (union __field_value)shiro_nil);
         }
 
         shiro_free_value(old);

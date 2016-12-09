@@ -172,6 +172,13 @@ shiro_value* shiro_cast_uint(shiro_runtime* runtime, shiro_uint n_args) {
     return shiro_new_uint(shiro_to_uint(arg0));
 }
 //-----------------------------------------------------------------------------
+// Converte um valor em ponto flutuante
+//-----------------------------------------------------------------------------
+shiro_value* shiro_cast_float(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
+    return shiro_new_float(shiro_to_float(arg0));
+}
+//-----------------------------------------------------------------------------
 // Carrega as funções da biblioteca padrão do shiro para o runtime
 //      runtime : shiro_runtime que será usado para executar código shiro
 //-----------------------------------------------------------------------------
@@ -192,6 +199,9 @@ SHIRO_API void shiro_load_stdlib(shiro_runtime* runtime) {
 
     p = shiro_new_native(1, (shiro_c_function)&shiro_cast_uint);
     shiro_set_global(runtime, ID("uint"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_float);
+    shiro_set_global(runtime, ID("float"), s_fFunction, (union __field_value)p);
 
     p = shiro_new_native(1, (shiro_c_function)&shiro_import);
     shiro_set_global(runtime, ID("import"), s_fFunction, (union __field_value)p);
