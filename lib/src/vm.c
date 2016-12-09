@@ -638,13 +638,13 @@ SHIRO_API shiro_float shiro_to_float(shiro_value* val) {
         case s_tInt:
             switch (v->type) {
                 case s_fLong:
-                    return 1.0 * v->value.l;
+                    return (shiro_float)v->value.l;
                     break;
                 case s_fInteger:
-                    return 1.0 * v->value.i;
+                    return (shiro_float)v->value.i;
                     break;
                 case s_fUInt:
-                    return 1.0 * v->value.u;
+                    return (shiro_float)v->value.u;
                     break;
                 default:
                     return 0.0;

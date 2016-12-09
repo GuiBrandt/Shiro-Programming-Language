@@ -188,6 +188,7 @@ SHIRO_API shiro_string    shiro_to_string     (shiro_value*);
 SHIRO_API shiro_int       shiro_to_int        (shiro_value*);
 SHIRO_API shiro_long      shiro_to_long       (shiro_value*);
 SHIRO_API shiro_uint      shiro_to_uint       (shiro_value*);
+SHIRO_API shiro_float     shiro_to_float      (shiro_value*);
 
 #define   shiro_nil       ((shiro_value*)-1)
 
