@@ -14,6 +14,13 @@ void shiro_glfw_error_callback(int, const char*);
 void shiro_glfw_close_callback(GLFWwindow*);
 
 shiro_value* shiro_background       (shiro_runtime*, shiro_uint);
+shiro_value* shiro_foreground       (shiro_runtime*, shiro_uint);
+
+shiro_value* shiro_line_weight      (shiro_runtime*, shiro_uint);
+shiro_value* shiro_line             (shiro_runtime*, shiro_uint);
+shiro_value* shiro_rect             (shiro_runtime*, shiro_uint);
+shiro_value* shiro_point            (shiro_runtime*, shiro_uint);
+shiro_value* shiro_ellipse          (shiro_runtime*, shiro_uint);
 
 shiro_value* shiro_stdgui_advanced  (shiro_runtime*, shiro_uint);
 

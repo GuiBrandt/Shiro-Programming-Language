@@ -53,6 +53,8 @@ shiro_value* shiro_create_window(shiro_runtime* runtime, shiro_uint n_args) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
+    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     shiro_window = glfwCreateWindow(width, height, title, NULL, NULL);
@@ -78,11 +80,18 @@ shiro_value* shiro_create_window(shiro_runtime* runtime, shiro_uint n_args) {
         return NULL;
     }
 
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, width, height, 0, 0, 1);
+
+    glMatrixMode(GL_MODELVIEW);
+
     shiro_function* display_func = g->value.func;
 
     while (shiro_window != NULL) {
         if (shiro_call_function(display_func, runtime, 0) == NULL)
             return NULL;
+
         glfwSwapBuffers(shiro_window);
         glfwPollEvents();
     }
@@ -95,19 +104,54 @@ shiro_value* shiro_create_window(shiro_runtime* runtime, shiro_uint n_args) {
 // Redimensiona a janela
 //-----------------------------------------------------------------------------
 shiro_value* shiro_resize_window(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value *arg0 = shiro_get_value(runtime, 0),
+                *arg1 = shiro_get_value(runtime, 1);
+
+    shiro_uint  width = shiro_to_uint(arg0),
+                height = shiro_to_uint(arg1);
+
+    if (shiro_window == NULL) {
+        shiro_error(0, "GUIError", "No window found to resize");
+        return NULL;
+    }
+    glfwSetWindowSize(shiro_window, width, height);
+    glViewport(0, 0, width, height);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, width, height, 0, 0, 1);
+
+    glMatrixMode(GL_MODELVIEW);
+
     return shiro_nil;
 }
 //-----------------------------------------------------------------------------
 // Põe a janela em tela cheia
 //-----------------------------------------------------------------------------
 shiro_value* shiro_fullscreen(shiro_runtime* runtime, shiro_uint n_args) {
+
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+    glfwSetWindowMonitor(
+        shiro_window,
+        monitor,
+        0, 0,
+        mode->width, mode->height,
+        mode->refreshRate
+    );
+
     return shiro_nil;
 }
-
+//-----------------------------------------------------------------------------
+// Callback para erros no GLFW
+//-----------------------------------------------------------------------------
 void shiro_glfw_error_callback(int err, const char* desc) {
     shiro_error(0, "GUIError", "Error %d: %s", err, desc);
 }
-
+//-----------------------------------------------------------------------------
+// Callback para fechamento da janela
+//-----------------------------------------------------------------------------
 void shiro_glfw_close_callback(GLFWwindow* window) {
     if (window != shiro_window)
         return;
@@ -123,12 +167,61 @@ shiro_value* shiro_background(shiro_runtime* runtime, shiro_uint n_args) {
                 *arg1 = shiro_get_value(runtime, 1),
                 *arg2 = shiro_get_value(runtime, 2);
 
-    GLuint r = get_uint(arg0);
-    GLuint g = get_uint(arg1);
-    GLuint b = get_uint(arg2);
+    GLuint r = shiro_to_uint(arg0);
+    GLuint g = shiro_to_uint(arg1);
+    GLuint b = shiro_to_uint(arg2);
 
-    glClearColor((float)r / 255, (float)g / 255, (float)b / 255, 0);
+    glClearColor(r / 255.0, g / 255.0, b / 255.0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    return shiro_nil;
+}
+//-----------------------------------------------------------------------------
+// Define a cor dos desenhos feitos na tela
+//-----------------------------------------------------------------------------
+shiro_value* shiro_foreground(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value *arg0 = shiro_get_value(runtime, 0),
+                *arg1 = shiro_get_value(runtime, 1),
+                *arg2 = shiro_get_value(runtime, 2);
+
+    GLuint r = shiro_to_uint(arg0);
+    GLuint g = shiro_to_uint(arg1);
+    GLuint b = shiro_to_uint(arg2);
+
+    glColor3f(r / 255.0, g / 255.0, b / 255.0);
+
+    return shiro_nil;
+}
+//-----------------------------------------------------------------------------
+// Define a largura das linhas
+//-----------------------------------------------------------------------------
+shiro_value* shiro_line_weight(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value *arg0 = shiro_get_value(runtime, 0);
+
+    shiro_float weight = shiro_to_float(arg0);
+
+    glLineWidth(weight);
+
+    return shiro_nil;
+}
+//-----------------------------------------------------------------------------
+// Desenha uma linha na tela
+//-----------------------------------------------------------------------------
+shiro_value* shiro_line(shiro_runtime* runtime, shiro_uint n_args) {
+    shiro_value *arg0 = shiro_get_value(runtime, 0),
+                *arg1 = shiro_get_value(runtime, 1),
+                *arg2 = shiro_get_value(runtime, 2),
+                *arg3 = shiro_get_value(runtime, 3);
+
+    shiro_uint  ax = shiro_to_uint(arg0),
+                ay = shiro_to_uint(arg1),
+                bx = shiro_to_uint(arg2),
+                by = shiro_to_uint(arg3);
+
+    glBegin(GL_LINES);
+    glVertex2i(ax, ay);
+    glVertex2i(bx, by);
+    glEnd();
 
     return shiro_nil;
 }
@@ -162,4 +255,13 @@ shiro_main(shiro_runtime* runtime) {
     //
     p = shiro_new_native(3, (shiro_c_function)&shiro_background);
     shiro_set_global(runtime, ID("background"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(3, (shiro_c_function)&shiro_foreground);
+    shiro_set_global(runtime, ID("foreground"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(1, (shiro_c_function)&shiro_line_weight);
+    shiro_set_global(runtime, ID("line_weight"), s_fFunction, (union __field_value)p);
+
+    p = shiro_new_native(4, (shiro_c_function)&shiro_line);
+    shiro_set_global(runtime, ID("line"), s_fFunction, (union __field_value)p);
 }
