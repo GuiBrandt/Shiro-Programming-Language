@@ -221,8 +221,80 @@ shiro_binary* __compile_statement(
     if (statement == NULL || statement->used == 0)
         return binary;
 
+    shiro_uint token_index = 0;
+
     const shiro_token* token;
-    token = get_token(statement, 0, line, sline);
+    token = get_token(statement, token_index, line, sline);
+
+    // Avança uma token
+    void next_token() {
+        token = get_token(statement, ++token_index, line, sline);
+    }
+
+    // Verifica se a token é igual a uma string
+    bool token_is(shiro_string tk) {
+        if (token == NULL)
+            return false;
+
+        return strcmp(token->value, tk) == 0;
+    }
+
+    // Obtém um binário a partir de um bloco
+    shiro_binary* parse_block() {
+        if (token_is(MARK_OBLOCK)) {
+            shiro_statement* block = __block(statement, token_index, sline);
+
+            shiro_protect(
+                shiro_binary* b_block = __compile_statements(block, line);
+            );
+
+            free_statement(block);
+
+            return b_block;
+        } else {
+            shiro_error(
+                *line,
+                ERR_SYNTAX_ERROR,
+                "Unexpected '%s', expecting '%s'",
+                token->value, MARK_OBLOCK
+            );
+
+            return NULL;
+        }
+    }
+
+    // Obtém um binário a partir de uma expressão
+    shiro_binary* parse_expression() {
+        if (token_is(MARK_OEXPR)) {
+            shiro_protect(
+                shiro_statement* expression = __expression(statement, token_index, sline);
+            );
+
+            shiro_protect(
+                shiro_binary* b_expr = __compile_statements(expression, line);
+            );
+
+            free_statement(expression);
+
+            if (!binary_returns_value(b_expr)) {
+                shiro_free_binary(binary);
+                shiro_free_binary(b_expr);
+
+                shiro_error(*line, ERR_SYNTAX_ERROR, "Invalid conditional statement");
+                return NULL;
+            }
+
+            return b_expr;
+        } else {
+            shiro_error(
+                *line,
+                ERR_SYNTAX_ERROR,
+                "Unexpected '%s', expecting '%s'",
+                token->value, MARK_OEXPR
+            );
+            return NULL;
+        }
+    }
 
     if (token == NULL)
         return binary;
@@ -234,114 +306,157 @@ shiro_binary* __compile_statement(
             //  exit
             //
             if (strcmp(token->value, KW_DIE) == 0) {
-                token = get_token(statement, 1, line, sline);
-                if (token == NULL) {
-                    shiro_node* node = new_node(DIE, 0);
-                    push_node(binary, node);
-                    free_node(node);
-                } else {
+                next_token();
+
+                if (token != NULL && !token_is(MARK_EOS)) {
+                    shiro_free_binary(binary);
+
                     shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
                     return NULL;
                 }
+
+                shiro_node* node = new_node(DIE, 0);
+                push_node(binary, node);
+                free_node(node);
             }
 
             //
             //  if (<expr>) { <code> } [else { <code> }]
             //
             else if (strcmp(token->value, KW_COND) == 0) {
-                token = get_token(statement, 1, line, sline);
 
-                if (token != NULL && strcmp(token->value, MARK_OEXPR) == 0) {
-                    shiro_protect(
-                        shiro_statement* expression = __expression(statement, 1, sline);
-                    );
+                shiro_binary *b_expr, *b_block, *b_block_else;
 
-                    shiro_protect(
-                        shiro_binary* b_expr = __compile_statements(expression, line);
-                    );
-                    free_statement(expression);
+                // Obtém a expressão condicional e compila
+                next_token();
+                shiro_protect2(
+                    b_expr = parse_expression();
+                ,
+                    shiro_free_binary(binary);
+                );
 
-                    if (!binary_returns_value(b_expr)) {
-                        shiro_error(*line, ERR_SYNTAX_ERROR, "Invalid conditional statement");
-                        return NULL;
-                    }
+                // Obtém o código que será executado se a expressão for verdadeira
+                next_token();
+                shiro_protect2(
+                    b_block = parse_block();
+                ,
+                    shiro_free_binary(b_expr);
+                    shiro_free_binary(binary);
+                );
 
-                    token = get_token(statement, 2, line, sline);
-                    if (token != NULL && strcmp(token->value, MARK_OBLOCK) == 0) {
-                        shiro_statement* block = __block(statement, 2, sline);
-                        shiro_protect(
-                            shiro_binary* b_block = __compile_statements(block, line);
+                next_token();
+
+                // Se acabou a sentença, compila e retorna o binário
+                if (token == NULL || token_is(MARK_EOS)) {
+                    shiro_node* cond = new_node(COND, 0);
+                    push_node(b_expr, cond);
+                    free_node(cond);
+
+                    shiro_node* jmp = new_node(JUMP, 1, shiro_new_int(b_block->used));
+                    push_node(b_expr, jmp);
+                    free_node(jmp);
+
+                    binary = concat_and_free_binary(binary, b_expr);
+                    binary = concat_and_free_binary(binary, b_block);
+
+                    return binary;
+                }
+
+                // Se tiver um else, compila o else
+                else if (token_is(KW_ELSE)) {
+
+                    next_token();
+
+                    bool else_if = false;
+
+                    // Se o token for um começo de bloco de código, compila o
+                    // bloco, se for um 'if', compila o if e usa como o bloco
+                    if (token_is(MARK_OBLOCK)) {
+                        shiro_protect2(
+                            b_block_else = parse_block();
+                        ,
+                            shiro_free_binary(b_expr);
+                            shiro_free_binary(b_block);
+                            shiro_free_binary(binary);
                         );
-                        free_statement(block);
+                    } else if (token_is(KW_COND)) {
+                        shiro_statement* offset = offset_statement(statement, token_index);
+                        shiro_protect2(
+                            b_block_else = __compile_statement(offset, line);
+                        ,
+                            shiro_free_binary(b_expr);
+                            shiro_free_binary(b_block);
+                            shiro_free_binary(binary);
+                        );
+                        free_statement(offset);
 
-                        token = get_token(statement, 3, line, sline);
-                        if (token != NULL && strcmp(token->value, KW_ELSE) == 0) {
-
-                            token = get_token(statement, 4, line, sline);
-
-                            if (token != NULL && strcmp(token->value, MARK_OBLOCK) == 0)
-                                if (get_token(statement, 5, line, sline) == NULL) {
-                                    shiro_statement* block2 = __block(statement, 4, sline);
-                                    shiro_protect(
-                                        shiro_binary* b_block2 = __compile_statements(block2, line);
-                                    );
-                                    free_statement(block2);
-
-                                    shiro_binary* bin = new_binary();
-
-                                    shiro_node* cond = new_node(COND, 0);
-                                    push_node(bin, cond);
-                                    free_node(cond);
-
-                                    shiro_node* jmp0 = new_node(JUMP, 1, shiro_new_int(1));
-                                    push_node(bin, jmp0);
-                                    free_node(jmp0);
-
-                                    shiro_node* jmp1 = new_node(JUMP, 1, shiro_new_int(b_block2->used + 1));
-                                    push_node(bin, jmp1);
-                                    free_node(jmp1);
-
-                                    bin = concat_and_free_binary(bin, b_block2);
-
-                                    shiro_node* jmp2 = new_node(JUMP, 1, shiro_new_int(b_block->used));
-                                    push_node(bin, jmp2);
-                                    free_node(jmp2);
-
-                                    bin = concat_and_free_binary(b_expr, bin);
-                                    bin = concat_and_free_binary(bin, b_block);
-                                    binary = concat_and_free_binary(binary, bin);
-                                } else {
-                                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
-                                    return NULL;
-                                }
-                            else {
-                                shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OBLOCK);
-                                return NULL;
-                            }
-                        } else if (token == NULL || strcmp(token->value, MARK_EOS) == 0) {
-                            shiro_binary* bin = new_binary();
-
-                            shiro_node* cond = new_node(COND, 0);
-                            push_node(bin, cond);
-                            free_node(cond);
-
-                            shiro_node* jmp = new_node(JUMP, 1, shiro_new_int(b_block->used));
-                            push_node(bin, jmp);
-                            free_node(jmp);
-
-                            bin = concat_and_free_binary(b_expr, bin);
-                            bin = concat_and_free_binary(bin, b_block);
-                            binary = concat_and_free_binary(binary, bin);
-                        } else {
-                            shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OBLOCK);
-                            return NULL;
-                        }
+                        else_if = true;
                     } else {
-                        shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OBLOCK);
+                        shiro_free_binary(b_expr);
+                        shiro_free_binary(b_block);
+                        shiro_free_binary(binary);
+
+                        if (token != NULL)
+                            shiro_error(
+                                *line,
+                                ERR_SYNTAX_ERROR,
+                                "Unexpected '%s', expecting '%s'",
+                                token->value, MARK_OBLOCK
+                            );
+                        else
+                            shiro_error(
+                                *line,
+                                ERR_SYNTAX_ERROR,
+                                "Unexpected <END>, expecting '%s'",
+                                MARK_OBLOCK
+                            );
+
                         return NULL;
                     }
+
+                    next_token();
+                    if (else_if || token == NULL || token_is(MARK_EOS)) {
+                        shiro_node* cond = new_node(COND, 0);
+                        push_node(b_expr, cond);
+                        free_node(cond);
+
+                        shiro_node* jmp0 = new_node(JUMP, 1, shiro_new_int(1));
+                        push_node(b_expr, jmp0);
+                        free_node(jmp0);
+
+                        shiro_node* jmp1 = new_node(JUMP, 1, shiro_new_int(b_block_else->used + 1));
+                        push_node(b_expr, jmp1);
+                        free_node(jmp1);
+
+                        b_expr = concat_and_free_binary(b_expr, b_block_else);
+
+                        shiro_node* jmp2 = new_node(JUMP, 1, shiro_new_int(b_block->used));
+                        push_node(b_expr, jmp2);
+                        free_node(jmp2);
+
+                        binary = concat_and_free_binary(binary, b_expr);
+                        binary = concat_and_free_binary(binary, b_block);
+                    } else {
+                        shiro_free_binary(b_expr);
+                        shiro_free_binary(b_block);
+                        shiro_free_binary(b_block_else);
+                        shiro_free_binary(binary);
+
+                        shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                        return NULL;
+                    }
+
                 } else {
-                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting '%s'", token->value, MARK_OEXPR);
+                    shiro_free_binary(b_expr);
+                    shiro_free_binary(b_block);
+                    shiro_free_binary(binary);
+
+                    shiro_error(
+                        *line,
+                        ERR_SYNTAX_ERROR,
+                        "Unexpected '%s', expecting <END>",
+                        token->value
+                    );
                     return NULL;
                 }
             }

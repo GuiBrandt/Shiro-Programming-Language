@@ -17,7 +17,7 @@ SHIRO_API void shiro_error(const shiro_uint, const shiro_string, const shiro_str
 
 SHIRO_API shiro_string shiro_get_last_error(void);
 
-#define shiro_protect(stuff)    stuff;\
+#define shiro_protect(crit)     crit;\
                                 {\
                                     shiro_string err = shiro_get_last_error();\
                                     \
@@ -26,5 +26,16 @@ SHIRO_API shiro_string shiro_get_last_error(void);
                                         return NULL;\
                                     }\
                                 }
+
+#define shiro_protect2(crit, save)  crit;\
+                                    {\
+                                        shiro_string err = shiro_get_last_error();\
+                                        \
+                                        if (err != NULL) {\
+                                            save;\
+                                            last_error = err;\
+                                            return NULL;\
+                                        }\
+                                    }
 
 #endif // ERRORS_H_INCLUDED
