@@ -61,6 +61,38 @@ void free_node(shiro_node* node) {
     free(node);
 }
 //-----------------------------------------------------------------------------
+// Retorna o número de valores que um nó põe no stack
+//-----------------------------------------------------------------------------
+shiro_int node_change_stack(const shiro_node* node) {
+    switch (node->code) {
+        case COND:
+        case DROP:
+        case SET_VAR:
+        case ADD:
+        case SUB:
+        case MUL:
+        case DIV:
+        case MOD:
+        case B_AND:
+        case B_OR:
+        case B_XOR:
+        case COMPARE_EQ:
+        case COMPARE_GT:
+        case COMPARE_LT:
+        case COMPARE_GT_EQ:
+        case COMPARE_LT_EQ:
+        case RETURN:
+            return -1;
+        case FN_CALL:
+            return -(shiro_int)get_uint(node->args[1]) + 1;
+        case PUSH:
+        case PUSH_BY_NAME:
+            return 1;
+        default:
+            return 0;
+    }
+}
+//-----------------------------------------------------------------------------
 // Cria um novo binário do shiro
 //-----------------------------------------------------------------------------
 shiro_binary* new_binary(void) {
@@ -128,13 +160,14 @@ shiro_binary* concat_binary(shiro_binary* binary, const shiro_binary* other) {
 //-----------------------------------------------------------------------------
 bool binary_returns_value(const shiro_binary* binary) {
     int n = 0, i;
-    for (i = 0; i < binary->used; i++)
-        if ((binary->nodes[i]->code & PUSH) == PUSH ||
-            binary->nodes[i]->code == FN_CALL ||
-            (binary->nodes[i]->code & OPERATE) == OPERATE)
-            n++;
-        else if (binary->nodes[i]->code == DROP)
-            n--;
+    for (i = 0; i < binary->used; i++) {
+        shiro_node* node = binary->nodes[i];
+
+        if (node->code == RETURN)
+            return true;
+        else
+            n += node_change_stack(node);
+    }
     return n > 0;
 }
 //-----------------------------------------------------------------------------

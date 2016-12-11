@@ -53,6 +53,8 @@ typedef enum bytecodes {
     OPERATE_U       = 0x70,
     NOT             = OPERATE_U + 1,
 
+    RETURN          = 0x80,
+
     DIE             = 0xED
 } shiro_bytecode;
 
@@ -70,8 +72,10 @@ typedef struct __binary {
 } shiro_binary;
 
 shiro_node*   new_node                  (const shiro_bytecode, const shiro_uint, ...);
-shiro_node*   use_node                (shiro_node*);
+shiro_node*   use_node                  (shiro_node*);
 void          free_node                 (shiro_node*);
+
+shiro_int     node_change_stack         (const shiro_node*);
 
 shiro_binary* new_binary                (void);
 shiro_binary* clone_binary              (shiro_binary*);

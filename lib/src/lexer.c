@@ -274,7 +274,8 @@ shiro_token_type get_token_type(const shiro_token* token) {
             (strcmp(string, KW_BREAK) == 0 || strcmp(string, KW_WHILE) == 0)
         ) ||
         (len == 6 &&
-            (strcmp(string, KW_IMPORT) == 0 || strcmp(string, KW_SWITCH) == 0 || strcmp(string, KW_DELETE) == 0)
+            (strcmp(string, KW_RETURN) == 0 || strcmp(string, KW_IMPORT) == 0 ||
+             strcmp(string, KW_SWITCH) == 0 || strcmp(string, KW_DELETE) == 0)
         ) ||
         (len == 7 &&
             (strcmp(string, KW_INCLUDE) == 0 || strcmp(string, KW_REQUIRE) == 0)

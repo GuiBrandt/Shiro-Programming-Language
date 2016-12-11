@@ -15,6 +15,7 @@
 #define KW_NEXT         "continue"
 #define KW_DELETE       "delete"
 #define KW_FUNC         "fn"
+#define KW_RETURN       "return"
 #define KW_CONST        "const"
 #define KW_CLASS        "class"
 #define KW_DIE          "exit"

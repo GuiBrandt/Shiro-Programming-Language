@@ -8,6 +8,40 @@
 
 #include <stdlib.h>
 #include <string.h>
+
+//-----------------------------------------------------------------------------
+// * Verifica se adicionar um valor ao stack é necessário
+//-----------------------------------------------------------------------------
+bool should_push_to_stack(shiro_binary* binary, shiro_uint i) {
+    shiro_int s = 0;
+
+    shiro_uint j;
+    for (j = i + 1; j < binary->used && s >= 0; j++) {
+        shiro_node* nd = binary->nodes[j];
+
+        if (nd->code == JUMP)
+            j += get_int(nd->args[0]);
+        else if (nd->code == FN_CALL) {
+            if (s >= get_uint(nd->args[1]))
+                s += node_change_stack(nd);
+            else {
+                s = -1;
+                break;
+            }
+        } else if ((nd->code & OPERATE) == OPERATE ||
+                   (nd->code & COMPARE) == COMPARE) {
+            if (s >= 2)
+                s += node_change_stack(nd);
+            else {
+                s = -1;
+                break;
+            }
+        } else
+            s += node_change_stack(nd);
+    }
+
+    return s < 0;
+}
 //-----------------------------------------------------------------------------
 // * Executa código shiro em um runtime usando um binário pré-compilado
 //      runtime : Runtime usado para executar o programa
@@ -61,15 +95,23 @@ SHIRO_API shiro_runtime* shiro_execute(
 
                 if (shiro_call_function(f, runtime, n_args) == NULL)
                     return NULL;
+
+                if (!should_push_to_stack(binary, i))
+                    shiro_drop_value(runtime);
+
                 break;
             }
             case PUSH:
             {
-                shiro_push_value(runtime, shiro_use_value(node->args[0]));
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, shiro_use_value(node->args[0]));
                 break;
             }
             case PUSH_BY_NAME:
             {
+                if (!should_push_to_stack(binary, i))
+                    break;
+
                 shiro_id id = get_uint(node->args[0]);
 
                 if (id == ID("self")) {
@@ -205,7 +247,9 @@ SHIRO_API shiro_runtime* shiro_execute(
                 }
                 shiro_free_value(l);
                 shiro_free_value(r);
-                shiro_push_value(runtime, result);
+
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, result);
 
                 break;
             }
@@ -263,7 +307,8 @@ SHIRO_API shiro_runtime* shiro_execute(
                 }
                 shiro_free_value(l);
                 shiro_free_value(r);
-                shiro_push_value(runtime, result);
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, result);
 
                 break;
             }
@@ -321,7 +366,8 @@ SHIRO_API shiro_runtime* shiro_execute(
                 }
                 shiro_free_value(l);
                 shiro_free_value(r);
-                shiro_push_value(runtime, result);
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, result);
 
                 break;
             }
@@ -379,7 +425,9 @@ SHIRO_API shiro_runtime* shiro_execute(
                 }
                 shiro_free_value(l);
                 shiro_free_value(r);
-                shiro_push_value(runtime, result);
+
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, result);
 
                 break;
             }
@@ -434,7 +482,8 @@ SHIRO_API shiro_runtime* shiro_execute(
                 }
                 shiro_free_value(l);
                 shiro_free_value(r);
-                shiro_push_value(runtime, result);
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, result);
 
                 break;
             }
@@ -489,7 +538,8 @@ SHIRO_API shiro_runtime* shiro_execute(
                 }
                 shiro_free_value(l);
                 shiro_free_value(r);
-                shiro_push_value(runtime, result);
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, result);
 
                 break;
             }
@@ -546,7 +596,8 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_free_value(l);
                 shiro_free_value(r);
 
-                shiro_push_value(runtime, result);
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, result);
 
                 break;
             }
@@ -603,7 +654,8 @@ SHIRO_API shiro_runtime* shiro_execute(
                 shiro_free_value(l);
                 shiro_free_value(r);
 
-                shiro_push_value(runtime, result);
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, result);
 
                 break;
             }
@@ -652,7 +704,8 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                 }
 
-                shiro_push_value(runtime, shiro_new_int(result));
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, shiro_new_int(result));
 
                 shiro_free_value(r);
                 shiro_free_value(l);
@@ -712,7 +765,8 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                 }
 
-                shiro_push_value(runtime, shiro_new_int(result));
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, shiro_new_int(result));
 
                 shiro_free_value(r);
                 shiro_free_value(l);
@@ -772,7 +826,8 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                 }
 
-                shiro_push_value(runtime, shiro_new_int(result));
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, shiro_new_int(result));
 
                 shiro_free_value(r);
                 shiro_free_value(l);
@@ -832,7 +887,8 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                 }
 
-                shiro_push_value(runtime, shiro_new_int(result));
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, shiro_new_int(result));
 
                 shiro_free_value(r);
                 shiro_free_value(l);
@@ -892,7 +948,8 @@ SHIRO_API shiro_runtime* shiro_execute(
                         break;
                 }
 
-                shiro_push_value(runtime, shiro_new_int(result));
+                if (should_push_to_stack(binary, i))
+                    shiro_push_value(runtime, shiro_new_int(result));
 
                 shiro_free_value(r);
                 shiro_free_value(l);
@@ -913,6 +970,7 @@ SHIRO_API shiro_runtime* shiro_execute(
                 break;
             }
             case DIE:
+            case RETURN:
                 return runtime;
             case BREAK:
                 do { i++; } while (binary->nodes[i]->code != END_LOOP);
