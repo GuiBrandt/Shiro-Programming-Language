@@ -33,9 +33,25 @@ __declspec(dllexport) BOOL APIENTRY DllMain(
 GLFWwindow* shiro_window = NULL;
 
 //-----------------------------------------------------------------------------
+// Callback para erros no GLFW
+//-----------------------------------------------------------------------------
+void shiro_glfw_error_callback(int err, const char* desc) {
+    shiro_error(0, "GUIError", "Error %d: %s", err, desc);
+}
+//-----------------------------------------------------------------------------
+// Callback para fechamento da janela
+//-----------------------------------------------------------------------------
+void shiro_glfw_close_callback(GLFWwindow* window) {
+    if (window != shiro_window)
+        return;
+
+    glfwDestroyWindow(shiro_window);
+    shiro_window = NULL;
+}
+//-----------------------------------------------------------------------------
 // Cria uma janela
 //-----------------------------------------------------------------------------
-shiro_value* shiro_create_window(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(create_window) {
     shiro_value *arg0 = shiro_get_value(runtime, 0),
                 *arg1 = shiro_get_value(runtime, 1),
                 *arg2 = shiro_get_value(runtime, 2);
@@ -56,7 +72,7 @@ shiro_value* shiro_create_window(shiro_runtime* runtime, shiro_uint n_args) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
     //glfwWindowHint(GLFW_SAMPLES, 4);
-    glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
+    //glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     shiro_window = glfwCreateWindow(width, height, title, NULL, NULL);
@@ -109,7 +125,7 @@ shiro_value* shiro_create_window(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Redimensiona a janela
 //-----------------------------------------------------------------------------
-shiro_value* shiro_resize_window(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(resize_window) {
     shiro_value *arg0 = shiro_get_value(runtime, 0),
                 *arg1 = shiro_get_value(runtime, 1);
 
@@ -134,8 +150,7 @@ shiro_value* shiro_resize_window(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Põe a janela em tela cheia
 //-----------------------------------------------------------------------------
-shiro_value* shiro_fullscreen(shiro_runtime* runtime, shiro_uint n_args) {
-
+shiro_native(fullscreen) {
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
@@ -150,25 +165,9 @@ shiro_value* shiro_fullscreen(shiro_runtime* runtime, shiro_uint n_args) {
     return shiro_nil;
 }
 //-----------------------------------------------------------------------------
-// Callback para erros no GLFW
-//-----------------------------------------------------------------------------
-void shiro_glfw_error_callback(int err, const char* desc) {
-    shiro_error(0, "GUIError", "Error %d: %s", err, desc);
-}
-//-----------------------------------------------------------------------------
-// Callback para fechamento da janela
-//-----------------------------------------------------------------------------
-void shiro_glfw_close_callback(GLFWwindow* window) {
-    if (window != shiro_window)
-        return;
-
-    glfwDestroyWindow(shiro_window);
-    shiro_window = NULL;
-}
-//-----------------------------------------------------------------------------
 // Limpa a tela com uma cor RGB
 //-----------------------------------------------------------------------------
-shiro_value* shiro_background(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(background) {
     shiro_value *arg0 = shiro_get_value(runtime, 0),
                 *arg1 = shiro_get_value(runtime, 1),
                 *arg2 = shiro_get_value(runtime, 2);
@@ -185,7 +184,7 @@ shiro_value* shiro_background(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Define a cor dos desenhos feitos na tela
 //-----------------------------------------------------------------------------
-shiro_value* shiro_foreground(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(foreground) {
     shiro_value *arg0 = shiro_get_value(runtime, 0),
                 *arg1 = shiro_get_value(runtime, 1),
                 *arg2 = shiro_get_value(runtime, 2);
@@ -201,7 +200,7 @@ shiro_value* shiro_foreground(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Define a largura das linhas
 //-----------------------------------------------------------------------------
-shiro_value* shiro_line_weight(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(line_weight) {
     shiro_value *arg0 = shiro_get_value(runtime, 0);
 
     shiro_float weight = shiro_to_float(arg0);
@@ -213,7 +212,7 @@ shiro_value* shiro_line_weight(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Desenha uma linha na tela
 //-----------------------------------------------------------------------------
-shiro_value* shiro_line(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(line) {
     shiro_value *arg0 = shiro_get_value(runtime, 0),
                 *arg1 = shiro_get_value(runtime, 1),
                 *arg2 = shiro_get_value(runtime, 2),
@@ -234,7 +233,7 @@ shiro_value* shiro_line(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Desenha um retângulo na tela
 //-----------------------------------------------------------------------------
-shiro_value* shiro_rect(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(rect) {
     shiro_value *arg0 = shiro_get_value(runtime, 0),
                 *arg1 = shiro_get_value(runtime, 1),
                 *arg2 = shiro_get_value(runtime, 2),
@@ -257,7 +256,7 @@ shiro_value* shiro_rect(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Desenha um ponto na tela
 //-----------------------------------------------------------------------------
-shiro_value* shiro_point(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(point) {
     shiro_value *arg0 = shiro_get_value(runtime, 0),
                 *arg1 = shiro_get_value(runtime, 1);
 
@@ -273,7 +272,7 @@ shiro_value* shiro_point(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Desenha um elípse na tela
 //-----------------------------------------------------------------------------
-shiro_value* shiro_ellipse(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(ellipse) {
     shiro_value *arg0 = shiro_get_value(runtime, 0),
                 *arg1 = shiro_get_value(runtime, 1);
 
@@ -296,21 +295,21 @@ shiro_value* shiro_ellipse(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Salva o estado atual da matriz
 //-----------------------------------------------------------------------------
-shiro_value* shiro_push_matrix(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(push_matrix) {
     glPushMatrix();
     return shiro_nil;
 }
 //-----------------------------------------------------------------------------
 // Descarta o estado atual da matriz e volta a usar o anterior
 //-----------------------------------------------------------------------------
-shiro_value* shiro_pop_matrix(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(pop_matrix) {
     glPopMatrix();
     return shiro_nil;
 }
 //-----------------------------------------------------------------------------
 // Aplica uma matriz de rotação
 //-----------------------------------------------------------------------------
-shiro_value* shiro_rotate(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(rotate) {
     shiro_value *arg0 = shiro_get_value(runtime, 0);
 
     shiro_float angle = shiro_to_float(arg0);
@@ -322,7 +321,7 @@ shiro_value* shiro_rotate(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Aplica uma matriz de translação
 //-----------------------------------------------------------------------------
-shiro_value* shiro_translate(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(translate) {
     shiro_value *arg0 = shiro_get_value(runtime, 0),
                 *arg1 = shiro_get_value(runtime, 1);
 
@@ -333,67 +332,62 @@ shiro_value* shiro_translate(shiro_runtime* runtime, shiro_uint n_args) {
 
     return shiro_nil;
 }
+//-----------------------------------------------------------------------------]
+// Obtém a posição X do mouse na janela
+//-----------------------------------------------------------------------------
+shiro_native(mouse_x) {
+    double xpos, ypos;
+    glfwGetCursorPos(shiro_window, &xpos, &ypos);
+
+    return shiro_new_int(xpos);
+}
+//-----------------------------------------------------------------------------
+// Obtém a posição Y do mouse na janela
+//-----------------------------------------------------------------------------
+shiro_native(mouse_y) {
+    double xpos, ypos;
+    glfwGetCursorPos(shiro_window, &xpos, &ypos);
+
+    return shiro_new_int(ypos);
+}
 //-----------------------------------------------------------------------------
 // Inicializa a biblioteca
 //-----------------------------------------------------------------------------
 shiro_main(shiro_runtime* runtime) {
-
-    shiro_function* p;
-
     //
     // Função para uso das funções avançadas
     //
-    p = shiro_new_native(0, (shiro_c_function)&shiro_stdgui_advanced);
-    shiro_set_global(runtime, ID("stdgui_load_advanced"), s_fFunction, (union __field_value)p);
+    shiro_def_native(runtime, stdgui_load_advanced, 0);
 
     //
     // Funções básicas
     //
-    p = shiro_new_native(3, (shiro_c_function)&shiro_create_window);
-    shiro_set_global(runtime, ID("create_window"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_resize_window);
-    shiro_set_global(runtime, ID("resize_window"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(0, (shiro_c_function)&shiro_fullscreen);
-    shiro_set_global(runtime, ID("fullscreen"), s_fFunction, (union __field_value)p);
+    shiro_def_native(runtime, create_window, 3);
+    shiro_def_native(runtime, resize_window, 2);
+    shiro_def_native(runtime, fullscreen,    0);
 
     //
     // Funções de desenho
     //
-    p = shiro_new_native(3, (shiro_c_function)&shiro_background);
-    shiro_set_global(runtime, ID("background"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(3, (shiro_c_function)&shiro_foreground);
-    shiro_set_global(runtime, ID("foreground"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_line_weight);
-    shiro_set_global(runtime, ID("line_weight"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_point);
-    shiro_set_global(runtime, ID("point"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(4, (shiro_c_function)&shiro_line);
-    shiro_set_global(runtime, ID("line"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(4, (shiro_c_function)&shiro_rect);
-    shiro_set_global(runtime, ID("rect"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_ellipse);
-    shiro_set_global(runtime, ID("ellipse"), s_fFunction, (union __field_value)p);
+    shiro_def_native(runtime, background, 3);
+    shiro_def_native(runtime, foreground, 3);
+    shiro_def_native(runtime, line_weight, 1);
+    shiro_def_native(runtime, point, 2);
+    shiro_def_native(runtime, line, 4);
+    shiro_def_native(runtime, rect, 4);
+    shiro_def_native(runtime, ellipse, 2);
 
     //
     // Funções de matriz
     //
-    p = shiro_new_native(0, (shiro_c_function)&shiro_push_matrix);
-    shiro_set_global(runtime, ID("push_matrix"), s_fFunction, (union __field_value)p);
+    shiro_def_native(runtime, push_matrix, 0);
+    shiro_def_native(runtime, pop_matrix, 0);
+    shiro_def_native(runtime, rotate, 1);
+    shiro_def_native(runtime, translate, 2);
 
-    p = shiro_new_native(0, (shiro_c_function)&shiro_pop_matrix);
-    shiro_set_global(runtime, ID("pop_matrix"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_rotate);
-    shiro_set_global(runtime, ID("rotate"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_translate);
-    shiro_set_global(runtime, ID("translate"), s_fFunction, (union __field_value)p);
+    //
+    // Posição do mouse
+    //
+    shiro_def_native(runtime, mouse_x, 0);
+    shiro_def_native(runtime, mouse_y, 0);
 }

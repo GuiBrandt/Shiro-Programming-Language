@@ -19,6 +19,6 @@
 //-----------------------------------------------------------------------------
 // Carrega as funções avançadas de GUI
 //-----------------------------------------------------------------------------
-shiro_value* shiro_stdgui_advanced(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(stdgui_load_advanced) {
     return shiro_nil;
 }

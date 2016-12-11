@@ -23,6 +23,7 @@ __declspec(dllexport) BOOL APIENTRY DllMain(
 }
 #endif // defined
 
+/*
 //-----------------------------------------------------------------------------
 // Função do shiro para criar um inteiro de precisão arbitrária
 // Define o valor do inteiro como zero
@@ -30,19 +31,21 @@ __declspec(dllexport) BOOL APIENTRY DllMain(
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum) {
     mpz_t* bigint = malloc(sizeof(mpz_t));
     mpz_init(*bigint);
 
     return shiro_new_uint((shiro_uint)bigint);
 }
+*/
+
 //-----------------------------------------------------------------------------
 // Função do shiro para converter um valor em bignum
 //
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_to_bignum(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum) {
     mpz_t* bigint = malloc(sizeof(mpz_t));
 
     shiro_value* arg0 = shiro_get_value(runtime, 0);
@@ -66,7 +69,7 @@ shiro_value* shiro_to_bignum(shiro_runtime* runtime, shiro_uint n_args) {
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_set_bignum(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(set_bignum) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_value* arg1 = shiro_get_value(runtime, 1);
 
@@ -80,7 +83,7 @@ shiro_value* shiro_set_bignum(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Função do shiro para liberar um bignum da memória
 //-----------------------------------------------------------------------------
-shiro_value* shiro_free_bignum(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(free_bignum) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     mpz_t* bigint = (mpz_t*)get_uint(arg0);
 
@@ -96,7 +99,7 @@ shiro_value* shiro_free_bignum(shiro_runtime* runtime, shiro_uint n_args) {
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum_add(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum_add) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_value* arg1 = shiro_get_value(runtime, 1);
 
@@ -114,7 +117,7 @@ shiro_value* shiro_bignum_add(shiro_runtime* runtime, shiro_uint n_args) {
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum_sub(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum_sub) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_value* arg1 = shiro_get_value(runtime, 1);
 
@@ -132,7 +135,7 @@ shiro_value* shiro_bignum_sub(shiro_runtime* runtime, shiro_uint n_args) {
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum_mul(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum_mul) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_value* arg1 = shiro_get_value(runtime, 1);
 
@@ -150,7 +153,7 @@ shiro_value* shiro_bignum_mul(shiro_runtime* runtime, shiro_uint n_args) {
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum_cdiv(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum_cdiv) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_value* arg1 = shiro_get_value(runtime, 1);
 
@@ -168,7 +171,7 @@ shiro_value* shiro_bignum_cdiv(shiro_runtime* runtime, shiro_uint n_args) {
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum_fdiv(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum_fdiv) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_value* arg1 = shiro_get_value(runtime, 1);
 
@@ -186,7 +189,7 @@ shiro_value* shiro_bignum_fdiv(shiro_runtime* runtime, shiro_uint n_args) {
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum_tdiv(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum_tdiv) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_value* arg1 = shiro_get_value(runtime, 1);
 
@@ -205,7 +208,7 @@ shiro_value* shiro_bignum_tdiv(shiro_runtime* runtime, shiro_uint n_args) {
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum_cmod(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum_cmod) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_value* arg1 = shiro_get_value(runtime, 1);
 
@@ -224,7 +227,7 @@ shiro_value* shiro_bignum_cmod(shiro_runtime* runtime, shiro_uint n_args) {
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum_fmod(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum_fmod) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_value* arg1 = shiro_get_value(runtime, 1);
 
@@ -243,7 +246,7 @@ shiro_value* shiro_bignum_fmod(shiro_runtime* runtime, shiro_uint n_args) {
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum_tmod(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum_tmod) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_value* arg1 = shiro_get_value(runtime, 1);
 
@@ -262,7 +265,7 @@ shiro_value* shiro_bignum_tmod(shiro_runtime* runtime, shiro_uint n_args) {
 //
 // Retorna um UInt representando o ponteiro para o bignum passado como base
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum_pow(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum_pow) {
     shiro_value *arg0 = shiro_get_value(runtime, 0),
                 *arg1 = shiro_get_value(runtime, 1);
 
@@ -282,7 +285,7 @@ shiro_value* shiro_bignum_pow(shiro_runtime* runtime, shiro_uint n_args) {
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum_root(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum_root) {
     shiro_value *arg0 = shiro_get_value(runtime, 0),
                 *arg1 = shiro_get_value(runtime, 1);
 
@@ -302,16 +305,16 @@ shiro_value* shiro_bignum_root(shiro_runtime* runtime, shiro_uint n_args) {
 // O valor de retorno da função é um inteiro representando o ponteiro para o
 // bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum_sqroot(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum_sqrt) {
     shiro_push_value(runtime, shiro_new_uint(2));
-    return shiro_bignum_root(runtime, 2);
+    return shiro_call_native(runtime, bignum_root, 2);
 }
 //-----------------------------------------------------------------------------
 // Função do shiro para converter um bignum em string
 //
 // O valor de retorno da função é uma string representando o bignum
 //-----------------------------------------------------------------------------
-shiro_value* shiro_bignum_to_string(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(bignum_to_string) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
 
     mpz_t* bigint = (mpz_t*)get_uint(arg0);
@@ -324,64 +327,33 @@ shiro_value* shiro_bignum_to_string(shiro_runtime* runtime, shiro_uint n_args) {
 // Inicializa a biblioteca
 //-----------------------------------------------------------------------------
 shiro_main(shiro_runtime* runtime) {
-    shiro_function* p;
-
     //
     // Inicialização/finalização de bignums
     //
-    p = shiro_new_native(1, (shiro_c_function)&shiro_to_bignum);
-    shiro_set_global(runtime, ID("bignum"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_set_bignum);
-    shiro_set_global(runtime, ID("bignum_set"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_free_bignum);
-    shiro_set_global(runtime, ID("free_bignum"), s_fFunction, (union __field_value)p);
+    shiro_def_native(runtime, bignum, 1);
+    shiro_def_native(runtime, set_bignum, 2);
+    shiro_def_native(runtime, free_bignum, 1);
 
     //
     // Operações
     //
     // Todos os operadores alteram o valor do bignum passado para eles como parâmetro
     //
-    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_add);
-    shiro_set_global(runtime, ID("bignum_add"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_sub);
-    shiro_set_global(runtime, ID("bignum_sub"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_mul);
-    shiro_set_global(runtime, ID("bignum_mul"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_cdiv);
-    shiro_set_global(runtime, ID("bignum_cdiv"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_fdiv);
-    shiro_set_global(runtime, ID("bignum_fdiv"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_tdiv);
-    shiro_set_global(runtime, ID("bignum_tdiv"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_cmod);
-    shiro_set_global(runtime, ID("bignum_cmod"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_fmod);
-    shiro_set_global(runtime, ID("bignum_fmod"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_tmod);
-    shiro_set_global(runtime, ID("bignum_tmod"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_pow);
-    shiro_set_global(runtime, ID("bignum_pow"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(2, (shiro_c_function)&shiro_bignum_root);
-    shiro_set_global(runtime, ID("bignum_root"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_bignum_root);
-    shiro_set_global(runtime, ID("bignum_sqrt"), s_fFunction, (union __field_value)p);
+    shiro_def_native(runtime, bignum_add, 2);
+    shiro_def_native(runtime, bignum_sub, 2);
+    shiro_def_native(runtime, bignum_mul, 2);
+    shiro_def_native(runtime, bignum_cdiv, 2);
+    shiro_def_native(runtime, bignum_fdiv, 2);
+    shiro_def_native(runtime, bignum_tdiv, 2);
+    shiro_def_native(runtime, bignum_cmod, 2);
+    shiro_def_native(runtime, bignum_fmod, 2);
+    shiro_def_native(runtime, bignum_tmod, 2);
+    shiro_def_native(runtime, bignum_pow, 2);
+    shiro_def_native(runtime, bignum_root, 2);
+    shiro_def_native(runtime, bignum_sqrt, 1);
 
     //
     // Conversão de bignums
     //
-    p = shiro_new_native(1, (shiro_c_function)&shiro_bignum_to_string);
-    shiro_set_global(runtime, ID("bignum_to_string"), s_fFunction, (union __field_value)p);
+    shiro_def_native(runtime, bignum_to_string, 1);
 }
