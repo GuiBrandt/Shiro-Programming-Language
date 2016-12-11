@@ -1,0 +1,16 @@
+.PHONY: all
+all:
+	$(MAKE) -C sdk
+	$(MAKE) -C exe
+	$(MAKE) -C cmp
+	$(MAKE) -C stdio
+	$(MAKE) -C stdgui
+	$(MAKE) -C bignum
+	
+clean:
+	$(MAKE) -C sdk clean
+	$(MAKE) -C exe clean
+	$(MAKE) -C cmp clean
+	$(MAKE) -C stdio clean
+	$(MAKE) -C stdgui clean
+	$(MAKE) -C bignum clean
