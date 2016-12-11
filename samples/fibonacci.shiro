@@ -28,7 +28,7 @@ fn fibonacci(n)
 	
 	free_bignum(a);
 	
-	b;
+	return b;
 };
 
 // import "stdio";
