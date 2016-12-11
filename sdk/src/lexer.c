@@ -215,7 +215,14 @@ shiro_statement* offset_statement(
     const shiro_statement* statement,
     const shiro_uint off
 ) {
+    shiro_uint i = 0;
     shiro_statement* stmt = new_statement(statement->used - off);
+
+    if (off == 0) {
+        for (; i < statement->used; i++)
+            push_token(stmt, statement->tokens[i]);
+        return stmt;
+    }
 
     shiro_uint line = 0, sline = 1;
     shiro_token* tk = get_token(statement, off - 1, &line, sline);
@@ -223,7 +230,6 @@ shiro_statement* offset_statement(
     if (tk == NULL)
         return stmt;
 
-    shiro_uint i = 0;
     while (statement->tokens[i] != tk)
         i++;
     i++;

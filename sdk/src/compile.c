@@ -1020,27 +1020,93 @@ shiro_binary* __compile_statement(
 
                 return binary;
             }
+
+            //
+            //  return <expr>
+            //
+            else if (strcmp(token->value, KW_RETURN) == 0) {
+                next_token();
+
+                if (token == NULL || token_is(MARK_EOS)) {
+                    shiro_free_binary(binary);
+                    shiro_error(
+                        *line,
+                        ERR_SYNTAX_ERROR,
+                        "Unexpected <END>, expecting value"
+                    );
+                    return NULL;
+                }
+
+                shiro_statement* offset = offset_statement(statement, token_index);
+                shiro_binary* b_expr;
+
+                shiro_protect2(
+                    b_expr = __compile_statement(offset, line);
+                ,
+                    shiro_free_binary(binary);
+                );
+
+                free_statement(offset);
+
+                if (!binary_returns_value(b_expr)) {
+                    shiro_free_binary(binary);
+                    shiro_free_binary(b_expr);
+                    shiro_error(
+                        *line,
+                        ERR_SYNTAX_ERROR,
+                        "Invalid return statement: returned expression doesn't yield any value"
+                    );
+                    return NULL;
+                }
+
+                binary = concat_and_free_binary(binary, b_expr);
+
+                shiro_node* ret = new_node(RETURN, 0);
+                push_node(binary, ret);
+                free_node(ret);
+
+                return binary;
+            }
         }
         case s_tkName:
         {
             shiro_string name = token->value;
 
-            token = get_token(statement, 1, line, sline);
+            next_token();
 
-            if (token == NULL) {
+            // Se a sentença acabou, dá um PUSH_BY_NAME
+            if (token == NULL || token_is(MARK_EOS)) {
                 shiro_node* node = new_node(PUSH_BY_NAME, 1, shiro_new_uint(ID(name)));
                 push_node(binary, node);
                 free_node(node);
-            } else if (get_token_type(token) == s_tkBinaryOperator) {
-                shiro_statement* val_stmt = offset_statement(statement, 2);
-                shiro_protect(
-                    shiro_binary* b_val = __compile_statement(val_stmt, line);
+
+                return binary;
+            }
+
+            // Se tiver um operador, compila a operação
+            else if (get_token_type(token) == s_tkBinaryOperator) {
+                shiro_statement* val_stmt = offset_statement(statement, token_index + 1);
+                shiro_binary* b_val;
+
+                shiro_protect2(
+                    b_val = __compile_statement(val_stmt, line);
+                ,
+                    shiro_free_binary(binary);
                 );
                 free_statement(val_stmt);
 
-                if (strcmp(token->value, OP_SET) == 0) {
+                // Se for um '=', faz um SET_VAR
+                if (token_is(OP_SET)) {
+
                     if (!binary_returns_value(b_val)) {
-                        shiro_error(*line, ERR_SYNTAX_ERROR, "Invalid variable value: statement doesn't have any value");
+                        shiro_free_binary(b_val);
+                        shiro_free_binary(binary);
+
+                        shiro_error(
+                            *line,
+                            ERR_SYNTAX_ERROR,
+                            "Invalid variable value: statement doesn't yield any value"
+                        );
                         return NULL;
                     }
 
@@ -1049,11 +1115,16 @@ shiro_binary* __compile_statement(
                     shiro_node* set = new_node(SET_VAR, 1, shiro_new_uint(ID(name)));
                     push_node(binary, set);
                     free_node(set);
-                } else if (*(token->value + 1) == *OP_SET && (
+                }
+
+                // Se for um operador binário seguido de um '=', faz a operação
+                // junto com um SET_VAR
+                else if (*(token->value + 1) == *OP_SET && (
                     *token->value == *OP_ADD || *token->value == *OP_SUB ||
                     *token->value == *OP_MUL || *token->value == *OP_DIV ||
                     *token->value == *OP_MOD || *token->value == *OP_AND ||
                     *token->value == *OP_OR  || *token->value == *OP_XOR)) {
+
                     shiro_string op = calloc(2, sizeof(shiro_character));
                     *op = *token->value;
 
@@ -1061,29 +1132,42 @@ shiro_binary* __compile_statement(
                     push_node(binary, node);
                     free_node(node);
 
-                    shiro_protect(
+                    shiro_protect2(
                         binary = __compile_operator(binary, op, b_val, line);
+                    ,
+                        shiro_free_binary(b_val);
+                        shiro_free_binary(binary);
+                        free(op);
                     );
                     free(op);
 
                     shiro_node* set = new_node(SET_VAR, 1, shiro_new_uint(ID(name)));
                     push_node(binary, set);
                     free_node(set);
-                } else {
+                }
+
+                // Se for só um operador normal, faz só a operação normal
+                else {
                     shiro_string op = token->value;
 
                     shiro_node* node = new_node(PUSH_BY_NAME, 1, shiro_new_uint(ID(name)));
                     push_node(binary, node);
                     free_node(node);
 
-                    shiro_protect(
+                    shiro_protect2(
                         binary = __compile_operator(binary, op, b_val, line);
+                    ,
+                        shiro_free_binary(b_val);
+                        shiro_free_binary(binary);
                     );
                 }
 
                 return binary;
+            }
 
-            } else if (strcmp(token->value, MARK_PROP) == 0) {
+            // Se tiver um '.' lê uma propriedade do objeto
+            // Não implementado
+            else if (token_is(MARK_PROP)) {
                 /*token = get_token(statement, 2, line);
 
                 if (get_token_type(token) == s_tkName) {
@@ -1104,29 +1188,100 @@ shiro_binary* __compile_statement(
                 }*/
                 shiro_error(*line, "NotSupportedYet", "Properties are not supported yet");
                 return NULL;
-            } else if (strcmp(token->value, MARK_OEXPR) == 0) {
-                shiro_protect(
-                    shiro_statement* expression = __expression(statement, 1, sline);
+            }
+
+            // Se tiver uma expressão com parêntesis, dá um FN_CALL
+            else if (token_is(MARK_OEXPR)) {
+                shiro_statement* expression;
+                shiro_protect2(
+                     expression = __expression(statement, token_index, sline);
+                ,
+                    shiro_free_binary(binary);
                 );
                 {
                     shiro_uint n_args = 0;
                     shiro_statement* arg = new_statement(1);
-                    shiro_token* tk = expression->tokens[0];
 
                     shiro_binary* bin = new_binary();
 
-                    int i;
-                    for (i = 0; i < expression->used; i++) {
-                        tk = expression->tokens[i];
-                        if (strcmp(tk->value, MARK_LIST) == 0) {
-                            shiro_protect(
+                    int i, l = 0;
+                    for (
+                        i = 0, token = get_token(expression, i, line, sline);
+                        i <= expression->used;
+                        token = get_token(expression, ++i, line, sline)
+                    ) {
+                        if (token == NULL) {
+                            free_statement(arg);
+
+                            arg = offset_statement(expression, l);
+
+                            shiro_protect2(
                                 shiro_binary* b_arg = __compile_statement(arg, line);
+                            ,
+                                shiro_free_binary(bin);
+                                shiro_free_binary(binary);
+                                free_statement(arg);
+                            );
+                            free_statement(arg);
+
+                            if (!binary_returns_value(b_arg)) {
+
+                                if (n_args == 0) {
+                                    shiro_free_binary(b_arg);
+                                    break;
+                                }
+
+                                shiro_free_binary(bin);
+                                shiro_free_binary(binary);
+                                free_statement(arg);
+
+                                shiro_error(
+                                    *line,
+                                    ERR_SYNTAX_ERROR,
+                                    "Invalid last argument for function '%s':"
+                                    " argument doesn't yield any value",
+                                    name
+                                );
+                                return NULL;
+                            }
+
+                            n_args++;
+                            bin = concat_and_free_binary(b_arg, bin);
+
+                            break;
+                        } else if (token_is(MARK_LIST)) {
+                            shiro_token* tk;
+                            int j;
+                            for (
+                                j = l,
+                                tk = expression->tokens[j];
+                                tk != token && j < expression->used;
+                                tk = expression->tokens[++j]
+                            )
+                                push_token(arg, tk);
+
+                            l = i + 1;
+
+                            shiro_protect2(
+                                shiro_binary* b_arg = __compile_statement(arg, line);
+                            ,
+                                shiro_free_binary(bin);
+                                shiro_free_binary(binary);
+                                free_statement(arg);
                             );
 
                             if (!binary_returns_value(b_arg)) {
-                                shiro_error(*line, ERR_SYNTAX_ERROR,
-                                        "Invalid argument for function '%s':"
-                                        " argument doesn't have any value", name);
+                                shiro_free_binary(bin);
+                                shiro_free_binary(binary);
+                                free_statement(arg);
+
+                                shiro_error(
+                                    *line,
+                                    ERR_SYNTAX_ERROR,
+                                    "Invalid argument %d for function '%s':"
+                                    " argument doesn't yield any value",
+                                    n_args + 1, name
+                                );
                                 return NULL;
                             }
 
@@ -1134,32 +1289,8 @@ shiro_binary* __compile_statement(
                             arg = new_statement(1);
                             n_args++;
                             bin = concat_and_free_binary(b_arg, bin);
-                        } else {
-                            if (strcmp(tk->value, MARK_EOL) == 0)
-                                (*line)++;
-                            push_token(arg, tk);
                         }
                     }
-                    shiro_protect(
-                        shiro_binary* b_arg = __compile_statement(arg, line);
-                    );
-                    free_statement(arg);
-
-                    if (b_arg->used > 0) {
-                        if (!binary_returns_value(b_arg)) {
-                            shiro_error(*line, ERR_SYNTAX_ERROR,
-                                    "Invalid argument for function '%s':"
-                                    " argument doesn't return any value", name);
-                            return NULL;
-                        }
-                        concat_and_free_binary(binary, b_arg);
-                        n_args++;
-                    } else if (n_args > 0) {
-                        shiro_error(*line, ERR_SYNTAX_ERROR,
-                                "Unexpected <END>, expecting <VALUE>");
-                        return NULL;
-                    } else
-                        shiro_free_binary(b_arg);
 
                     binary = concat_and_free_binary(binary, bin);
 
@@ -1168,10 +1299,11 @@ shiro_binary* __compile_statement(
                     free_node(fcall);
                 }
                 free_statement(expression);
+                next_token();
 
-                token = get_token(statement, 2, line, sline);
-
-                if (token != NULL && strcmp(token->value, MARK_PROP) == 0) {
+                // Se tiver um '.' lê uma propriedade do objeto
+                // Não implementado
+                if (token_is(MARK_PROP)) {
                     /*token = get_token(statement, 2, line);
 
                     if (get_token_type(token) == s_tkName) {
@@ -1192,32 +1324,49 @@ shiro_binary* __compile_statement(
                         return NULL;
                     }*/
                     shiro_error(*line, "NotSupportedYet", "Properties are not supported yet");
-                } else if (get_token_type(token) == s_tkBinaryOperator) {
-                    shiro_statement* rest = offset_statement(statement, 3);
+                }
 
-                    shiro_protect(
-                        shiro_binary* b_val = __compile_statement(rest, line);
+                // Se tiver um operador, compila a operação
+                else if (get_token_type(token) == s_tkBinaryOperator) {
+                    shiro_statement* rest = offset_statement(statement, token_index + 1);
+
+                    shiro_binary*  b_val;
+                    shiro_protect2(
+                        b_val = __compile_statement(rest, line);
+                    ,
+                        free_statement(rest);
+                        shiro_free_binary(binary);
                     );
                     free_statement(rest);
                     shiro_string op = token->value;
 
-                    /*shiro_node* fcall = new_node(FN_CALL, 2, shiro_new_uint(ID(name)), shiro_new_uint(n_args));
-                    push_node(binary, fcall);
-                    free_node(fcall);*/
-
-                    shiro_protect(
-                        binary = __compile_operator(binary, op, b_val, line);
+                    shiro_protect2(
+                        __compile_operator(binary, op, b_val, line);
+                    ,
+                        shiro_free_binary(binary);
                     );
+
                     return binary;
                 } else if (token != NULL && strcmp(token->value, MARK_EOS) != 0) {
+                    shiro_free_binary(binary);
                     shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
                     return NULL;
                 }
-            } else {
+
+                else if (token != NULL && !token_is(MARK_EOS)) {
+                    shiro_free_binary(binary);
+                    shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
+                    return NULL;
+                }
+
+                return binary;
+            }
+
+            else {
+                shiro_free_binary(binary);
                 shiro_error(*line, ERR_SYNTAX_ERROR, "Unexpected '%s', expecting <END>", token->value);
                 return NULL;
             }
-            break;
         }
         case s_tkMark:
         {
@@ -1291,7 +1440,7 @@ shiro_binary* __compile_statement(
                     char* end;
                     shiro_long l = strtoll(value, &end, 10);
 
-                    if (l < 0x7FFFFFFF && l > -0x80000000)
+                    if (l < 2147483647L && l > -2147483647L)
                         s_value = shiro_new_int((shiro_int)l);
                     else
                         s_value = shiro_new_long(l);

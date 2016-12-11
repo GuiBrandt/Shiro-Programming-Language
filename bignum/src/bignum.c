@@ -320,8 +320,10 @@ shiro_native(bignum_to_string) {
     mpz_t* bigint = (mpz_t*)get_uint(arg0);
 
     shiro_string str = mpz_get_str(NULL, 10, *bigint);
+    shiro_value* r = shiro_new_string(str);
+    free(str);
 
-    return shiro_new_string(str);
+    return r;
 }
 //-----------------------------------------------------------------------------
 // Inicializa a biblioteca
