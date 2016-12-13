@@ -128,4 +128,10 @@ SHIRO_API shiro_float     shiro_to_float        (shiro_value*);
 
 SHIRO_API void            shiro_load_stdlib     (shiro_runtime*);
 
+#define __native_fn_name(name) __shiro_imported_ ## name
+
+#define shiro_native(name) shiro_value* __native_fn_name(name) (shiro_runtime* runtime, shiro_uint n_args)
+#define shiro_def_native(runtime, name, n_args) shiro_set_global(runtime, ID(#name), s_fFunction, (union __field_value)shiro_new_native(n_args, (shiro_c_function)&__native_fn_name(name)));
+#define shiro_call_native(runtime, name, n_args) __native_fn_name(name)(runtime, n_args)
+
 #endif // VM_H_INCLUDED

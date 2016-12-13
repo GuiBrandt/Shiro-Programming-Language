@@ -26,12 +26,12 @@ typedef enum bytecodes {
     COND            = 0x04,
     JUMP            = 0x05,
     FN_CALL         = 0x06,
+    END_LOOP        = 0x07,
+    BREAK           = 0x08,
 
     VAR             = 0x01,
     FN              = 0x02,
     CLASS           = 0x04,
-
-    ALLOC           = 0x10,
 
     SET             = 0x20,
     SET_VAR         = SET | VAR,
@@ -41,8 +41,6 @@ typedef enum bytecodes {
     PUSH            = 0x30,
     PUSH_BY_NAME    = 0x31,
     DROP            = 0x32,
-
-    FREE            = 0x50,
 
     COMPARE         = 0x40,
     GT              = 0x01,
@@ -54,7 +52,25 @@ typedef enum bytecodes {
     COMPARE_LT_EQ   = COMPARE | LT | EQ,
     COMPARE_GT_EQ   = COMPARE | GT | EQ,
 
-    DIE             = 0xED,
+    FREE            = 0x50,
+
+    OPERATE         = 0x60,
+    ADD             = OPERATE + 1,
+    SUB             = OPERATE + 2,
+    MUL             = OPERATE + 3,
+    DIV             = OPERATE + 4,
+    MOD             = OPERATE + 5,
+
+    B_AND           = OPERATE + 6,
+    B_OR            = OPERATE + 7,
+    B_XOR           = OPERATE + 8,
+
+    OPERATE_U       = 0x70,
+    NOT             = OPERATE_U + 1,
+
+    RETURN          = 0x80,
+
+    DIE             = 0xED
 } shiro_bytecode;
 
 typedef struct __node {

@@ -37,7 +37,7 @@ typedef void (*shiro_load_library_proc)(shiro_runtime*);
 //-----------------------------------------------------------------------------
 // Função usada para importação de bibliotecas
 //-----------------------------------------------------------------------------
-shiro_value* shiro_import(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(import) {
     shiro_string name = get_string(shiro_get_value(runtime, 0));
     shiro_load_library_proc proc;
 
@@ -73,7 +73,7 @@ shiro_value* shiro_import(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Função usada para importação de arquivos compilados do shiro
 //-----------------------------------------------------------------------------
-shiro_value* shiro_require(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(require) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_string fname = calloc(512, sizeof(shiro_character));
     sprintf(fname, get_string(arg0));
@@ -100,7 +100,7 @@ shiro_value* shiro_require(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Função usada para importação de arquivos .shiro
 //-----------------------------------------------------------------------------
-shiro_value* shiro_include(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(include) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     shiro_string fname = calloc(512, sizeof(shiro_character));
     sprintf(fname, get_string(arg0));
@@ -134,47 +134,67 @@ shiro_value* shiro_include(shiro_runtime* runtime, shiro_uint n_args) {
 //-----------------------------------------------------------------------------
 // Chamada do sistema pelo shiro
 //-----------------------------------------------------------------------------
-shiro_value* shiro_sys(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(system) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_field* val  = shiro_get_field(arg0, ID_VALUE);
+    system(shiro_to_string(arg0));
 
-    if (val->type == s_fString)
-        system(val->value.str);
+    return shiro_nil;
+}
+//-----------------------------------------------------------------------------
+// Executa uma string como código shiro
+//-----------------------------------------------------------------------------
+shiro_native(eval) {
+  shiro_value* arg0 = shiro_get_value(runtime, 0);
 
+  shiro_string code = shiro_to_string(arg0);
+
+  shiro_uint n = runtime->used_stack;
+
+  shiro_binary* binary = shiro_compile(code);
+  free(code);
+
+  shiro_execute(runtime, binary);
+  shiro_free_binary(binary);
+
+  if (runtime->used_stack > n) {
+    shiro_value* ret = shiro_get_last_value(runtime);
+    shiro_drop_value(runtime);
+    return ret;
+  } else
     return shiro_nil;
 }
 //-----------------------------------------------------------------------------
 // Converte um valor em string
 //-----------------------------------------------------------------------------
-shiro_value* shiro_cast_string(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(string) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     return shiro_new_string(shiro_to_string(arg0));
 }
 //-----------------------------------------------------------------------------
 // Converte um valor em inteiro
 //-----------------------------------------------------------------------------
-shiro_value* shiro_cast_int(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(int) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     return shiro_new_int(shiro_to_int(arg0));
 }
 //-----------------------------------------------------------------------------
 // Converte um valor em long
 //-----------------------------------------------------------------------------
-shiro_value* shiro_cast_long(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(long) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     return shiro_new_long(shiro_to_long(arg0));
 }
 //-----------------------------------------------------------------------------
 // Converte um valor em inteiro positivo
 //-----------------------------------------------------------------------------
-shiro_value* shiro_cast_uint(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(uint) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     return shiro_new_uint(shiro_to_uint(arg0));
 }
 //-----------------------------------------------------------------------------
 // Converte um valor em ponto flutuante
 //-----------------------------------------------------------------------------
-shiro_value* shiro_cast_float(shiro_runtime* runtime, shiro_uint n_args) {
+shiro_native(float) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
     return shiro_new_float(shiro_to_float(arg0));
 }
@@ -183,34 +203,16 @@ shiro_value* shiro_cast_float(shiro_runtime* runtime, shiro_uint n_args) {
 //      runtime : shiro_runtime que será usado para executar código shiro
 //-----------------------------------------------------------------------------
 SHIRO_API void shiro_load_stdlib(shiro_runtime* runtime) {
-    shiro_function* p;
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_sys);
-    shiro_set_global(runtime, ID("sys"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_string);
-    shiro_set_global(runtime, ID("string"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_int);
-    shiro_set_global(runtime, ID("int"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_long);
-    shiro_set_global(runtime, ID("long"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_uint);
-    shiro_set_global(runtime, ID("uint"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_cast_float);
-    shiro_set_global(runtime, ID("float"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_import);
-    shiro_set_global(runtime, ID("import"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_include);
-    shiro_set_global(runtime, ID("include"), s_fFunction, (union __field_value)p);
-
-    p = shiro_new_native(1, (shiro_c_function)&shiro_require);
-    shiro_set_global(runtime, ID("require"), s_fFunction, (union __field_value)p);
+    shiro_def_native(runtime, system, 1);
+    shiro_def_native(runtime, string, 1);
+    shiro_def_native(runtime, int, 1);
+    shiro_def_native(runtime, long, 1);
+    shiro_def_native(runtime, uint, 1);
+    shiro_def_native(runtime, float, 1);
+    shiro_def_native(runtime, import, 1);
+    shiro_def_native(runtime, include, 1);
+    shiro_def_native(runtime, require, 1);
+    shiro_def_native(runtime, eval, 1);
 }
 //-----------------------------------------------------------------------------
 // Configura a variável de ambiente PATH para que o sistema de arquivos

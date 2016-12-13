@@ -1,7 +1,7 @@
 //=============================================================================
 // src\vm.c
 //-----------------------------------------------------------------------------
-// Define as funções usadas para controle do runtime do shiro
+// Define as funï¿½ï¿½es usadas para controle do runtime do shiro
 //=============================================================================
 #include "vm.h"
 
@@ -43,8 +43,8 @@ shiro_field* shiro_clone_field(shiro_field* f) {
     return field;
 }
 //-----------------------------------------------------------------------------
-// Libera um campo shiro_field da memória
-//      f   : Ponteiro para o campo que será liberado
+// Libera um campo shiro_field da memï¿½ria
+//      f   : Ponteiro para o campo que serï¿½ liberado
 //-----------------------------------------------------------------------------
 void shiro_free_field(shiro_field* f) {
     if (f == NULL)
@@ -109,7 +109,7 @@ SHIRO_API shiro_value* shiro_clone_value(const shiro_value* v) {
     return val;
 }
 //-----------------------------------------------------------------------------
-// Obtém um shiro_id a partir de um nome
+// Obtï¿½m um shiro_id a partir de um nome
 //      name    : Nome para o qual obter o ID
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_id shiro_parse_id_from_name(const shiro_string name) {
@@ -167,10 +167,10 @@ SHIRO_API shiro_value* shiro_set_field(
     return v;
 }
 //-----------------------------------------------------------------------------
-// Obtém um campo de um valor a partir do seu ID
+// Obtï¿½m um campo de um valor a partir do seu ID
 //      v   : Valor do qual obter o campo
 //      id  : Identificador do campo
-//      pos : Ponteiro para um shiro_uint que recebe a posição do campo no
+//      pos : Ponteiro para um shiro_uint que recebe a posiï¿½ï¿½o do campo no
 //            vetor de campos do shiro_value
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_field* shiro_get_field(
@@ -264,7 +264,7 @@ SHIRO_API shiro_value* shiro_new_float(const shiro_float f) {
 }
 //-----------------------------------------------------------------------------
 // Inicializa um shiro_value com o tipo Function a partir de uma estrutura de
-// função do shiro
+// funï¿½ï¿½o do shiro
 //      fn  : Estrutura shiro_function usada para criar o shiro_value do tipo
 //            Function
 //-----------------------------------------------------------------------------
@@ -279,8 +279,8 @@ SHIRO_API shiro_value* shiro_new_function(shiro_function* fn) {
     return val;
 }
 //-----------------------------------------------------------------------------
-// Libera a memória usada por um shiro_value
-//      v   : shiro_value que será liberado da memória
+// Libera a memï¿½ria usada por um shiro_value
+//      v   : shiro_value que serï¿½ liberado da memï¿½ria
 //-----------------------------------------------------------------------------
 SHIRO_API void shiro_free_value(shiro_value* v) {
     if (v == shiro_nil)
@@ -295,9 +295,9 @@ SHIRO_API void shiro_free_value(shiro_value* v) {
     free(v);
 }
 //-----------------------------------------------------------------------------
-// Cria uma função do shiro escrita em C
-//      n_args  : Número de argumentos para a função
-//      fp      : Ponteiro para a função
+// Cria uma funï¿½ï¿½o do shiro escrita em C
+//      n_args  : Nï¿½mero de argumentos para a funï¿½ï¿½o
+//      fp      : Ponteiro para a funï¿½ï¿½o
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_function* shiro_new_native(
     shiro_uint n_args,
@@ -312,9 +312,9 @@ SHIRO_API shiro_function* shiro_new_native(
     return f;
 }
 //-----------------------------------------------------------------------------
-// Cria uma função do shiro escrita em shiro
-//      n_args  : Número de argumentos para a função
-//      bin     : Binário compilado do shiro
+// Cria uma funï¿½ï¿½o do shiro escrita em shiro
+//      n_args  : Nï¿½mero de argumentos para a funï¿½ï¿½o
+//      bin     : Binï¿½rio compilado do shiro
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_function* shiro_new_fn(shiro_uint n_args, shiro_binary* bin) {
     shiro_function* f = malloc(sizeof(shiro_function));
@@ -326,8 +326,8 @@ SHIRO_API shiro_function* shiro_new_fn(shiro_uint n_args, shiro_binary* bin) {
     return f;
 }
 //-----------------------------------------------------------------------------
-// Clona uma função do shiro
-//      f   : shiro_function que será clonada
+// Clona uma funï¿½ï¿½o do shiro
+//      f   : shiro_function que serï¿½ clonada
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_function* shiro_use_function(shiro_function* f) {
     if (f == NULL)
@@ -337,8 +337,8 @@ SHIRO_API shiro_function* shiro_use_function(shiro_function* f) {
     return f;
 }
 //-----------------------------------------------------------------------------
-// Libera a memória usada por uma shiro_function
-//      f   : shiro_function que será liberada da memória
+// Libera a memï¿½ria usada por uma shiro_function
+//      f   : shiro_function que serï¿½ liberada da memï¿½ria
 //-----------------------------------------------------------------------------
 SHIRO_API void shiro_free_function(shiro_function* f) {
 
@@ -381,8 +381,8 @@ SHIRO_API void shiro_terminate(shiro_runtime* runtime) {
 }
 //-----------------------------------------------------------------------------
 // Adiciona um valor ao topo da pilha
-//      runtime : Runtime onde o valor será adicionado
-//      value   : Valor que será adicionado
+//      runtime : Runtime onde o valor serï¿½ adicionado
+//      value   : Valor que serï¿½ adicionado
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_runtime* shiro_push_value(
     shiro_runtime* runtime,
@@ -405,7 +405,7 @@ SHIRO_API shiro_runtime* shiro_push_value(
 }
 //-----------------------------------------------------------------------------
 // Remove o primeiro valor da pilha
-//      runtime : Runtime de onde o valor será removido
+//      runtime : Runtime de onde o valor serï¿½ removido
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_runtime* shiro_drop_value(shiro_runtime* runtime) {
     if (runtime->used_stack > 0) {
@@ -415,8 +415,8 @@ SHIRO_API shiro_runtime* shiro_drop_value(shiro_runtime* runtime) {
     return runtime;
 }
 //-----------------------------------------------------------------------------
-// Obtém o primeiro valor na pilha
-//      runtime : Runtime onde o valor está
+// Obtï¿½m o primeiro valor na pilha
+//      runtime : Runtime onde o valor estï¿½
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_value* shiro_get_last_value(shiro_runtime* runtime) {
     if (runtime->used_stack == 0)
@@ -425,8 +425,8 @@ SHIRO_API shiro_value* shiro_get_last_value(shiro_runtime* runtime) {
         return runtime->stack[runtime->used_stack - 1];
 }
 //-----------------------------------------------------------------------------
-// Obtém o primeiro valor na pilha
-//      runtime : Runtime onde o valor está
+// Obtï¿½m o primeiro valor na pilha
+//      runtime : Runtime onde o valor estï¿½
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_value* shiro_get_value(shiro_runtime* runtime, shiro_uint n) {
     if (runtime->used_stack <= n)
@@ -436,7 +436,7 @@ SHIRO_API shiro_value* shiro_get_value(shiro_runtime* runtime, shiro_uint n) {
 }
 //-----------------------------------------------------------------------------
 // Define um valor global em um runtime
-//      runtime : Runtime onde o global será definido
+//      runtime : Runtime onde o global serï¿½ definido
 //      field   : Valor a ser definido
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_runtime* shiro_def_global(
@@ -447,7 +447,7 @@ SHIRO_API shiro_runtime* shiro_def_global(
 }
 //-----------------------------------------------------------------------------
 // Define um valor global em um runtime
-//      runtime : Runtime onde o global será definido
+//      runtime : Runtime onde o global serï¿½ definido
 //      id      : shiro_id do global
 //      g_type  : Tipo do global
 //      g_val   : Valor do global
@@ -462,15 +462,15 @@ SHIRO_API shiro_runtime* shiro_set_global(
     return runtime;
 };
 //-----------------------------------------------------------------------------
-// Obtém um valor global de um runtime
-//      runtime : Runtime de onde o global será obtido
+// Obtï¿½m um valor global de um runtime
+//      runtime : Runtime de onde o global serï¿½ obtido
 //      id      : Identificador do global
 //-----------------------------------------------------------------------------
 SHIRO_API shiro_field* shiro_get_global(shiro_runtime* runtime, shiro_id id) {
     return shiro_get_field(runtime->self, id);
 }
 //-----------------------------------------------------------------------------
-// Determina se um valor é verdadeiro ou falso
+// Determina se um valor ï¿½ verdadeiro ou falso
 //      val     : Valor a ser convertido
 //-----------------------------------------------------------------------------
 SHIRO_API bool shiro_to_bool(shiro_value* value) {

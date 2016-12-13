@@ -53,7 +53,6 @@ pre_release:
 
 release:
 		$(CC) $(CFLAGS_RELEASE) -o $(OUT_RELEASE) -shared $(INC) src/bignum.c $(LIBDIR_RELEASE) $(LIBS)
-
 #------------------------------------------------------------------------------
 # Regras para limpeza dos arquivos compilados
 #------------------------------------------------------------------------------
