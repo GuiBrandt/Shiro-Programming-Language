@@ -42,6 +42,9 @@ shiro_native(import) {
     shiro_load_library_proc proc;
 
     #if defined(__WIN32__)
+        name = realloc(name, (strlen(name) + 2) * sizeof(shiro_character));
+        strcat(name, ".");
+
         HMODULE library = LoadLibrary(name);
         if (library == NULL) {
             shiro_error(0, "ImportError", "Could not load library '%s'", name);

@@ -332,7 +332,7 @@ shiro_native(translate) {
 
     return shiro_nil;
 }
-//-----------------------------------------------------------------------------]
+//-----------------------------------------------------------------------------
 // Obtém a posição X do mouse na janela
 //-----------------------------------------------------------------------------
 shiro_native(mouse_x) {
@@ -351,6 +351,24 @@ shiro_native(mouse_y) {
     return shiro_new_int(ypos);
 }
 //-----------------------------------------------------------------------------
+// Obtém a largura da janela
+//-----------------------------------------------------------------------------
+shiro_native(width) {
+  int width, height;
+  glfwGetWindowSize(shiro_window, &width, &height);
+
+  return shiro_new_uint(width);
+}
+//-----------------------------------------------------------------------------
+// Obtém a altura da janela
+//-----------------------------------------------------------------------------
+shiro_native(height) {
+  int width, height;
+  glfwGetWindowSize(shiro_window, &width, &height);
+
+  return shiro_new_uint(height);
+}
+//-----------------------------------------------------------------------------
 // Inicializa a biblioteca
 //-----------------------------------------------------------------------------
 shiro_main(shiro_runtime* runtime) {
@@ -365,6 +383,10 @@ shiro_main(shiro_runtime* runtime) {
     shiro_def_native(runtime, create_window, 3);
     shiro_def_native(runtime, resize_window, 2);
     shiro_def_native(runtime, fullscreen,    0);
+    shiro_def_native(runtime, mouse_x, 0);
+    shiro_def_native(runtime, mouse_y, 0);
+    shiro_def_native(runtime, width, 0);
+    shiro_def_native(runtime, height, 0);
 
     //
     // Funções de desenho
@@ -384,10 +406,4 @@ shiro_main(shiro_runtime* runtime) {
     shiro_def_native(runtime, pop_matrix, 0);
     shiro_def_native(runtime, rotate, 1);
     shiro_def_native(runtime, translate, 2);
-
-    //
-    // Posição do mouse
-    //
-    shiro_def_native(runtime, mouse_x, 0);
-    shiro_def_native(runtime, mouse_y, 0);
 }

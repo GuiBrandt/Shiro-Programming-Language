@@ -22,14 +22,14 @@ CFLAGS = -Wall -DGLEW_STATIC
 LIBDIR_DEBUG	= $(LIBDIR)/Debug $(LIB_GLFW) $(LIB_GLEW)
 CFLAGS_DEBUG 	= $(CFLAGS) -Wunreachable-code -g -D__DEBUG__
 OUTDIR_DEBUG 	= ../bin/Debug
-OUT_DEBUG 		= $(OUTDIR_DEBUG)/lib/stdgui.dll
+OUT_DEBUG 		= $(OUTDIR_DEBUG)/lib/stdgui.
 OBJDIR_DEBUG 	= obj/Debug
 
 # Variáveis para a compilação do arquivo definitivo
 LIBDIR_RELEASE	= $(LIBDIR)/Release $(LIB_GLFW) $(LIB_GLEW)
 CFLAGS_RELEASE 	= $(CFLAGS) -O3
 OUTDIR_RELEASE 	= ../bin/Release
-OUT_RELEASE 		= $(OUTDIR_RELEASE)/lib/stdgui.dll
+OUT_RELEASE 		= $(OUTDIR_RELEASE)/lib/stdgui.
 OBJDIR_RELEASE	= obj/Release
 
 #==============================================================================
