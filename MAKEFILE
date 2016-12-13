@@ -1,4 +1,5 @@
 .PHONY: all
+
 all:
 	$(MAKE) -C sdk
 	$(MAKE) -C exe
@@ -6,7 +7,25 @@ all:
 	$(MAKE) -C stdio
 	$(MAKE) -C stdgui
 	$(MAKE) -C bignum
-	
+
+sdk:
+	$(MAKE) -C sdk
+
+exe: sdk
+	$(MAKE) -C exe
+
+cmp: sdk
+	$(MAKE) -C cmp
+
+stdio: sdk
+	$(MAKE) -C stdio
+
+stdgui: sdk
+	$(MAKE) -C stdgui
+
+bignum: sdk
+	$(MAKE) -C bignum
+
 clean:
 	$(MAKE) -C sdk clean
 	$(MAKE) -C exe clean
