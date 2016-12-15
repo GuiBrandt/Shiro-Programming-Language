@@ -2,30 +2,32 @@
 # MAKEFILE para o shiro.exe e shirow.exe
 #==============================================================================
 # Executáveis usados
-CC = gcc.exe
-LD = ld.exe
+CC = gcc
+LD = gcc
+
+BASEDIR = ../..
 
 # Diretório com os .h usados
-INC = -I../sdk/include
-LIB = -L../bin
+INC = -I$(BASEDIR)/include
+LIB = -L$(BASEDIR)/bin
 
 # Flag para o compilador
 CFLAGS = -Wall
 
 # Variáveis para a compilação do arquivo de Debug
-LIB_DEBUG			= $(LIB)/Debug
+LIB_DEBUG		= $(LIB)/Win32/Debug
 CFLAGS_DEBUG 	= $(CFLAGS) -Wunreachable-code -g -D__DEBUG__
-OUTDIR_DEBUG 	= ../bin/Debug
-OUT_DEBUG 		= $(OUTDIR_DEBUG)/shiro.exe
-OUTW_DEBUG 		= $(OUTDIR_DEBUG)/shirow.exe
+OUTDIR_DEBUG 	= $(BASEDIR)/bin/Win32/Debug
+OUT_DEBUG 		= $(OUTDIR_DEBUG)/shiro
+OUTW_DEBUG 		= $(OUTDIR_DEBUG)/shirow
 OBJDIR_DEBUG 	= obj/Debug
 
 # Variáveis para a compilação do arquivo definitivo
-LIB_RELEASE			= $(LIB)/Release
+LIB_RELEASE		= $(LIB)/Win32/Release
 CFLAGS_RELEASE 	= $(CFLAGS) -O2
-OUTDIR_RELEASE 	= ../bin/Release
-OUT_RELEASE 		= $(OUTDIR_RELEASE)/shiro.exe
-OUTW_RELEASE 		= $(OUTDIR_RELEASE)/shirow.exe
+OUTDIR_RELEASE 	= $(BASEDIR)/bin/Win32/Release
+OUT_RELEASE 	= $(OUTDIR_RELEASE)/shiro
+OUTW_RELEASE	= $(OUTDIR_DEBUG)/shirow
 OBJDIR_RELEASE	= obj/Release
 
 #==============================================================================
@@ -39,20 +41,22 @@ all: pre_debug debug pre_release release
 #------------------------------------------------------------------------------
 pre_debug:
 	test -d $(OBJDIR_DEBUG) || mkdir "$(OBJDIR_DEBUG)"
+	test -d $(OUTDIR_DEBUG) || mkdir "$(OUTDIR_DEBUG)"
 
 debug:
-	$(CC) $(CFLAGS_DEBUG)  -o $(OUT_DEBUG) $(INC) src/shiro.c $(LIB_DEBUG) -lshiro
-	$(CC) $(CFLAGS_DEBUG) -mwindows -o $(OUTW_DEBUG) $(INC) src/shiro.c $(LIB_DEBUG) -lshiro
+	$(CC) $(CFLAGS_DEBUG) $(INC) $(LIB_DEBUG) -o $(OUT_DEBUG) shiro.c -lshiro
+	$(CC) $(CFLAGS_DEBUG) $(INC) $(LIB_DEBUG) -o $(OUTW_DEBUG) shiro.c -lshiro -mconsole -mwindows
 
 #------------------------------------------------------------------------------
 # Regra para os arquivos de objeto do Release
 #------------------------------------------------------------------------------
 pre_release:
 	test -d $(OBJDIR_RELEASE) || mkdir "$(OBJDIR_RELEASE)"
+	test -d $(OUTDIR_RELEASE) || mkdir "$(OUTDIR_RELEASE)"
 
 release:
-	$(CC) $(CFLAGS_RELEASE) -o $(OUT_RELEASE) $(INC) src/shiro.c $(LIB_RELEASE) -lshiro
-	$(CC) $(CFLAGS_RELEASE) -mwindows -o $(OUTW_RELEASE) $(INC) src/shiro.c $(LIB_RELEASE) -lshiro
+	$(CC) $(CFLAGS_RELEASE) $(INC) $(LIB_RELEASE) -o $(OUT_RELEASE) shiro.c -lshiro
+	$(CC) $(CFLAGS_RELEASE) $(INC) $(LIB_RELEASE) -o $(OUTW_RELEASE) shiro.c -lshiro -mwindows
 
 #------------------------------------------------------------------------------
 # Regras para limpeza dos arquivos compilados
@@ -66,4 +70,4 @@ clean_release:
 	rm -f $(OUT_RELEASE)
 
 clean: clean_debug clean_release
-		rm -rf obj
+	rm -rf obj

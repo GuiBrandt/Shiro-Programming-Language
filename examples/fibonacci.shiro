@@ -10,24 +10,24 @@ import "bignum";	// Biblioteca padrão para números de precisão arbitrária
 //
 //		n	: Índice do número que será retornado na sequência de fibonacci
 //-----------------------------------------------------------------------------
-fn fibonacci(n) 
+fn fibonacci(n)
 {
 	a = bignum(1);
 	b = bignum(1);
-	
+
 	i = uint(0);
-	
-	while (i < n) 
+
+	while (i < n)
 	{
 		lb = b;
 		b = bignum_add(a, b);
 		a = lb;
-		
+
 		i += 1;
 	};
-	
+
 	free_bignum(a);
-	
+
 	return b;
 };
 

@@ -1,35 +1,21 @@
 .PHONY: all
 
 all:
-	$(MAKE) -C sdk
-	$(MAKE) -C exe
-	$(MAKE) -C cmp
-	$(MAKE) -C stdio
-	$(MAKE) -C stdgui
-	$(MAKE) -C bignum
+	$(MAKE) -C src/shiro				-f MAKEFILE
+	$(MAKE) -C src/shiro/libs/stdio		-f MAKEFILE
+	$(MAKE) -C src/shiro/libs/stdgui	-f MAKEFILE
+	$(MAKE) -C src/shiro/libs/math		-f MAKEFILE
+	$(MAKE) -C src/shiro/libs/bignum	-f MAKEFILE
 
-sdk:
-	$(MAKE) -C sdk
+	$(MAKE) -C src/interpreter	-f MAKEFILE
+	$(MAKE) -C src/compiler		-f MAKEFILE
 
-exe: sdk
-	$(MAKE) -C exe
+clean debug release:
+	$(MAKE) -C src/shiro				-f MAKEFILE $@
+	$(MAKE) -C src/shiro/libs/stdio		-f MAKEFILE $@
+	$(MAKE) -C src/shiro/libs/stdgui	-f MAKEFILE $@
+	$(MAKE) -C src/shiro/libs/math		-f MAKEFILE $@
+	$(MAKE) -C src/shiro/libs/bignum	-f MAKEFILE $@
 
-cmp: sdk
-	$(MAKE) -C cmp
-
-stdio: sdk
-	$(MAKE) -C stdio
-
-stdgui: sdk
-	$(MAKE) -C stdgui
-
-bignum: sdk
-	$(MAKE) -C bignum
-
-clean:
-	$(MAKE) -C sdk clean
-	$(MAKE) -C exe clean
-	$(MAKE) -C cmp clean
-	$(MAKE) -C stdio clean
-	$(MAKE) -C stdgui clean
-	$(MAKE) -C bignum clean
+	$(MAKE) -C src/interpreter	-f MAKEFILE $@
+	$(MAKE) -C src/compiler		-f MAKEFILE $@

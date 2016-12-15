@@ -1,35 +1,39 @@
 #==============================================================================
-# MAKEFILE para o lib/stdgui.dll
+# MAKEFILE para o lib/stdgui
 #==============================================================================
 # Executáveis usados
-CC = gcc.exe
-LD = ld.exe
+CC = gcc
+LD = gcc
+
+BASEDIR = ../../../..
+
+LIBNAME = stdgui
 
 # Diretório com os .h usados
-INC = -I../sdk/include -Iinclude -Iglfw-3.2.1/include -Iglew-2.0.0/include
+INC = -I$(BASEDIR)/include -Iinclude -Iglew-2.0.0/include -Iglfw-3.2.1/include
 
-# Diretórios dos .a/.lib usados
+# Diret�rios dos .a/.lib usados
 LIB_GLFW = -Lglfw-3.2.1/lib-mingw
 LIB_GLEW = -Lglew-2.0.0/lib/Release/Win32
-LIBDIR = -L../bin
+LIBDIR = -L$(BASEDIR)/bin
 
 LIBS = -lshiro -lglfw3 -lglew32s -lopengl32 -lgdi32 -luser32 -lwinmm
 
 # Flag para o compilador
 CFLAGS = -Wall -DGLEW_STATIC
 
-# Variáveis para a compilação do arquivo de Debug
-LIBDIR_DEBUG	= $(LIBDIR)/Debug $(LIB_GLFW) $(LIB_GLEW)
+# Vari�veis para a compila��o do arquivo de Debug
+LIBDIR_DEBUG	= $(LIBDIR)/Win32/Debug $(LIB_GLFW) $(LIB_GLEW)
 CFLAGS_DEBUG 	= $(CFLAGS) -Wunreachable-code -g -D__DEBUG__
-OUTDIR_DEBUG 	= ../bin/Debug
-OUT_DEBUG 		= $(OUTDIR_DEBUG)/lib/stdgui.
+OUTDIR_DEBUG 	= $(BASEDIR)/bin/Win32/Debug
+OUT_DEBUG 		= $(OUTDIR_DEBUG)/lib/$(LIBNAME).
 OBJDIR_DEBUG 	= obj/Debug
 
-# Variáveis para a compilação do arquivo definitivo
-LIBDIR_RELEASE	= $(LIBDIR)/Release $(LIB_GLFW) $(LIB_GLEW)
+# Vari�veis para a compila��o do arquivo definitivo
+LIBDIR_RELEASE	= $(LIBDIR)/Win32/Release $(LIB_GLFW) $(LIB_GLEW)
 CFLAGS_RELEASE 	= $(CFLAGS) -O3
-OUTDIR_RELEASE 	= ../bin/Release
-OUT_RELEASE 		= $(OUTDIR_RELEASE)/lib/stdgui.
+OUTDIR_RELEASE 	= $(BASEDIR)/bin/Win32/Release
+OUT_RELEASE 	= $(OUTDIR_RELEASE)/lib/$(LIBNAME).
 OBJDIR_RELEASE	= obj/Release
 
 #==============================================================================
@@ -43,25 +47,28 @@ all: pre_debug debug pre_release release
 #------------------------------------------------------------------------------
 pre_debug:
 	test -d $(OBJDIR_DEBUG) || mkdir "$(OBJDIR_DEBUG)"
+	test -d $(OUTDIR_DEBUG) || mkdir "$(OUTDIR_DEBUG)"
 
-$(OBJDIR_DEBUG)/stdgui.o: src/stdgui.c
+$(OBJDIR_DEBUG)/stdgui.o: stdgui.c
 	$(CC) $(CFLAGS_DEBUG) -o $@ $(INC) -c $<
 
-$(OBJDIR_DEBUG)/advgui.o: src/advgui.c
+$(OBJDIR_DEBUG)/advgui.o: advgui.c
 	$(CC) $(CFLAGS_DEBUG) -o $@ $(INC) -c $<
 
 debug: $(OBJDIR_DEBUG)/stdgui.o $(OBJDIR_DEBUG)/advgui.o
 	$(CC) $(CFLAGS_DEBUG) -o $(OUT_DEBUG) -shared $^ $(LIBDIR_DEBUG) $(LIBS)
+
 #------------------------------------------------------------------------------
 # Regra para os arquivos de objeto do Release
 #------------------------------------------------------------------------------
 pre_release:
 	test -d $(OBJDIR_RELEASE) || mkdir "$(OBJDIR_RELEASE)"
+	test -d $(OUTDIR_RELEASE) || mkdir "$(OUTDIR_RELEASE)"
 
-$(OBJDIR_RELEASE)/stdgui.o: src/stdgui.c
+$(OBJDIR_RELEASE)/stdgui.o: stdgui.c
 		$(CC) $(CFLAGS_RELEASE) -o $@ $(INC) -c $<
 
-$(OBJDIR_RELEASE)/advgui.o: src/advgui.c
+$(OBJDIR_RELEASE)/advgui.o: advgui.c
 		$(CC) $(CFLAGS_RELEASE) -o $@ $(INC) -c $<
 
 release: $(OBJDIR_RELEASE)/advgui.o $(OBJDIR_RELEASE)/stdgui.o

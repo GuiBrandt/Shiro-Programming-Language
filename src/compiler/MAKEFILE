@@ -1,0 +1,69 @@
+#==============================================================================
+# MAKEFILE para o shiroc.exe
+#==============================================================================
+# Executáveis usados
+CC = gcc
+LD = gcc
+
+BASEDIR = ../..
+
+# Diretório com os .h usados
+INC = -I$(BASEDIR)/include
+LIB = -L$(BASEDIR)/bin
+
+# Flag para o compilador
+CFLAGS = -Wall
+
+# Variáveis para a compilação do arquivo de Debug
+LIB_DEBUG		= $(LIB)/Win32/Debug
+CFLAGS_DEBUG 	= $(CFLAGS) -Wunreachable-code -g -D__DEBUG__
+OUTDIR_DEBUG 	= $(BASEDIR)/bin/Win32/Debug
+OUT_DEBUG 		= $(OUTDIR_DEBUG)/shiroc
+OBJDIR_DEBUG 	= obj/Debug
+
+# Variáveis para a compilação do arquivo definitivo
+LIB_RELEASE		= $(LIB)/Win32/Release
+CFLAGS_RELEASE 	= $(CFLAGS) -O2
+OUTDIR_RELEASE 	= $(BASEDIR)/bin/Win32/Release
+OUT_RELEASE 	= $(OUTDIR_RELEASE)/shiroc
+OBJDIR_RELEASE	= obj/Release
+
+#==============================================================================
+# Regras de compilação
+#==============================================================================
+all: pre_debug debug pre_release release
+.PHONY: all
+
+#------------------------------------------------------------------------------
+# Regra para os arquivos de objeto do Debug
+#------------------------------------------------------------------------------
+pre_debug:
+	test -d $(OBJDIR_DEBUG) || mkdir "$(OBJDIR_DEBUG)"
+	test -d $(OUTDIR_DEBUG) || mkdir "$(OUTDIR_DEBUG)"
+
+debug:
+	$(CC) $(CFLAGS_DEBUG) -o $(OUT_DEBUG) $(INC) shiroc.c $(LIB_DEBUG) -lshiro
+
+#------------------------------------------------------------------------------
+# Regra para os arquivos de objeto do Release
+#------------------------------------------------------------------------------
+pre_release:
+	test -d $(OBJDIR_RELEASE) || mkdir "$(OBJDIR_RELEASE)"
+	test -d $(OUTDIR_RELEASE) || mkdir "$(OUTDIR_RELEASE)"
+
+release:
+	$(CC) $(CFLAGS_RELEASE) -o $(OUT_RELEASE) $(INC) shiroc.c $(LIB_RELEASE) -lshiro
+
+#------------------------------------------------------------------------------
+# Regras para limpeza dos arquivos compilados
+#------------------------------------------------------------------------------
+clean_debug:
+	rm -rf $(OBJDIR_DEBUG)
+	rm -f $(OUT_DEBUG)
+
+clean_release:
+	rm -rf $(OBJDIR_DEBUG)
+	rm -f $(OUT_RELEASE)
+
+clean: clean_debug clean_release
+		rm -rf obj

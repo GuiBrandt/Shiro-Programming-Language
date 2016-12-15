@@ -34,7 +34,7 @@ SHIRO_API void shiro_error(
     char* err = malloc(1024);
 
     if (line != 0)
-        sprintf(err, "%s on line %d: %s", errcode, line, message);
+        sprintf(err, "%s on line %lu: %s", errcode, line, message);
     else
         sprintf(err, "%s: %s", errcode, message);
 

@@ -1,0 +1,5 @@
+.PHONY: all
+all:
+	$(MAKE) -C shiro 		-f MAKEFILE
+	$(MAKE) -C compiler 	-f MAKEFILE
+	$(MAKE) -C interpreter	-f MAKEFILE

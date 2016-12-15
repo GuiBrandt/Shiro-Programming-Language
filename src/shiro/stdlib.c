@@ -1,7 +1,7 @@
 //=============================================================================
 // src\stdlib.c
 //-----------------------------------------------------------------------------
-// Implementação das funções da biblioteca padrão do shiro
+// Implementaï¿½ï¿½o das funï¿½ï¿½es da biblioteca padrï¿½o do shiro
 //=============================================================================
 #include <vm.h>
 #include <eval.h>
@@ -9,6 +9,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+
+#include <string.h>
 
 #ifdef __WIN32__
 #include <windows.h>
@@ -35,7 +37,7 @@ __declspec(dllexport) BOOL APIENTRY DllMain(
 typedef void (*shiro_load_library_proc)(shiro_runtime*);
 
 //-----------------------------------------------------------------------------
-// Função usada para importação de bibliotecas
+// Funï¿½ï¿½o usada para importaï¿½ï¿½o de bibliotecas
 //-----------------------------------------------------------------------------
 shiro_native(import) {
     shiro_string name = get_string(shiro_get_value(runtime, 0));
@@ -74,7 +76,7 @@ shiro_native(import) {
     return shiro_nil;
 }
 //-----------------------------------------------------------------------------
-// Função usada para importação de arquivos compilados do shiro
+// Funï¿½ï¿½o usada para importaï¿½ï¿½o de arquivos compilados do shiro
 //-----------------------------------------------------------------------------
 shiro_native(require) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
@@ -101,7 +103,7 @@ shiro_native(require) {
     return shiro_nil;
 }
 //-----------------------------------------------------------------------------
-// Função usada para importação de arquivos .shiro
+// Funï¿½ï¿½o usada para importaï¿½ï¿½o de arquivos .shiro
 //-----------------------------------------------------------------------------
 shiro_native(include) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
@@ -144,7 +146,7 @@ shiro_native(system) {
     return shiro_nil;
 }
 //-----------------------------------------------------------------------------
-// Executa uma string como código shiro
+// Executa uma string como cï¿½digo shiro
 //-----------------------------------------------------------------------------
 shiro_native(eval) {
   shiro_value* arg0 = shiro_get_value(runtime, 0);
@@ -202,8 +204,8 @@ shiro_native(float) {
     return shiro_new_float(shiro_to_float(arg0));
 }
 //-----------------------------------------------------------------------------
-// Carrega as funções da biblioteca padrão do shiro para o runtime
-//      runtime : shiro_runtime que será usado para executar código shiro
+// Carrega as funï¿½ï¿½es da biblioteca padrï¿½o do shiro para o runtime
+//      runtime : shiro_runtime que serï¿½ usado para executar cï¿½digo shiro
 //-----------------------------------------------------------------------------
 SHIRO_API void shiro_load_stdlib(shiro_runtime* runtime) {
     shiro_def_native(runtime, system, 1);
@@ -218,10 +220,10 @@ SHIRO_API void shiro_load_stdlib(shiro_runtime* runtime) {
     shiro_def_native(runtime, eval, 1);
 }
 //-----------------------------------------------------------------------------
-// Configura a variável de ambiente PATH para que o sistema de arquivos
+// Configura a variï¿½vel de ambiente PATH para que o sistema de arquivos
 // funcione corretamente
-//      argv    : Variável argv recebida na main
-//      fname   : Nome do arquivo que será executado
+//      argv    : Variï¿½vel argv recebida na main
+//      fname   : Nome do arquivo que serï¿½ executado
 //-----------------------------------------------------------------------------
 SHIRO_API void shiro_set_path(const shiro_string* argv, const shiro_string fname) {
     if (argv == NULL || fname == NULL)
@@ -237,9 +239,9 @@ SHIRO_API void shiro_set_path(const shiro_string* argv, const shiro_string fname
             *(e + 1) = 0;
 
         char* curr_path = getenv("PATH");
-        char* new_path = calloc(strlen(curr_path) + strlen(full_path) * 2 + 13, sizeof(char));
-        sprintf(new_path, "PATH=%s;%s;%s/lib/", curr_path, full_path, full_path);
-        setenv(new_path);
+        char* new_path = calloc(strlen(curr_path) + strlen(full_path) * 2 + 8, sizeof(char));
+        sprintf(new_path, "%s;%s;%s/lib/", curr_path, full_path, full_path);
+        setenv("PATH", new_path, 1);
 
         free(full_path);
         free(new_path);

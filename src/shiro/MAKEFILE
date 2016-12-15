@@ -1,31 +1,41 @@
 #==============================================================================
-# MAKEFILE para o shiroc.exe
+# MAKEFILE para o shiro.dll
 #==============================================================================
 # Executáveis usados
-CC = gcc.exe
-LD = ld.exe
+CC = gcc
+LD = gcc
 
 # Diretório com os .h usados
-INC = -I../sdk/include
-LIB = -L../bin
+INC = -Iinclude
 
 # Flag para o compilador
-CFLAGS = -Wall
+CFLAGS = -Wall -DSHIRO_EXPORTS
 
 # Variáveis para a compilação do arquivo de Debug
-LIB_DEBUG			= $(LIB)/Debug
 CFLAGS_DEBUG 	= $(CFLAGS) -Wunreachable-code -g -D__DEBUG__
-OUTDIR_DEBUG 	= ../bin/Debug
-OUT_DEBUG 		= $(OUTDIR_DEBUG)/shiroc.exe
+OUTDIR_DEBUG 	= ../../bin/Win32/Debug
+OUT_DEBUG 		= $(OUTDIR_DEBUG)/shiro.dll
+OUTLIB_DEBUG 	= $(OUTDIR_DEBUG)/libshiro.a
 OBJDIR_DEBUG 	= obj/Debug
+OBJS_DEBUG 		= 	$(OBJDIR_DEBUG)/lexer.o \
+					$(OBJDIR_DEBUG)/binary.o \
+					$(OBJDIR_DEBUG)/compile.o \
+					$(OBJDIR_DEBUG)/vm.o \
+					$(OBJDIR_DEBUG)/eval.o \
+					$(OBJDIR_DEBUG)/stdlib.o
 
 # Variáveis para a compilação do arquivo definitivo
-LIB_RELEASE			= $(LIB)/Release
-CFLAGS_RELEASE 	= $(CFLAGS) -O2
-OUTDIR_RELEASE 	= ../bin/Release
-OUT_RELEASE 		= $(OUTDIR_RELEASE)/shiroc.exe
-OBJDIR_RELEASE	= obj/Release
-
+CFLAGS_RELEASE 	= $(CFLAGS) -fexpensive-optimizations -O2
+OUTDIR_RELEASE 	= ../../bin/Win32/Release
+OUT_RELEASE    	= $(OUTDIR_RELEASE)/shiro.dll
+OUTLIB_RELEASE 	= $(OUTDIR_RELEASE)/libshiro.a
+OBJDIR_RELEASE 	= obj/Release
+OBJS_RELEASE 	= $(OBJDIR_RELEASE)/lexer.o \
+				$(OBJDIR_RELEASE)/binary.o \
+				$(OBJDIR_RELEASE)/compile.o \
+				$(OBJDIR_RELEASE)/vm.o \
+				$(OBJDIR_RELEASE)/eval.o \
+				$(OBJDIR_RELEASE)/stdlib.o
 #==============================================================================
 # Regras de compilação
 #==============================================================================
@@ -35,20 +45,28 @@ all: pre_debug debug pre_release release
 #------------------------------------------------------------------------------
 # Regra para os arquivos de objeto do Debug
 #------------------------------------------------------------------------------
+$(OBJDIR_DEBUG)/%.o: %.c
+	$(CC) -c $(INC) -o $@ $< $(CFLAGS_DEBUG)
+
 pre_debug:
 	test -d $(OBJDIR_DEBUG) || mkdir "$(OBJDIR_DEBUG)"
+	test -d $(OUTDIR_DEBUG) || mkdir "$(OUTDIR_DEBUG)"
 
-debug:
-	$(CC) -o $(OUT_DEBUG) $(INC) src/compile.c $(LIB_DEBUG) -lshiro
+debug: $(OBJS_DEBUG)
+	$(LD) -shared $^ -o $(OUT_DEBUG) -Wl,--out-implib,$(OUTLIB_DEBUG) $(CFLAGS_DEBUG)
 
 #------------------------------------------------------------------------------
 # Regra para os arquivos de objeto do Release
 #------------------------------------------------------------------------------
+$(OBJDIR_RELEASE)/%.o: %.c
+	$(CC) -c $(INC) -o $@ $< $(CFLAGS_RELEASE)
+
 pre_release:
 	test -d $(OBJDIR_RELEASE) || mkdir "$(OBJDIR_RELEASE)"
+	test -d $(OUTDIR_RELEASE) || mkdir "$(OUTDIR_RELEASE)"
 
-release:
-	$(CC) -o $(OUT_RELEASE) $(INC) src/compile.c $(LIB_RELEASE) -lshiro
+release: $(OBJS_RELEASE)
+	$(CC) -shared $^ -o $(OUT_RELEASE) -Wl,--out-implib,$(OUTLIB_RELEASE) $(CFLAGS_RELEASE)
 
 #------------------------------------------------------------------------------
 # Regras para limpeza dos arquivos compilados
