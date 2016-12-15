@@ -26,6 +26,19 @@ __declspec(dllexport) BOOL APIENTRY DllMain(
 
 #define PI 3.141592653589793
 #define E  2.718281828459045
+
+#define RAD2DEG(n) n * 180 / PI
+//-----------------------------------------------------------------------------
+// Define a seed usada pela função random
+//-----------------------------------------------------------------------------
+shiro_native(rseed) {
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
+
+    shiro_uint n = shiro_to_uint(arg0);
+    srand(n);
+
+    return shiro_nil;
+}
 //-----------------------------------------------------------------------------
 // Gera um número aleatório de 0 a RANDOM_MAX
 //-----------------------------------------------------------------------------
@@ -120,7 +133,7 @@ shiro_native(sin) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
 
     shiro_float n = shiro_to_float(arg0);
-    return shiro_new_float(sin(n * 180 / PI));
+    return shiro_new_float(sin(RAD2DEG(n)));
 }
 //-----------------------------------------------------------------------------
 // Retorna o cosseno de um ângulo
@@ -129,7 +142,7 @@ shiro_native(cos) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
 
     shiro_float n = shiro_to_float(arg0);
-    return shiro_new_float(cos(n * 180 / PI));
+    return shiro_new_float(cos(RAD2DEG(n)));
 }
 //-----------------------------------------------------------------------------
 // Retorna a tangente de um ângulo
@@ -138,7 +151,7 @@ shiro_native(tan) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
 
     shiro_float n = shiro_to_float(arg0);
-    return shiro_new_float(tan(n * 180 / PI));
+    return shiro_new_float(tan(RAD2DEG(n)));
 }
 //-----------------------------------------------------------------------------
 // Retorna o arc-seno de um ângulo
@@ -147,7 +160,7 @@ shiro_native(asin) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
 
     shiro_float n = shiro_to_float(arg0);
-    return shiro_new_float(asin(n * 180 / PI));
+    return shiro_new_float(asin(RAD2DEG(n)));
 }
 //-----------------------------------------------------------------------------
 // Retorna o arc-cosseno de um ângulo
@@ -156,7 +169,7 @@ shiro_native(acos) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
 
     shiro_float n = shiro_to_float(arg0);
-    return shiro_new_float(acos(n * 180 / PI));
+    return shiro_new_float(acos(RAD2DEG(n)));
 }
 //-----------------------------------------------------------------------------
 // Retorna a arc-tangente de um ângulo
@@ -165,46 +178,107 @@ shiro_native(atan) {
     shiro_value* arg0 = shiro_get_value(runtime, 0);
 
     shiro_float n = shiro_to_float(arg0);
-    return shiro_new_float(atan(n * 180 / PI));
+    return shiro_new_float(atan(RAD2DEG(n)));
 }
-
+//-----------------------------------------------------------------------------
+// Retorna o seno hiperbólico de um ângulo
+//-----------------------------------------------------------------------------
 shiro_native(sinh) {
-    return shiro_nil;
-}
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
 
+    shiro_float n = shiro_to_float(arg0);
+    return shiro_new_float(sinh(RAD2DEG(n)));
+}
+//-----------------------------------------------------------------------------
+// Retorna o cosseno hiperbólico de um ângulo
+//-----------------------------------------------------------------------------
 shiro_native(cosh) {
-    return shiro_nil;
-}
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
 
+    shiro_float n = shiro_to_float(arg0);
+    return shiro_new_float(cosh(RAD2DEG(n)));
+}
+//-----------------------------------------------------------------------------
+// Retorna a tangente hiperbólica de um ângulo
+//-----------------------------------------------------------------------------
 shiro_native(tanh) {
-    return shiro_nil;
-}
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
 
+    shiro_float n = shiro_to_float(arg0);
+    return shiro_new_float(tanh(RAD2DEG(n)));
+}
+//-----------------------------------------------------------------------------
+// Retorna E ^ n, sendo n o parâmetro da função
+//-----------------------------------------------------------------------------
 shiro_native(exp) {
-    return shiro_nil;
-}
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
 
+    shiro_float n = shiro_to_float(arg0);
+    return shiro_new_float(exp(n));
+}
+//-----------------------------------------------------------------------------
+// Retorna a ^ b, sendo a e b os parâmetros da função
+//-----------------------------------------------------------------------------
 shiro_native(pow) {
-    return shiro_nil;
-}
+    shiro_value *arg0 = shiro_get_value(runtime, 0),
+                *arg1 = shiro_get_value(runtime, 1);
 
+    shiro_float a = shiro_to_float(arg0),
+                b = shiro_to_float(arg1);
+    return shiro_new_float(pow(a, b));
+}
+//-----------------------------------------------------------------------------
+// Retorna a raíz quadrada de um número
+//-----------------------------------------------------------------------------
 shiro_native(sqrt) {
-    return shiro_nil;
-}
+    shiro_value* arg0 = shiro_get_value(runtime, 0);
 
+    shiro_float n = shiro_to_float(arg0);
+    return shiro_new_float(sqrt(n));
+}
+//-----------------------------------------------------------------------------
+// Retorna o log de b na base a
+//-----------------------------------------------------------------------------
 shiro_native(log) {
-    return shiro_nil;
+    shiro_value *arg0 = shiro_get_value(runtime, 0),
+                *arg1 = shiro_get_value(runtime, 1);
+
+    shiro_float a = shiro_to_float(arg0),
+                b = shiro_to_float(arg1);
+    return shiro_new_float(log(b) / log(a));
 }
 //-----------------------------------------------------------------------------
 // Inicializa a biblioteca
 //-----------------------------------------------------------------------------
 shiro_main(shiro_runtime* runtime) {
-
     shiro_set_global(runtime, ID("PI"), s_fFloat, (union __field_value)PI);
     shiro_set_global(runtime, ID("E"),  s_fFloat, (union __field_value)E);
 
     srand((unsigned)time(NULL));
 
+    shiro_def_native(runtime, rseed, 1);
     shiro_def_native(runtime, random, 0);
+    shiro_def_native(runtime, abs, 1);
+    shiro_def_native(runtime, min, 2);
+    shiro_def_native(runtime, max, 2);
+    shiro_def_native(runtime, map, 5);
 
+    shiro_def_native(runtime, ceil, 1);
+    shiro_def_native(runtime, round, 1);
+    shiro_def_native(runtime, floor, 1);
+
+    shiro_def_native(runtime, sin, 1);
+    shiro_def_native(runtime, cos, 1);
+    shiro_def_native(runtime, tan, 1);
+    shiro_def_native(runtime, asin, 1);
+    shiro_def_native(runtime, acos, 1);
+    shiro_def_native(runtime, atan, 1);
+    shiro_def_native(runtime, sinh, 1);
+    shiro_def_native(runtime, cosh, 1);
+    shiro_def_native(runtime, tanh, 1);
+
+    shiro_def_native(runtime, exp, 1);
+    shiro_def_native(runtime, sqrt, 1);
+    shiro_def_native(runtime, pow, 2);
+    shiro_def_native(runtime, log, 2);
 }

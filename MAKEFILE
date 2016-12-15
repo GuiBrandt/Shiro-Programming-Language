@@ -1,14 +1,15 @@
 .PHONY: all
 
-all:
-	$(MAKE) -C src/shiro				-f MAKEFILE
-	$(MAKE) -C src/shiro/libs/stdio		-f MAKEFILE
-	$(MAKE) -C src/shiro/libs/stdgui	-f MAKEFILE
-	$(MAKE) -C src/shiro/libs/math		-f MAKEFILE
-	$(MAKE) -C src/shiro/libs/bignum	-f MAKEFILE
+all: shiro-lib stdio stdgui math bignum interpreter compiler
 
-	$(MAKE) -C src/interpreter	-f MAKEFILE
-	$(MAKE) -C src/compiler		-f MAKEFILE
+shiro-lib:
+	$(MAKE) -C src/shiro -f MAKEFILE
+
+stdio stdgui math bignum:
+	$(MAKE) -C src/shiro/libs/$@ -f MAKEFILE
+
+interpreter compiler:
+	$(MAKE) -C src/$@	-f MAKEFILE
 
 clean debug release:
 	$(MAKE) -C src/shiro				-f MAKEFILE $@
