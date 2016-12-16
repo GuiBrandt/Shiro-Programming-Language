@@ -12,7 +12,7 @@ LIBNAME = stdgui
 # DiretÃ³rio com os .h usados
 INC = -I$(BASEDIR)/include -Iinclude -Iglew-2.0.0/include -Iglfw-3.2.1/include
 
-# Diretórios dos .a/.lib usados
+# Diretï¿½rios dos .a/.lib usados
 LIB_GLFW = -Lglfw-3.2.1/lib-mingw
 LIB_GLEW = -Lglew-2.0.0/lib/Release/Win32
 LIBDIR = -L$(BASEDIR)/bin
@@ -22,18 +22,18 @@ LIBS = -lshiro -lglfw3 -lglew32s -lopengl32 -lgdi32 -luser32 -lwinmm
 # Flag para o compilador
 CFLAGS = -Wall -DGLEW_STATIC
 
-# Variáveis para a compilação do arquivo de Debug
+# Variï¿½veis para a compilaï¿½ï¿½o do arquivo de Debug
 LIBDIR_DEBUG	= $(LIBDIR)/Win32/Debug $(LIB_GLFW) $(LIB_GLEW)
 CFLAGS_DEBUG 	= $(CFLAGS) -Wunreachable-code -g -D__DEBUG__
-OUTDIR_DEBUG 	= $(BASEDIR)/bin/Win32/Debug
-OUT_DEBUG 		= $(OUTDIR_DEBUG)/lib/$(LIBNAME).
+OUTDIR_DEBUG 	= $(BASEDIR)/bin/Win32/Debug/lib
+OUT_DEBUG 		= $(OUTDIR_DEBUG)/$(LIBNAME).
 OBJDIR_DEBUG 	= obj/Debug
 
-# Variáveis para a compilação do arquivo definitivo
+# Variï¿½veis para a compilaï¿½ï¿½o do arquivo definitivo
 LIBDIR_RELEASE	= $(LIBDIR)/Win32/Release $(LIB_GLFW) $(LIB_GLEW)
 CFLAGS_RELEASE 	= $(CFLAGS) -O3
-OUTDIR_RELEASE 	= $(BASEDIR)/bin/Win32/Release
-OUT_RELEASE 	= $(OUTDIR_RELEASE)/lib/$(LIBNAME).
+OUTDIR_RELEASE 	= $(BASEDIR)/bin/Win32/Release/lib
+OUT_RELEASE 	= $(OUTDIR_RELEASE)/$(LIBNAME).
 OBJDIR_RELEASE	= obj/Release
 
 #==============================================================================
@@ -46,8 +46,8 @@ all: pre_debug debug pre_release release
 # Regra para os arquivos de objeto do Debug
 #------------------------------------------------------------------------------
 pre_debug:
-	test -d $(OBJDIR_DEBUG) || mkdir "$(OBJDIR_DEBUG)"
-	test -d $(OUTDIR_DEBUG) || mkdir "$(OUTDIR_DEBUG)"
+	test -d $(OBJDIR_DEBUG) || md "$(OBJDIR_DEBUG)"
+	test -d $(OUTDIR_DEBUG) || md "$(OUTDIR_DEBUG)"
 
 $(OBJDIR_DEBUG)/stdgui.o: stdgui.c
 	$(CC) $(CFLAGS_DEBUG) -o $@ $(INC) -c $<
@@ -62,8 +62,8 @@ debug: $(OBJDIR_DEBUG)/stdgui.o $(OBJDIR_DEBUG)/advgui.o
 # Regra para os arquivos de objeto do Release
 #------------------------------------------------------------------------------
 pre_release:
-	test -d $(OBJDIR_RELEASE) || mkdir "$(OBJDIR_RELEASE)"
-	test -d $(OUTDIR_RELEASE) || mkdir "$(OUTDIR_RELEASE)"
+	test -d $(OBJDIR_RELEASE) || md "$(OBJDIR_RELEASE)"
+	test -d $(OUTDIR_RELEASE) || md "$(OUTDIR_RELEASE)"
 
 $(OBJDIR_RELEASE)/stdgui.o: stdgui.c
 		$(CC) $(CFLAGS_RELEASE) -o $@ $(INC) -c $<

@@ -332,7 +332,21 @@ shiro_native(translate) {
 
     return shiro_nil;
 }
-//-----------------------------------------------------------------------------]
+//-----------------------------------------------------------------------------
+// Dá zoom na tela
+//-----------------------------------------------------------------------------
+shiro_native(scale) {
+    shiro_value *arg0 = shiro_get_value(runtime, 0),
+                *arg1 = shiro_get_value(runtime, 1);
+
+    shiro_float x = shiro_to_float(arg0),
+                y = shiro_to_float(arg1);
+
+    glScalef(x, y, 1.0f);
+
+    return shiro_nil;
+}
+//-----------------------------------------------------------------------------
 // Obtém a posição X do mouse na janela
 //-----------------------------------------------------------------------------
 shiro_native(mouse_x) {
@@ -384,6 +398,7 @@ shiro_main(shiro_runtime* runtime) {
     shiro_def_native(runtime, pop_matrix, 0);
     shiro_def_native(runtime, rotate, 1);
     shiro_def_native(runtime, translate, 2);
+    shiro_def_native(runtime, scale, 2);
 
     //
     // Posição do mouse

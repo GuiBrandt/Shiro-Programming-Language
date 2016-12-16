@@ -49,8 +49,8 @@ $(OBJDIR_DEBUG)/%.o: %.c
 	$(CC) -c $(INC) -o $@ $< $(CFLAGS_DEBUG)
 
 pre_debug:
-	test -d $(OBJDIR_DEBUG) || mkdir "$(OBJDIR_DEBUG)"
-	test -d $(OUTDIR_DEBUG) || mkdir "$(OUTDIR_DEBUG)"
+	test -d $(OBJDIR_DEBUG) || md "$(OBJDIR_DEBUG)"
+	test -d $(OUTDIR_DEBUG) || md "$(OUTDIR_DEBUG)"
 
 debug: $(OBJS_DEBUG)
 	$(LD) -shared $^ -o $(OUT_DEBUG) -Wl,--out-implib,$(OUTLIB_DEBUG) $(CFLAGS_DEBUG)
@@ -62,8 +62,8 @@ $(OBJDIR_RELEASE)/%.o: %.c
 	$(CC) -c $(INC) -o $@ $< $(CFLAGS_RELEASE)
 
 pre_release:
-	test -d $(OBJDIR_RELEASE) || mkdir "$(OBJDIR_RELEASE)"
-	test -d $(OUTDIR_RELEASE) || mkdir "$(OUTDIR_RELEASE)"
+	test -d $(OBJDIR_RELEASE) || md "$(OBJDIR_RELEASE)"
+	test -d $(OUTDIR_RELEASE) || md "$(OUTDIR_RELEASE)"
 
 release: $(OBJS_RELEASE)
 	$(CC) -shared $^ -o $(OUT_RELEASE) -Wl,--out-implib,$(OUTLIB_RELEASE) $(CFLAGS_RELEASE)

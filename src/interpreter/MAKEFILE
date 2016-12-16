@@ -40,8 +40,8 @@ all: pre_debug debug pre_release release
 # Regra para os arquivos de objeto do Debug
 #------------------------------------------------------------------------------
 pre_debug:
-	test -d $(OBJDIR_DEBUG) || mkdir "$(OBJDIR_DEBUG)"
-	test -d $(OUTDIR_DEBUG) || mkdir "$(OUTDIR_DEBUG)"
+	test -d $(OBJDIR_DEBUG) || md "$(OBJDIR_DEBUG)"
+	test -d $(OUTDIR_DEBUG) || md "$(OUTDIR_DEBUG)"
 
 debug:
 	$(CC) $(CFLAGS_DEBUG) $(INC) $(LIB_DEBUG) -o $(OUT_DEBUG) shiro.c -lshiro
@@ -51,8 +51,8 @@ debug:
 # Regra para os arquivos de objeto do Release
 #------------------------------------------------------------------------------
 pre_release:
-	test -d $(OBJDIR_RELEASE) || mkdir "$(OBJDIR_RELEASE)"
-	test -d $(OUTDIR_RELEASE) || mkdir "$(OUTDIR_RELEASE)"
+	test -d $(OBJDIR_RELEASE) || md "$(OBJDIR_RELEASE)"
+	test -d $(OUTDIR_RELEASE) || md "$(OUTDIR_RELEASE)"
 
 release:
 	$(CC) $(CFLAGS_RELEASE) $(INC) $(LIB_RELEASE) -o $(OUT_RELEASE) shiro.c -lshiro

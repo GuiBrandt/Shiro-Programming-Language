@@ -21,15 +21,15 @@ CFLAGS = -Wall
 # Variáveis para a compilação do arquivo de Debug
 LIB_DEBUG		= $(LIB)/Win32/Debug $(LIB_GMP)
 CFLAGS_DEBUG 	= $(CFLAGS) -Wunreachable-code -g -D__DEBUG__
-OUTDIR_DEBUG 	= $(BASEDIR)/bin/Win32/Debug
-OUT_DEBUG 		= $(OUTDIR_DEBUG)/lib/$(LIBNAME).
+OUTDIR_DEBUG 	= $(BASEDIR)/bin/Win32/Debug/lib
+OUT_DEBUG 		= $(OUTDIR_DEBUG)/$(LIBNAME).
 OBJDIR_DEBUG 	= obj/Debug
 
 # Variáveis para a compilação do arquivo definitivo
 LIB_RELEASE		= $(LIB)/Win32/Release $(LIB_GMP)
 CFLAGS_RELEASE 	= $(CFLAGS) -O2
-OUTDIR_RELEASE 	= $(BASEDIR)/bin/Win32/Release
-OUT_RELEASE 	= $(OUTDIR_RELEASE)/lib/$(LIBNAME).
+OUTDIR_RELEASE 	= $(BASEDIR)/bin/Win32/Release/lib
+OUT_RELEASE 	= $(OUTDIR_RELEASE)/$(LIBNAME).
 OBJDIR_RELEASE	= obj/Release
 
 #==============================================================================
@@ -42,8 +42,8 @@ all: pre_debug debug pre_release release
 # Regra para os arquivos de objeto do Debug
 #------------------------------------------------------------------------------
 pre_debug:
-	test -d $(OBJDIR_DEBUG) || mkdir "$(OBJDIR_DEBUG)"
-	test -d $(OUTDIR_DEBUG) || mkdir "$(OUTDIR_DEBUG)"
+	test -d $(OBJDIR_DEBUG) || md "$(OBJDIR_DEBUG)"
+	test -d $(OUTDIR_DEBUG) || md "$(OUTDIR_DEBUG)"
 
 debug:
 	$(CC) $(CFLAGS_DEBUG) -shared -o $(OUT_DEBUG) $(INC) bignum.c $(LIB_DEBUG) -lshiro -lgmp
@@ -52,8 +52,8 @@ debug:
 # Regra para os arquivos de objeto do Release
 #------------------------------------------------------------------------------
 pre_release:
-	test -d $(OBJDIR_RELEASE) || mkdir "$(OBJDIR_RELEASE)"
-	test -d $(OUTDIR_RELEASE) || mkdir "$(OUTDIR_RELEASE)"
+	test -d $(OBJDIR_RELEASE) || md "$(OBJDIR_RELEASE)"
+	test -d $(OUTDIR_RELEASE) || md "$(OUTDIR_RELEASE)"
 
 release:
 	$(CC) $(CFLAGS_RELEASE) -shared -o $(OUT_RELEASE) $(INC) bignum.c $(LIB_RELEASE) -lshiro -lgmp
