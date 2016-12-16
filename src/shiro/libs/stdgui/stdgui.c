@@ -52,13 +52,13 @@ void shiro_glfw_close_callback(GLFWwindow* window) {
 // Cria uma janela
 //-----------------------------------------------------------------------------
 shiro_native(create_window) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1),
-                *arg2 = shiro_get_value(runtime, 2);
+    shiro_push_arg(arg_w, 0);
+    shiro_push_arg(arg_h, 1);
 
-    shiro_uint  width = shiro_to_uint(arg0),
-                height = shiro_to_uint(arg1);
+    shiro_uint  width = shiro_to_uint(arg_w),
+                height = shiro_to_uint(arg_h);
 
+    shiro_push_arg_t(title, string, 0);
     shiro_string title = get_string(arg2);
 
     if (!glfwInit()) {
@@ -126,11 +126,11 @@ shiro_native(create_window) {
 // Redimensiona a janela
 //-----------------------------------------------------------------------------
 shiro_native(resize_window) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_c(width, uint, 0);
+    shiro_push_arg_c(height, uint, 1);
 
-    shiro_uint  width = shiro_to_uint(arg0),
-                height = shiro_to_uint(arg1);
+    shiro_uint  width = shiro_to_uint(arg_w),
+                height = shiro_to_uint(arg_h);
 
     if (shiro_window == NULL) {
         shiro_error(0, "GUIError", "No window found to resize");
@@ -168,13 +168,9 @@ shiro_native(fullscreen) {
 // Limpa a tela com uma cor RGB
 //-----------------------------------------------------------------------------
 shiro_native(background) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1),
-                *arg2 = shiro_get_value(runtime, 2);
-
-    GLuint r = shiro_to_uint(arg0);
-    GLuint g = shiro_to_uint(arg1);
-    GLuint b = shiro_to_uint(arg2);
+    shiro_push_arg_c(r, uint, 0);
+    shiro_push_arg_c(g, uint, 1);
+    shiro_push_arg_c(b, uint, 1);
 
     glClearColor(r / 255.0, g / 255.0, b / 255.0, 0);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -185,13 +181,9 @@ shiro_native(background) {
 // Define a cor dos desenhos feitos na tela
 //-----------------------------------------------------------------------------
 shiro_native(foreground) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1),
-                *arg2 = shiro_get_value(runtime, 2);
-
-    GLuint r = shiro_to_uint(arg0);
-    GLuint g = shiro_to_uint(arg1);
-    GLuint b = shiro_to_uint(arg2);
+    shiro_push_arg_c(r, uint, 0);
+    shiro_push_arg_c(g, uint, 1);
+    shiro_push_arg_c(b, uint, 1);
 
     glColor3f(r / 255.0, g / 255.0, b / 255.0);
 
@@ -201,10 +193,9 @@ shiro_native(foreground) {
 // Define a largura das linhas
 //-----------------------------------------------------------------------------
 shiro_native(line_weight) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0);
+    shiro_push_arg(arg, 0);
 
-    shiro_float weight = shiro_to_float(arg0);
-
+    shiro_float weight = shiro_to_float(arg);
     glLineWidth(weight);
 
     return shiro_nil;
@@ -213,15 +204,10 @@ shiro_native(line_weight) {
 // Desenha uma linha na tela
 //-----------------------------------------------------------------------------
 shiro_native(line) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1),
-                *arg2 = shiro_get_value(runtime, 2),
-                *arg3 = shiro_get_value(runtime, 3);
-
-    shiro_uint  ax = shiro_to_uint(arg0),
-                ay = shiro_to_uint(arg1),
-                bx = shiro_to_uint(arg2),
-                by = shiro_to_uint(arg3);
+    shiro_push_arg_c(ax, uint, 0);
+    shiro_push_arg_c(ay, uint, 1);
+    shiro_push_arg_c(bx, uint, 2);
+    shiro_push_arg_c(by, uint, 3);
 
     glBegin(GL_LINES);
         glVertex2i(ax, ay);

@@ -35,10 +35,12 @@ shiro_native(gets) {
 // Escreve um valor para a saida padrão
 //-----------------------------------------------------------------------------
 shiro_native(print) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_string str = shiro_to_string(arg0);
+    shiro_push_arg(msg, 0)
+    shiro_string str = shiro_to_string(msg);
+
     printf(str);
-    if (arg0->type != s_tString) free(str);
+    if (msg->type != s_tString)
+        free(str);
 
     return shiro_nil;
 }
@@ -46,10 +48,11 @@ shiro_native(print) {
 // Escreve um valor para a saída de erros
 //-----------------------------------------------------------------------------
 shiro_native(error) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_string str = shiro_to_string(arg0);
+    shiro_push_arg(msg, 0)
+    shiro_string str = shiro_to_string(msg);
     fprintf(stderr, str);
-    if (arg0->type != s_tString) free(str);
+    if (msg->type != s_tString)
+        free(str);
 
     return shiro_nil;
 }
@@ -62,11 +65,8 @@ shiro_native(error) {
 // Retorna um UInt representando o ponteiro para o arquivo aberto
 //-----------------------------------------------------------------------------
 shiro_native(fopen) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1);
-
-    shiro_string    fname = get_string(arg0),
-                    mode = get_string(arg1);
+    shiro_push_arg_t(fname, string, 0);
+    shiro_push_arg_t(mode, string,  1);
 
     return shiro_new_uint((shiro_uint)fopen(fname, mode));
 }
@@ -77,11 +77,16 @@ shiro_native(fopen) {
 // um valor qualquer que será escrito
 //-----------------------------------------------------------------------------
 shiro_native(fwrite) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(fileptr, uint, 0);
+    shiro_push_arg  (data,  1);
 
-    FILE* file = (FILE*)get_uint(arg0);
-    fwrite(shiro_to_string(arg1), sizeof(shiro_character), shiro_get_field(arg1, ID("length"))->value.u, file);
+    FILE* file = (FILE*)fileptr;
+    fwrite(
+        get_string(data),
+        sizeof(shiro_character),
+        shiro_get_field(data, ID("length"))->value.u,
+        file
+    );
 
     return shiro_nil;
 }
@@ -91,10 +96,8 @@ shiro_native(fwrite) {
 // O parâmetro passado deve ser um UInt de ponteiro para o arquivo
 //-----------------------------------------------------------------------------
 shiro_native(fflush) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0);
-
-    fflush((FILE*)get_uint(arg0));
-
+    shiro_push_arg_t(fileptr, uint, 0);
+    fflush((FILE*)fileptr);
     return shiro_nil;
 }
 //-----------------------------------------------------------------------------
@@ -103,9 +106,9 @@ shiro_native(fflush) {
 // O parâmetro passado deve ser um UInt de ponteiro para o arquivo
 //-----------------------------------------------------------------------------
 shiro_native(fread) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0);
+    shiro_push_arg_t(fileptr, uint, 0);
 
-    FILE* file = (FILE*)get_uint(arg0);
+    FILE* file = (FILE*)fileptr;
     fseek(file, 0, SEEK_END);
     shiro_uint size = ftell(file);
     fseek(file, 0, SEEK_SET);
@@ -126,9 +129,9 @@ shiro_native(fread) {
 // arquivo
 //-----------------------------------------------------------------------------
 shiro_native(fclose) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0);
+    shiro_push_arg_t(fileptr, uint, 0);
 
-    FILE* file = (FILE*)get_uint(arg0);
+    FILE* file = (FILE*)fileptr;
     fclose(file);
 
     return shiro_nil;
@@ -139,11 +142,8 @@ shiro_native(fclose) {
 // O parâmetro deve ser uma string com o nome do arquivo
 //-----------------------------------------------------------------------------
 shiro_native(fremove) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0);
-
-    shiro_string fname = get_string(arg0);
+    shiro_push_arg_t(fname, string, 0);
     remove(fname);
-
     return shiro_nil;
 }
 //-----------------------------------------------------------------------------
@@ -153,13 +153,10 @@ shiro_native(fremove) {
 // segundo uma string com o novo nome a ser dado para o arquivo
 //-----------------------------------------------------------------------------
 shiro_native(frename) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(old_fname, string, 0);
+    shiro_push_arg_t(new_fname, string, 0);
 
-    shiro_string old_fname = get_string(arg0),
-                 new_fname = get_string(arg1);
     rename(old_fname, new_fname);
-
     return shiro_nil;
 }
 //-----------------------------------------------------------------------------
@@ -171,8 +168,7 @@ shiro_native(frename) {
 // Retorna um UInt representando o ponteiro para o arquivo temporário criado
 //-----------------------------------------------------------------------------
 shiro_native(temp_file) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0);
-    shiro_string mode = get_string(arg0);
+    shiro_push_arg_t(mode, string, 0);
 
     return shiro_new_uint((shiro_uint)fopen(tmpnam(NULL), mode));
 }
@@ -180,7 +176,6 @@ shiro_native(temp_file) {
 // Inicializa a biblioteca
 //-----------------------------------------------------------------------------
 shiro_main(shiro_runtime* runtime) {
-
     //
     // Funções de entrada/saída padrão
     //

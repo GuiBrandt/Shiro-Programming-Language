@@ -33,4 +33,4 @@ fn fibonacci(n)
 
 // import "stdio";
 //
-// print(bignum_to_string(fibo(20000)));
+// print(bignum_to_string(fibonacci(20000)));

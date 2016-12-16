@@ -226,8 +226,14 @@ SHIRO_API void shiro_set_path               (const shiro_string*, const shiro_st
 #define shiro_main __declspec(dllexport) void shiro_load_library
 
 #define __native_fn_name(name) __shiro_imported_ ## name
+#define __native_fn_arg_name(n) arg ## n
 
 #define shiro_native(name) shiro_value* __native_fn_name(name) (shiro_runtime* runtime, shiro_uint n_args)
+
+#define shiro_push_arg(v, n) shiro_value* v = shiro_get_value(runtime, n);
+#define shiro_push_arg_t(v, t, n) shiro_ ## t v = get_ ## t (shiro_get_value(runtime, n));
+#define shiro_push_arg_c(v, t, n) shiro_ ## t v = shiro_to_ ## t (shiro_get_value(runtime, n));
+
 #define shiro_def_native(runtime, name, n_args) shiro_set_global(runtime, ID(#name), s_fFunction, (union __field_value)shiro_new_native(n_args, (shiro_c_function)&__native_fn_name(name)));
 #define shiro_call_native(runtime, name, n_args) __native_fn_name(name)(runtime, n_args)
 

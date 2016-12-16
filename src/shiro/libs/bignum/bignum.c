@@ -48,15 +48,15 @@ shiro_native(bignum) {
 shiro_native(bignum) {
     mpz_t* bigint = malloc(sizeof(mpz_t));
 
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_field* val  = shiro_get_field(arg0, ID_VALUE);
+    shiro_push_arg(arg, 0);
+    shiro_field* val  = shiro_get_field(arg, ID_VALUE);
 
     switch (val->type) {
         case s_fString:
             mpz_init_set_str(*bigint, val->value.str, 10);
             break;
         default:
-            mpz_init_set_si(*bigint, shiro_to_long(arg0));
+            mpz_init_set_si(*bigint, shiro_to_long(arg));
             break;
     }
 
@@ -70,11 +70,11 @@ shiro_native(bignum) {
 // bignum
 //-----------------------------------------------------------------------------
 shiro_native(set_bignum) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_value* arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(ptrA, uint, 0);
+    shiro_push_arg_t(ptrB, uint, 0);
 
-    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
-    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+    mpz_t* bigintA = (mpz_t*)ptrA;
+    mpz_t* bigintB = (mpz_t*)ptrB;
 
     mpz_set(*bigintA, *bigintB);
 
@@ -84,8 +84,8 @@ shiro_native(set_bignum) {
 // Função do shiro para liberar um bignum da memória
 //-----------------------------------------------------------------------------
 shiro_native(free_bignum) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    mpz_t* bigint = (mpz_t*)get_uint(arg0);
+    shiro_push_arg_t(ptr, uint, 0);
+    mpz_t* bigint = (mpz_t*)ptr;
 
     mpz_clear(*bigint);
     free(bigint);
@@ -100,11 +100,11 @@ shiro_native(free_bignum) {
 // bignum
 //-----------------------------------------------------------------------------
 shiro_native(bignum_add) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_value* arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(ptrA, uint, 0);
+    shiro_push_arg_t(ptrB, uint, 0);
 
-    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
-    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+    mpz_t* bigintA = (mpz_t*)ptrA;
+    mpz_t* bigintB = (mpz_t*)ptrB;
 
     mpz_add(*bigintA, *bigintA, *bigintB);
 
@@ -118,11 +118,11 @@ shiro_native(bignum_add) {
 // bignum
 //-----------------------------------------------------------------------------
 shiro_native(bignum_sub) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_value* arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(ptrA, uint, 0);
+    shiro_push_arg_t(ptrB, uint, 0);
 
-    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
-    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+    mpz_t* bigintA = (mpz_t*)ptrA;
+    mpz_t* bigintB = (mpz_t*)ptrB;
 
     mpz_sub(*bigintA, *bigintA, *bigintB);
 
@@ -136,11 +136,11 @@ shiro_native(bignum_sub) {
 // bignum
 //-----------------------------------------------------------------------------
 shiro_native(bignum_mul) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_value* arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(ptrA, uint, 0);
+    shiro_push_arg_t(ptrB, uint, 0);
 
-    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
-    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+    mpz_t* bigintA = (mpz_t*)ptrA;
+    mpz_t* bigintB = (mpz_t*)ptrB;
 
     mpz_mul(*bigintA, *bigintA, *bigintB);
 
@@ -154,11 +154,11 @@ shiro_native(bignum_mul) {
 // bignum
 //-----------------------------------------------------------------------------
 shiro_native(bignum_cdiv) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_value* arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(ptrA, uint, 0);
+    shiro_push_arg_t(ptrB, uint, 0);
 
-    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
-    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+    mpz_t* bigintA = (mpz_t*)ptrA;
+    mpz_t* bigintB = (mpz_t*)ptrB;
 
     mpz_cdiv_q(*bigintA, *bigintA, *bigintB);
 
@@ -172,11 +172,11 @@ shiro_native(bignum_cdiv) {
 // bignum
 //-----------------------------------------------------------------------------
 shiro_native(bignum_fdiv) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_value* arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(ptrA, uint, 0);
+    shiro_push_arg_t(ptrB, uint, 0);
 
-    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
-    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+    mpz_t* bigintA = (mpz_t*)ptrA;
+    mpz_t* bigintB = (mpz_t*)ptrB;
 
     mpz_fdiv_q(*bigintA, *bigintA, *bigintB);
 
@@ -190,11 +190,11 @@ shiro_native(bignum_fdiv) {
 // bignum
 //-----------------------------------------------------------------------------
 shiro_native(bignum_tdiv) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_value* arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(ptrA, uint, 0);
+    shiro_push_arg_t(ptrB, uint, 0);
 
-    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
-    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+    mpz_t* bigintA = (mpz_t*)ptrA;
+    mpz_t* bigintB = (mpz_t*)ptrB;
 
     mpz_tdiv_q(*bigintA, *bigintA, *bigintB);
 
@@ -209,11 +209,11 @@ shiro_native(bignum_tdiv) {
 // bignum
 //-----------------------------------------------------------------------------
 shiro_native(bignum_cmod) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_value* arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(ptrA, uint, 0);
+    shiro_push_arg_t(ptrB, uint, 0);
 
-    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
-    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+    mpz_t* bigintA = (mpz_t*)ptrA;
+    mpz_t* bigintB = (mpz_t*)ptrB;
 
     mpz_cdiv_r(*bigintA, *bigintA, *bigintB);
 
@@ -228,11 +228,11 @@ shiro_native(bignum_cmod) {
 // bignum
 //-----------------------------------------------------------------------------
 shiro_native(bignum_fmod) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_value* arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(ptrA, uint, 0);
+    shiro_push_arg_t(ptrB, uint, 0);
 
-    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
-    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+    mpz_t* bigintA = (mpz_t*)ptrA;
+    mpz_t* bigintB = (mpz_t*)ptrB;
 
     mpz_fdiv_r(*bigintA, *bigintA, *bigintB);
 
@@ -247,11 +247,11 @@ shiro_native(bignum_fmod) {
 // bignum
 //-----------------------------------------------------------------------------
 shiro_native(bignum_tmod) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
-    shiro_value* arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(ptrA, uint, 0);
+    shiro_push_arg_t(ptrB, uint, 0);
 
-    mpz_t* bigintA = (mpz_t*)get_uint(arg0);
-    mpz_t* bigintB = (mpz_t*)get_uint(arg1);
+    mpz_t* bigintA = (mpz_t*)ptrA;
+    mpz_t* bigintB = (mpz_t*)ptrB;
 
     mpz_tdiv_r(*bigintA, *bigintA, *bigintB);
 
@@ -266,11 +266,11 @@ shiro_native(bignum_tmod) {
 // Retorna um UInt representando o ponteiro para o bignum passado como base
 //-----------------------------------------------------------------------------
 shiro_native(bignum_pow) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(ptr, uint, 0);
+    shiro_push_arg(arg, 0);
 
-    mpz_t* bigint  = (mpz_t*)get_uint(arg0);
-    shiro_uint exp = shiro_to_uint(arg1);
+    mpz_t* bigint  = (mpz_t*)ptr;
+    shiro_uint exp = shiro_to_uint(arg);
 
     mpz_pow_ui(*bigint, *bigint, exp);
 
@@ -286,11 +286,11 @@ shiro_native(bignum_pow) {
 // bignum
 //-----------------------------------------------------------------------------
 shiro_native(bignum_root) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1);
+    shiro_push_arg_t(ptr, uint, 0);
+    shiro_push_arg(arg, 0);
 
-    mpz_t* bigint = (mpz_t*)get_uint(arg0);
-    shiro_uint n = shiro_to_uint(arg1);
+    mpz_t* bigint  = (mpz_t*)ptr;
+    shiro_uint n = shiro_to_uint(arg);
 
     mpz_root(*bigint, *bigint, n);
 
@@ -315,9 +315,9 @@ shiro_native(bignum_sqrt) {
 // O valor de retorno da função é uma string representando o bignum
 //-----------------------------------------------------------------------------
 shiro_native(bignum_to_string) {
-    shiro_value* arg0 = shiro_get_value(runtime, 0);
+    shiro_push_arg_t(ptr, uint, 0);
 
-    mpz_t* bigint = (mpz_t*)get_uint(arg0);
+    mpz_t* bigint = (mpz_t*)ptr;
 
     shiro_string str = mpz_get_str(NULL, 10, *bigint);
     shiro_value* r = shiro_new_string(str);
@@ -329,6 +329,7 @@ shiro_native(bignum_to_string) {
 // Inicializa a biblioteca
 //-----------------------------------------------------------------------------
 shiro_main(shiro_runtime* runtime) {
+    
     //
     // Inicialização/finalização de bignums
     //
