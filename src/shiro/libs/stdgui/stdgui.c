@@ -59,7 +59,6 @@ shiro_native(create_window) {
                 height = shiro_to_uint(arg_h);
 
     shiro_push_arg_t(title, string, 0);
-    shiro_string title = get_string(arg2);
 
     if (!glfwInit()) {
         shiro_error(0, "GUIError", "Failed to initialize GLFW-3.2.1");
@@ -128,9 +127,6 @@ shiro_native(create_window) {
 shiro_native(resize_window) {
     shiro_push_arg_c(width, uint, 0);
     shiro_push_arg_c(height, uint, 1);
-
-    shiro_uint  width = shiro_to_uint(arg_w),
-                height = shiro_to_uint(arg_h);
 
     if (shiro_window == NULL) {
         shiro_error(0, "GUIError", "No window found to resize");
@@ -220,15 +216,10 @@ shiro_native(line) {
 // Desenha um retângulo na tela
 //-----------------------------------------------------------------------------
 shiro_native(rect) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1),
-                *arg2 = shiro_get_value(runtime, 2),
-                *arg3 = shiro_get_value(runtime, 3);
-
-    shiro_uint  x = shiro_to_uint(arg0),
-                y = shiro_to_uint(arg1),
-                w = shiro_to_uint(arg2),
-                h = shiro_to_uint(arg3);
+    shiro_push_arg_c(x, uint, 0);
+    shiro_push_arg_c(y, uint, 1);
+    shiro_push_arg_c(w, uint, 2);
+    shiro_push_arg_c(h, uint, 3);
 
     glBegin(GL_QUADS);
         glVertex2i(x, y);
@@ -243,11 +234,8 @@ shiro_native(rect) {
 // Desenha um ponto na tela
 //-----------------------------------------------------------------------------
 shiro_native(point) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1);
-
-    shiro_uint  x = shiro_to_uint(arg0),
-                y = shiro_to_uint(arg1);
+    shiro_push_arg_c(x, uint, 0);
+    shiro_push_arg_c(y, uint, 1);
 
     glBegin(GL_POINTS);
         glVertex2i(x, y);
@@ -259,11 +247,8 @@ shiro_native(point) {
 // Desenha um elípse na tela
 //-----------------------------------------------------------------------------
 shiro_native(ellipse) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1);
-
-    shiro_uint  rx = shiro_to_uint(arg0),
-                ry = shiro_to_uint(arg1);
+    shiro_push_arg_c(rx, uint, 0);
+    shiro_push_arg_c(ry, uint, 1);
 
     glBegin(GL_POLYGON);
 
@@ -296,9 +281,7 @@ shiro_native(pop_matrix) {
 // Aplica uma matriz de rotação
 //-----------------------------------------------------------------------------
 shiro_native(rotate) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0);
-
-    shiro_float angle = shiro_to_float(arg0);
+    shiro_push_arg_c(angle, float, 0);
 
     glRotatef(angle, 0, 0, 1.0);
 
@@ -308,11 +291,8 @@ shiro_native(rotate) {
 // Aplica uma matriz de translação
 //-----------------------------------------------------------------------------
 shiro_native(translate) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1);
-
-    shiro_int   x = shiro_to_int(arg0),
-                y = shiro_to_int(arg1);
+    shiro_push_arg_c(x, uint, 0);
+    shiro_push_arg_c(y, uint, 1);
 
     glTranslatef(x, y, 0);
 
@@ -322,11 +302,8 @@ shiro_native(translate) {
 // Dá zoom na tela
 //-----------------------------------------------------------------------------
 shiro_native(scale) {
-    shiro_value *arg0 = shiro_get_value(runtime, 0),
-                *arg1 = shiro_get_value(runtime, 1);
-
-    shiro_float x = shiro_to_float(arg0),
-                y = shiro_to_float(arg1);
+    shiro_push_arg_c(x, float, 0);
+    shiro_push_arg_c(y, float, 1);
 
     glScalef(x, y, 1.0f);
 
