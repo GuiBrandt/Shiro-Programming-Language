@@ -1,49 +1,47 @@
-「白」プログラミング言語
+Shiro
+===
+
+Este repositório contém o código do interpretador da linguagem "Shiro", uma linguagem C-like
+desenvolvida em 2016 como estudo. O objetivo deste projeto era o de tentar entender o funcionamento
+de um interpretador/compilador de uma linguagem de programação.
+
+O projeto inclui:
+- [Uma implementação de Lexer](./src/shiro/lexer.c)
+- [Uma implementação de Parser de descida recursiva](./src/shiro/parser.c)
+- [Uma implementação de interpretador/máquina virtual](./src/shiro/eval.c)
+- [Bibliotecas padrão para a linguagem](./src/shiro/libs)
+
+Infelizmente, devido a limitações de conhecimento do autor à época, nenhum tipo de otimização foi
+implementada como parte do pipeline do compilador.
+
+Exemplo
 ---
 
-Yo!
+Um exemplo de programa para para calcular a sequência de fibonacci indeterminadamente usando loops
+e números de precisão arbitrária na linguagem:
+```rust
+import "bignum";
 
-Se você chegou aqui provavelmente sabe do que se trata o repositório, mas pra
-não ficar faltando uma explicação:
-O Shiro Programming Language (ou shiro pra encurtar) é um
-compilador/interpretador/qualquer coisa pra uma linguagem bem simples, com
-sintaxe semelhante a C.
+fn fibo(n) {
+	a = bignum(1);
+	b = bignum(1);
 
-O programa é todo feito em C e o único objetivo do projeto é entender o
-funcionamento de um interpretador/compilador/qualquer coisa.
+	i = uint(0);
 
-O nome é aleatório mesmo. Deal with it.
+	while (i < n) {
+		lb = b;
+		b = bignum_add(a, b);
+		a = lb;
 
-
-Progresso
----
-
-Já é possível usar a linguagem para calcular a sequência de fibonacci
-indeterminadamente usando loops e números de precisão arbitrária:
-
-	import "bignum";
-
-	fn fibo(n)
-	{
-		a = bignum(1);
-		b = bignum(1);
-
-		i = uint(0);
-
-		while (i < n)
-		{
-			lb = b;
-			b = bignum_add(a, b);
-			a = lb;
-
-			i += 1;
-		};
-
-		free_bignum(a);
-
-		return b;
+		i += 1;
 	};
 
-	import "stdio";
+	free_bignum(a);
 
-	print(bignum_to_string(fibo(9000)));
+	return b;
+};
+
+import "stdio";
+
+print(bignum_to_string(fibo(9000)));
+```
